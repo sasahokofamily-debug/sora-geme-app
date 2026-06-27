@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SHOO KING II fixed</title>
+<title>SHOO KING II</title>
 <style>
 html,body{margin:0;height:100%;background:#02030a;color:#7df9ff;font-family:system-ui,sans-serif;display:grid;place-items:center}.loading{text-align:center;line-height:1.8;max-width:720px;padding:24px}pre{white-space:pre-wrap;color:#fff;text-align:left}
 </style>
 </head>
 <body>
-<div class="loading"><h1>SHOO KING II</h1><p>Loading fixed game...</p></div>
+<div class="loading"><h1>SHOO KING II</h1><p>Loading game...</p></div>
 <script>
 async function gunzipBase64(b64){
   const bin=atob(b64);
   const bytes=new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-  if(!('DecompressionStream' in window))throw new Error('このブラウザは展開機能に未対応です。Chrome/Edgeで開いてください。');
+  if(!('DecompressionStream' in window))throw new Error('このブラウザは展開機能に未対応です。Safari/Chrome/Edgeの新しい版で開いてください。');
   const ds=new DecompressionStream('gzip');
   const writer=ds.writable.getWriter();
   writer.write(bytes);
@@ -33,9 +33,21 @@ async function gunzipBase64(b64){
 }
 async function boot(){
   try{
-    const res=await fetch('shooking_game2_gacha_effect.html',{cache:'no-store'});
-    if(!res.ok)throw new Error('元ファイルを読めません: '+res.status);
-    const text=await res.text();
+    const sources=[
+      'https://raw.githubusercontent.com/sasahokofamily-debug/sora-geme-app/fb9ca08a6da155d4d6364949ec0b361a59903490/shooking_game2_gacha_effect.html',
+      './shooking_game2_gacha_effect.html'
+    ];
+    let text='';
+    let lastErr=null;
+    for(const src of sources){
+      try{
+        const res=await fetch(src,{cache:'no-store'});
+        if(!res.ok)throw new Error('元ファイルを読めません: '+res.status+' / '+src);
+        text=await res.text();
+        if(text.includes('GAME_GZIP_BASE64'))break;
+      }catch(e){lastErr=e;}
+    }
+    if(!text || !text.includes('GAME_GZIP_BASE64'))throw lastErr||new Error('ゲームデータが見つかりません');
     const m=text.match(/const GAME_GZIP_BASE64="([^"]+)"/);
     if(!m)throw new Error('ゲームデータが見つかりません');
     const html=await gunzipBase64(m[1]);
