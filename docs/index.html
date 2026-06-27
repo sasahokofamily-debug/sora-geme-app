@@ -6,30 +6,39 @@
 <title>Sora Game App</title>
 <style>
 body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07111f;color:white;font-family:system-ui,sans-serif;text-align:center}
-.box{padding:28px;border:1px solid rgba(255,255,255,.25);border-radius:18px;background:rgba(255,255,255,.08)}
+.box{max-width:680px;padding:28px;border:1px solid rgba(255,255,255,.25);border-radius:18px;background:rgba(255,255,255,.08)}
 a{color:#7dd3fc}
+.small{opacity:.75;font-size:13px}
 </style>
 </head>
 <body>
 <div class="box">
 <h1>起動中...</h1>
-<p>ゲームを読み込んでいます。</p>
-<p><a id="open" href="https://cdn.jsdelivr.net/gh/sasahokofamily-debug/sora-geme-app@main/index.html">直接開く</a></p>
+<p id="msg">ゲームを読み込んでいます。</p>
+<p><a id="direct" href="https://raw.githack.com/sasahokofamily-debug/sora-geme-app/main/index.html">直接開く</a></p>
+<p class="small">読み込みが止まる場合は、少し待ってから再読み込みしてください。</p>
 </div>
 <script>
 (async()=>{
-  const url='https://cdn.jsdelivr.net/gh/sasahokofamily-debug/sora-geme-app@main/index.html?v='+Date.now();
-  try{
-    const res=await fetch(url,{cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const html=await res.text();
-    document.open();
-    document.write(html);
-    document.close();
-  }catch(e){
-    document.querySelector('p').textContent='読み込みに失敗しました。下のリンクから直接開いてください。';
-    console.error(e);
+  const sources=[
+    'https://raw.githubusercontent.com/sasahokofamily-debug/sora-geme-app/main/index.html?cache='+Date.now(),
+    'https://cdn.jsdelivr.net/gh/sasahokofamily-debug/sora-geme-app@main/index.html?cache='+Date.now()
+  ];
+  let lastError=null;
+  for(const url of sources){
+    try{
+      const res=await fetch(url,{cache:'no-store'});
+      if(!res.ok) throw new Error(url+' / HTTP '+res.status);
+      const html=await res.text();
+      if(!html.includes('<!DOCTYPE html') && !html.includes('<html')) throw new Error('HTMLではありません');
+      document.open();
+      document.write(html);
+      document.close();
+      return;
+    }catch(e){ lastError=e; }
   }
+  document.getElementById('msg').textContent='読み込みに失敗しました。下の「直接開く」を押してください。';
+  console.error(lastError);
 })();
 </script>
 </body>
