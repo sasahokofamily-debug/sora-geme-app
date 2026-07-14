@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SHOO KING geme</title>
+<meta name="theme-color" content="#02030a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SHOO KING II">
+<meta name="description" content="SHOO KING II - 宇宙を進むシューティングWebアプリ">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/icon.svg">
+<title>SHOO KING II</title>
 <style>
 body{margin:0;background:#02030a;color:white;font-family:system-ui,sans-serif;overflow:hidden}
 canvas{display:block}
@@ -940,6 +948,20 @@ textarea{height:110px;resize:vertical}
   font-size:13px;
 }
 
+.installCard{
+  display:none;
+  text-align:left;
+  border:1px solid rgba(250,204,21,.7);
+  background:rgba(250,204,21,.1);
+  border-radius:14px;
+  padding:12px;
+  margin:12px 0;
+  color:#fde68a;
+}
+.installCard.ready{display:block}
+.installCard button{margin:8px 0 0}
+.installCard .small{color:#fff7ad}
+
 </style>
 </head>
 <body>
@@ -989,7 +1011,7 @@ textarea{height:110px;resize:vertical}
 <div id="ui"></div><div id="itemStatus"></div><div id="missionToast"></div>
 <div id="mobileControls"><div id="joystick"><div id="stick"></div></div><div id="aimPad"></div><button id="fireButton">FIRE</button></div>
 
-<div id="home" class="screen"><div class="panel"><h1>SHOO KING II</h1><div class="authStatus" id="accountStatusHome">未ログイン</div><button onclick="openLogin()">ログイン / サインイン</button><button onclick="openRegister()">新規登録</button><p>ボタン無反応修正版</p><canvas id="homeShipPreview" width="220" height="170"></canvas><p class="small" id="homeShipText"></p><button onclick="openStageSelect()">出撃</button><button class="shop" onclick="openScreen('shop')">ショップ</button><button onclick="openHangar()">格納庫(Hangar)</button><button class="gacha" onclick="openScreen('gacha')">ガチャ</button><button onclick="openOnlinePlay()">オンラインPlay / オンちゃ</button><button onclick="openSaveManager()">セーブコード</button><button class="gacha" onclick="openAchievements()">実績</button><button onclick="openSettings()">設定</button><button onclick="openFamilyMessageSettings()">父の日・母の日メッセージ設定</button><button class="mod" onclick="openModEditor()">MOD保存・読み込み</button><button onclick="openRequestLog()">リクエスト/応答ログ</button><button onclick="openSavedReports()">保存済み報告書</button><p class="small" id="homeStats"></p></div></div>
+<div id="home" class="screen"><div class="panel"><h1>SHOO KING II</h1><div class="authStatus" id="accountStatusHome">未ログイン</div><div id="installCard" class="installCard"><b>Webアプリとして追加できます</b><div class="small" id="installHelp">ホーム画面に追加すると、アプリのように全画面で起動できます。</div><button id="installButton" onclick="installWebApp()">ホーム画面に追加</button></div><button onclick="openLogin()">ログイン / サインイン</button><button onclick="openRegister()">新規登録</button><p>ボタン無反応修正版</p><canvas id="homeShipPreview" width="220" height="170"></canvas><p class="small" id="homeShipText"></p><button onclick="openStageSelect()">出撃</button><button class="shop" onclick="openScreen('shop')">ショップ</button><button onclick="openHangar()">格納庫(Hangar)</button><button class="gacha" onclick="openScreen('gacha')">ガチャ</button><button onclick="openOnlinePlay()">オンラインPlay / オンちゃ</button><button onclick="openSaveManager()">セーブコード</button><button class="gacha" onclick="openAchievements()">実績</button><button onclick="openSettings()">設定</button><button onclick="openFamilyMessageSettings()">父の日・母の日メッセージ設定</button><button class="mod" onclick="openModEditor()">MOD保存・読み込み</button><button onclick="openRequestLog()">リクエスト/応答ログ</button><button onclick="openSavedReports()">保存済み報告書</button><p class="small" id="homeStats"></p></div></div>
 
 <div id="loginScreen" class="screen hidden">
   <div class="panel">
@@ -1200,6 +1222,55 @@ textarea{height:110px;resize:vertical}
   </div>
 </div>
 <script>
+let deferredInstallPrompt=null;
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("Service worker registration failed",err));
+  });
+}
+window.addEventListener("beforeinstallprompt",event=>{
+  event.preventDefault();
+  deferredInstallPrompt=event;
+  updateInstallCard();
+});
+window.addEventListener("appinstalled",()=>{
+  deferredInstallPrompt=null;
+  updateInstallCard(true);
+});
+function isStandaloneWebApp(){
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true;
+}
+function updateInstallCard(installed=false){
+  const card=document.getElementById("installCard");
+  const help=document.getElementById("installHelp");
+  const button=document.getElementById("installButton");
+  if(!card||!help||!button)return;
+  if(installed||isStandaloneWebApp()){
+    card.classList.remove("ready");
+    return;
+  }
+  const isiOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(deferredInstallPrompt){
+    card.classList.add("ready");
+    button.style.display="block";
+    help.textContent="ホーム画面に追加すると、アプリのように全画面で起動できます。";
+  }else if(isiOS){
+    card.classList.add("ready");
+    button.style.display="none";
+    help.textContent="Safariの共有ボタンから「ホーム画面に追加」を選んでください。";
+  }
+}
+async function installWebApp(){
+  if(!deferredInstallPrompt){
+    updateInstallCard();
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt=null;
+  updateInstallCard();
+}
+setTimeout(updateInstallCard,0);
 const canvas=document.getElementById("game"),ctx=canvas.getContext("2d"),ui=document.getElementById("ui");
 function resize(){canvas.width=innerWidth;canvas.height=innerHeight}addEventListener("resize",resize);resize();
 const ALL_SCREENS=["home","loginScreen","registerScreen","stageSelect","shop","gacha","onlinePlay","settings","familyMessageSettings","modEditor","requestLog","questScreen","progressScreen","hangar","skinChangeScreen","missionReportScreen","savedReportsScreen","achievementScreen","saveManagerScreen","levelUpScreen","gameover"];

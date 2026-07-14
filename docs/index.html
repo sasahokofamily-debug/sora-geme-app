@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Sora Game App</title>
+<meta name="theme-color" content="#02030a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SHOO KING II">
+<meta name="description" content="SHOO KING II - 宇宙を進むシューティングWebアプリ">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/icon.svg">
+<title>SHOO KING II</title>
 <style>
 body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07111f;color:white;font-family:system-ui,sans-serif;text-align:center}
 .box{max-width:680px;padding:28px;border:1px solid rgba(255,255,255,.25);border-radius:18px;background:rgba(255,255,255,.08)}
@@ -19,6 +27,11 @@ a{color:#7dd3fc}
 <p class="small">読み込みが止まる場合は、少し待ってから再読み込みしてください。</p>
 </div>
 <script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(console.warn);
+  });
+}
 (async()=>{
   const sources=[
     'https://raw.githubusercontent.com/sasahokofamily-debug/sora-geme-app/main/index.html?cache='+Date.now(),
