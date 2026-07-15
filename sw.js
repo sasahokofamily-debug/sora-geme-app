@@ -1,8 +1,9 @@
-const CACHE_NAME = "shooking-ii-v4";
+const CACHE_NAME = "shooking-ii-v5";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./ui-patch.js",
+  "./google-login.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -25,26 +26,21 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-async function addUiPatch(response) {
-  const html = await response.text();
-  if (html.includes("ui-patch.js")) {
-    return new Response(html, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers
-    });
+async function addAppPatches(response) {
+  let html = await response.text();
+  if (!html.includes("ui-patch.js")) {
+    html = html.replace("</body>", '<script src="./ui-patch.js?v=1"></script></body>');
   }
-
-  const patchedHtml = html.replace(
-    "</body>",
-    '<script src="./ui-patch.js?v=1"></script></body>'
-  );
+  if (!html.includes("google-login.js")) {
+    html = html.replace("</body>", '<script src="./google-login.js?v=5"></script></body>');
+  }
 
   const headers = new Headers(response.headers);
   headers.set("content-type", "text/html; charset=utf-8");
   headers.delete("content-length");
+  headers.set("cache-control", "no-cache");
 
-  return new Response(patchedHtml, {
+  return new Response(html, {
     status: response.status,
     statusText: response.statusText,
     headers
@@ -58,10 +54,10 @@ self.addEventListener("fetch", event => {
     event.respondWith((async () => {
       try {
         const networkResponse = await fetch(event.request);
-        return await addUiPatch(networkResponse);
+        return await addAppPatches(networkResponse);
       } catch {
         const cachedResponse = await caches.match("./index.html");
-        return cachedResponse ? addUiPatch(cachedResponse) : Response.error();
+        return cachedResponse ? addAppPatches(cachedResponse) : Response.error();
       }
     })());
     return;
