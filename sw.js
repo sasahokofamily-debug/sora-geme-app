@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v5";
+const CACHE_NAME = "shooking-ii-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -11,17 +11,13 @@ const APP_SHELL = [
 ];
 
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
   self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))
-    )
+    caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
   );
   self.clients.claim();
 });
@@ -32,7 +28,7 @@ async function addAppPatches(response) {
     html = html.replace("</body>", '<script src="./ui-patch.js?v=1"></script></body>');
   }
   if (!html.includes("google-login.js")) {
-    html = html.replace("</body>", '<script src="./google-login.js?v=5"></script></body>');
+    html = html.replace("</body>", '<script src="./google-login.js?v=6"></script></body>');
   }
 
   const headers = new Headers(response.headers);
