@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="theme-color" content="#02030a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,8 +15,9 @@
 <style>
 body{margin:0;background:#02030a;color:white;font-family:system-ui,sans-serif;overflow:hidden}
 canvas{display:block}
+#game{touch-action:none}
 .screen{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;background:radial-gradient(circle,#142050,#02030a 70%);z-index:5;overflow-y:auto;padding:24px 0;box-sizing:border-box}
-.panel{width:min(760px,92vw);max-height:calc(100vh - 48px);overflow-y:auto;padding:28px;border:2px solid #5ee7ff;border-radius:20px;background:rgba(0,0,0,.72);box-shadow:0 0 30px #00d9ff55;text-align:center;box-sizing:border-box}
+.panel{width:min(760px,92vw);max-height:calc(100vh - 48px);overflow-y:auto;padding:28px;border:2px solid #5ee7ff;border-radius:20px;background:rgba(0,0,0,.72);box-shadow:0 0 30px #00d9ff55;text-align:center;box-sizing:border-box;overflow-wrap:anywhere}
 .hidden{display:none!important;pointer-events:none!important}
 .screen.hidden{display:none!important;pointer-events:none!important}
 h1{margin:0 0 10px;font-size:38px;color:#7df9ff}
@@ -35,8 +36,38 @@ textarea{height:110px;resize:vertical}
 .stageNode.locked{border-color:#475569;background:#111827;color:#64748b;box-shadow:none;cursor:not-allowed}.stageNode.cleared{border-color:#facc15;box-shadow:0 0 18px rgba(250,204,21,.75)}.stageNode.selected{outline:4px solid rgba(255,255,255,.75)}
 .choiceGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}.choiceCard{border:1px solid #38bdf8;border-radius:14px;padding:14px;background:rgba(15,23,42,.9);cursor:pointer;min-height:120px}.choiceCard:hover{background:rgba(30,64,175,.75)}.choiceTitle{color:#7df9ff;font-weight:bold;margin-bottom:8px}
 #missionToast{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:rgba(2,6,23,.9);border:1px solid #facc15;border-radius:14px;padding:12px 18px;z-index:10;box-shadow:0 0 24px rgba(250,204,21,.4);display:none;text-align:center}
-#mobileControls{position:fixed;inset:0;pointer-events:none;z-index:3;display:none}#joystick{position:absolute;left:26px;bottom:34px;width:132px;height:132px;border-radius:50%;border:2px solid rgba(125,249,255,.7);background:rgba(15,23,42,.45);pointer-events:auto;touch-action:none}#stick{position:absolute;left:43px;top:43px;width:46px;height:46px;border-radius:50%;background:rgba(125,249,255,.85);box-shadow:0 0 18px #7df9ff}#fireButton{position:absolute;right:28px;bottom:44px;width:118px;height:118px;border-radius:50%;border:2px solid rgba(255,77,109,.8);background:rgba(127,29,29,.55);color:white;font-weight:bold;font-size:18px;pointer-events:auto;touch-action:none}#aimPad{position:absolute;right:18px;top:100px;width:150px;height:150px;border-radius:50%;border:1px dashed rgba(255,255,255,.3);background:rgba(255,255,255,.04);pointer-events:auto;touch-action:none}
+#mobileControls{position:fixed;inset:0;pointer-events:none;z-index:3;display:none}
+#mobileControls.is-visible{display:block}
+#joystick{position:absolute;left:max(22px,env(safe-area-inset-left));bottom:max(28px,env(safe-area-inset-bottom));width:132px;height:132px;border-radius:50%;border:2px solid rgba(125,249,255,.7);background:rgba(15,23,42,.45);box-shadow:0 0 22px rgba(56,189,248,.22);pointer-events:auto;touch-action:none}
+#stick{position:absolute;left:43px;top:43px;width:46px;height:46px;border-radius:50%;background:rgba(125,249,255,.85);box-shadow:0 0 18px #7df9ff}
+#fireButton{position:absolute;right:max(22px,env(safe-area-inset-right));bottom:max(32px,env(safe-area-inset-bottom));width:118px;height:118px;border-radius:50%;border:2px solid rgba(255,77,109,.8);background:rgba(127,29,29,.55);color:white;font-weight:bold;font-size:18px;pointer-events:auto;touch-action:none}
+#aimPad{position:absolute;right:max(24px,env(safe-area-inset-right));bottom:172px;width:142px;height:142px;border-radius:50%;border:1px dashed rgba(255,255,255,.38);background:rgba(255,255,255,.045);box-shadow:inset 0 0 18px rgba(255,255,255,.04);pointer-events:auto;touch-action:none}
+body.large-touch-controls #joystick{width:150px;height:150px}
+body.large-touch-controls #fireButton{width:136px;height:136px;font-size:20px}
+body.large-touch-controls #aimPad{width:158px;height:158px;bottom:190px}
 @media(max-width:700px){#ui{font-size:12px;max-width:170px}.choiceGrid{grid-template-columns:1fr}#galaxyMap{height:420px}.stageNode{width:50px;height:50px;font-size:13px}}
+@media(max-width:700px),(pointer:coarse){
+  body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+  button{min-height:48px;padding:14px 13px;border-radius:10px}
+  .panel{width:min(720px,92vw);padding:18px;max-height:calc(100dvh - 28px)}
+  h1{font-size:clamp(28px,9vw,36px)}
+  #ui{left:max(8px,env(safe-area-inset-left));top:max(8px,env(safe-area-inset-top));max-width:min(46vw,170px);padding:8px 10px;font-size:11px;line-height:1.35;border-radius:10px;background:rgba(2,6,23,.62)}
+  #itemStatus{right:max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));padding:7px 9px;font-size:11px;line-height:1.35;border-radius:10px;background:rgba(2,6,23,.62)}
+  #missionToast{top:max(154px,env(safe-area-inset-top));max-width:82vw;font-size:13px}
+  #joystick{left:max(18px,env(safe-area-inset-left));bottom:max(24px,env(safe-area-inset-bottom));width:128px;height:128px;background:rgba(15,23,42,.52)}
+  #fireButton{right:max(18px,env(safe-area-inset-right));bottom:max(28px,env(safe-area-inset-bottom));width:120px;height:120px;margin:0}
+  #aimPad{right:max(20px,env(safe-area-inset-right));bottom:162px;width:136px;height:136px}
+}
+@media(max-width:360px){
+  #ui{max-width:44vw;font-size:10px;padding:7px 8px}
+  #itemStatus{font-size:10px;padding:6px 8px}
+  #joystick{width:112px;height:112px}
+  #fireButton{width:108px;height:108px;font-size:16px}
+  #aimPad{width:118px;height:118px;bottom:144px}
+  body.large-touch-controls #joystick{width:124px;height:124px}
+  body.large-touch-controls #fireButton{width:120px;height:120px}
+  body.large-touch-controls #aimPad{width:126px;height:126px;bottom:154px}
+}
 
 .skinGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
 .skinCard{border:1px solid #334155;border-radius:14px;background:rgba(15,23,42,.9);padding:12px;text-align:left}
@@ -1329,10 +1360,14 @@ function showScreen(id){hideAllScreens();const el=document.getElementById(id);if
 let audioCtx=null,gameVolume=Number(localStorage.getItem("shooking2_volume")||"1");
 function sound(freq=440,time=.07,type="square",vol=.04){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==="suspended")audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(vol*gameVolume,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+time);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+time)}
 const keys={};addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=true;if(e.key==="Escape")openScreen("home")});addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
-const mouse={x:innerWidth/2,y:innerHeight/2,down:false},touchMove={x:0,y:0};let mobileControlsEnabled=localStorage.getItem("shooking2_mobile_controls")==="1",largeButtonsEnabled=localStorage.getItem("shooking2_large_buttons")==="1";
+const mouse={x:innerWidth/2,y:innerHeight/2,down:false},touchMove={x:0,y:0};
+const mobileControlsStored=localStorage.getItem("shooking2_mobile_controls");
+const prefersTouchControls=matchMedia("(pointer: coarse)").matches||("ontouchstart" in window)||innerWidth<=900;
+let mobileControlsEnabled=mobileControlsStored===null?prefersTouchControls:mobileControlsStored==="1",largeButtonsEnabled=localStorage.getItem("shooking2_large_buttons")==="1";
 addEventListener("mousemove",e=>{mouse.x=e.clientX;mouse.y=e.clientY});addEventListener("mousedown",()=>{mouse.down=true;sound(500,.03)});addEventListener("mouseup",()=>mouse.down=false);
-function applyMobileControlsVisibility(){const box=document.getElementById("mobileControls");if(box)box.style.display=mobileControlsEnabled?"block":"none"}setTimeout(applyMobileControlsVisibility,0);
-function setupTouchControls(){const joystick=document.getElementById("joystick"),stick=document.getElementById("stick"),fire=document.getElementById("fireButton"),aim=document.getElementById("aimPad");if(!joystick)return;function reset(){touchMove.x=0;touchMove.y=0;stick.style.left="43px";stick.style.top="43px"}joystick.addEventListener("touchmove",e=>{if(!mobileControlsEnabled)return;e.preventDefault();const r=joystick.getBoundingClientRect(),t=e.touches[0],cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=t.clientX-cx,dy=t.clientY-cy,max=r.width*.32,d=Math.hypot(dx,dy)||1;if(d>max){dx=dx/d*max;dy=dy/d*max}touchMove.x=dx/max;touchMove.y=dy/max;stick.style.left=(r.width/2-23+dx)+"px";stick.style.top=(r.height/2-23+dy)+"px"},{passive:false});joystick.addEventListener("touchend",reset);fire.addEventListener("touchstart",e=>{if(!mobileControlsEnabled)return;e.preventDefault();mouse.down=true},{passive:false});fire.addEventListener("touchend",e=>{mouse.down=false},{passive:false});aim.addEventListener("touchmove",e=>{if(!mobileControlsEnabled)return;e.preventDefault();mouse.x=e.touches[0].clientX;mouse.y=e.touches[0].clientY},{passive:false})}setTimeout(setupTouchControls,0);
+function applyMobileControlsVisibility(){const box=document.getElementById("mobileControls");if(box)box.classList.toggle("is-visible",mobileControlsEnabled);document.body.classList.toggle("large-touch-controls",largeButtonsEnabled)}
+setTimeout(applyMobileControlsVisibility,0);
+function setupTouchControls(){const joystick=document.getElementById("joystick"),stick=document.getElementById("stick"),fire=document.getElementById("fireButton"),aim=document.getElementById("aimPad");if(!joystick)return;function placeStick(dx=0,dy=0){const r=joystick.getBoundingClientRect(),sr=stick.getBoundingClientRect(),sw=sr.width||46,sh=sr.height||46;stick.style.left=(r.width/2-sw/2+dx)+"px";stick.style.top=(r.height/2-sh/2+dy)+"px"}function reset(){touchMove.x=0;touchMove.y=0;placeStick()}function updateAimFromTouch(e){const t=e.touches[0];mouse.x=t.clientX;mouse.y=t.clientY}joystick.addEventListener("touchstart",e=>{if(!mobileControlsEnabled)return;e.preventDefault();placeStick()},{passive:false});joystick.addEventListener("touchmove",e=>{if(!mobileControlsEnabled)return;e.preventDefault();const r=joystick.getBoundingClientRect(),t=e.touches[0],cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=t.clientX-cx,dy=t.clientY-cy,max=r.width*.34,d=Math.hypot(dx,dy)||1;if(d>max){dx=dx/d*max;dy=dy/d*max}touchMove.x=dx/max;touchMove.y=dy/max;placeStick(dx,dy)},{passive:false});joystick.addEventListener("touchend",reset);joystick.addEventListener("touchcancel",reset);fire.addEventListener("touchstart",e=>{if(!mobileControlsEnabled)return;e.preventDefault();mouse.down=true;sound(500,.03)},{passive:false});fire.addEventListener("touchend",e=>{mouse.down=false},{passive:false});fire.addEventListener("touchcancel",e=>{mouse.down=false},{passive:false});aim.addEventListener("touchstart",e=>{if(!mobileControlsEnabled)return;e.preventDefault();updateAimFromTouch(e)},{passive:false});aim.addEventListener("touchmove",e=>{if(!mobileControlsEnabled)return;e.preventDefault();updateAimFromTouch(e)},{passive:false});addEventListener("resize",reset)}setTimeout(setupTouchControls,0);
 const WORLD_UNITS={pxPerMeter:4,kmhToPxPerFrame(kmh){return(kmh*1000/3600)*this.pxPerMeter/60},pxPerFrameToKmh(px){return px*60/this.pxPerMeter*3.6}};
 
 const MODS={weapons:{main:{bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(960),bulletSize:5,damageBase:14}},enemies:{eliteRate:.13},stages:{spawnBoost:1}};
@@ -2021,7 +2056,7 @@ function getNearestEnemyInfo(){
   return {enemy:best,distance:bestD,angle:Math.atan2(best.y-player.worldY,best.x-player.worldX)};
 }
 function drawEnemyRadar(){
-  const w=Math.min(166,Math.max(132,canvas.width*.18)),h=w,x=canvas.width-w-14,y=14,cx=x+w/2,cy=y+h/2,range=1500;
+  const compact=canvas.width<700,w=compact?112:Math.min(166,Math.max(132,canvas.width*.18)),h=w,x=canvas.width-w-(compact?10:14),y=compact?78:14,cx=x+w/2,cy=y+h/2,range=1500;
   ctx.save();ctx.globalAlpha=1;ctx.fillStyle="rgba(2,6,23,.78)";ctx.strokeStyle="#56e1ff";ctx.lineWidth=1.5;ctx.beginPath();
   if(ctx.roundRect)ctx.roundRect(x,y,w,h,16);else ctx.rect(x,y,w,h);
   ctx.fill();ctx.stroke();
@@ -2029,7 +2064,7 @@ function drawEnemyRadar(){
   ctx.beginPath();ctx.arc(cx,cy,w*.26,0,Math.PI*2);ctx.stroke();
   ctx.beginPath();ctx.arc(cx,cy,w*.43,0,Math.PI*2);ctx.stroke();
   ctx.beginPath();ctx.moveTo(cx,y+28);ctx.lineTo(cx,y+h-10);ctx.moveTo(x+10,cy);ctx.lineTo(x+w-10,cy);ctx.stroke();
-  ctx.fillStyle="#7df9ff";ctx.font="bold 11px system-ui";ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText("ENEMY RADAR",x+12,y+9);
+  ctx.fillStyle="#7df9ff";ctx.font=`bold ${compact?9:11}px system-ui`;ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText("ENEMY RADAR",x+(compact?8:12),y+(compact?7:9));
   ctx.fillStyle="#38bdf8";ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fill();
   enemies.filter(e=>e&&Number.isFinite(e.x)&&Number.isFinite(e.y)).slice(0,80).forEach(e=>{
     const dx=e.x-player.worldX,dy=e.y-player.worldY,dist=Math.hypot(dx,dy),a=Math.atan2(dy,dx),rr=(Math.min(range,dist)/range)*(w*.42);
