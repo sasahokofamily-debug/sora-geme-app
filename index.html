@@ -54,6 +54,47 @@ textarea{height:110px;resize:vertical}
   background:radial-gradient(circle,#0f172a,#020617 72%);
   box-shadow:0 0 20px rgba(125,249,255,.25);
 }
+.homeCommandGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:10px 0 12px;
+  text-align:left;
+}
+.homeCommandCard{
+  border:1px solid #334155;
+  border-left:4px solid #38bdf8;
+  background:rgba(15,23,42,.84);
+  border-radius:12px;
+  padding:10px;
+  min-height:74px;
+}
+.homeCommandTitle{
+  color:#7df9ff;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+  margin-bottom:6px;
+}
+.homeCommandText{
+  color:#e2e8f0;
+  font-size:13px;
+  line-height:1.45;
+}
+.enemyIntelList{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.enemyIntelBadge{
+  border:1px solid rgba(125,249,255,.32);
+  border-radius:999px;
+  padding:4px 8px;
+  background:rgba(2,6,23,.72);
+  color:#dbeafe;
+  font-size:12px;
+}
+@media(max-width:700px){.homeCommandGrid{grid-template-columns:1fr}}
 .reportBox{
   text-align:left;background:rgba(15,23,42,.9);border:1px solid #334155;
   border-radius:14px;padding:14px;margin:12px 0;line-height:1.6
@@ -1020,7 +1061,7 @@ textarea{height:110px;resize:vertical}
 <div id="ui"></div><div id="itemStatus"></div><div id="missionToast"></div>
 <div id="mobileControls"><div id="joystick"><div id="stick"></div></div><div id="aimPad"></div><button id="fireButton">FIRE</button></div>
 
-<div id="home" class="screen"><div class="panel"><h1>SHOO KING II</h1><div class="authStatus" id="accountStatusHome">未ログイン</div><div id="installCard" class="installCard"><b>Webアプリとして追加できます</b><div class="small" id="installHelp">ホーム画面に追加すると、アプリのように全画面で起動できます。</div><button id="installButton" onclick="installWebApp()">ホーム画面に追加</button></div><button onclick="openLogin()">ログイン / サインイン</button><button onclick="openRegister()">新規登録</button><p>ボタン無反応修正版</p><canvas id="homeShipPreview" width="220" height="170"></canvas><p class="small" id="homeShipText"></p><button onclick="openStageSelect()">出撃</button><button class="shop" onclick="openScreen('shop')">ショップ</button><button onclick="openHangar()">格納庫(Hangar)</button><button class="gacha" onclick="openScreen('gacha')">ガチャ</button><button onclick="openOnlinePlay()">オンラインPlay / オンちゃ</button><button onclick="openSaveManager()">セーブコード</button><button class="gacha" onclick="openAchievements()">実績</button><button onclick="openSettings()">設定</button><button onclick="openFamilyMessageSettings()">父の日・母の日メッセージ設定</button><button class="mod" onclick="openModEditor()">MOD保存・読み込み</button><button onclick="openRequestLog()">リクエスト/応答ログ</button><button onclick="openSavedReports()">保存済み報告書</button><p class="small" id="homeStats"></p></div></div>
+<div id="home" class="screen"><div class="panel"><h1>SHOO KING II</h1><div class="authStatus" id="accountStatusHome">未ログイン</div><div id="installCard" class="installCard"><b>Webアプリとして追加できます</b><div class="small" id="installHelp">ホーム画面に追加すると、アプリのように全画面で起動できます。</div><button id="installButton" onclick="installWebApp()">ホーム画面に追加</button></div><button onclick="openLogin()">ログイン / サインイン</button><button onclick="openRegister()">新規登録</button><p>ボタン無反応修正版</p><canvas id="homeShipPreview" width="220" height="170"></canvas><p class="small" id="homeShipText"></p><div class="homeCommandGrid"><div class="homeCommandCard"><div class="homeCommandTitle">TODAY'S OPS</div><div class="homeCommandText" id="homeMissionBrief">作戦データを読み込み中...</div></div><div class="homeCommandCard"><div class="homeCommandTitle">ENEMY INTEL</div><div class="enemyIntelList" id="homeEnemyIntel"></div></div></div><button onclick="openStageSelect()">出撃</button><button class="shop" onclick="openScreen('shop')">ショップ</button><button onclick="openHangar()">格納庫(Hangar)</button><button class="gacha" onclick="openScreen('gacha')">ガチャ</button><button onclick="openOnlinePlay()">オンラインPlay / オンちゃ</button><button onclick="openSaveManager()">セーブコード</button><button class="gacha" onclick="openAchievements()">実績</button><button onclick="openSettings()">設定</button><button onclick="openFamilyMessageSettings()">父の日・母の日メッセージ設定</button><button class="mod" onclick="openModEditor()">MOD保存・読み込み</button><button onclick="openRequestLog()">リクエスト/応答ログ</button><button onclick="openSavedReports()">保存済み報告書</button><p class="small" id="homeStats"></p></div></div>
 
 <div id="loginScreen" class="screen hidden">
   <div class="panel">
@@ -1805,13 +1846,35 @@ function shoot(t){
   }
   sound(w.sound||520,.035,w.id==="sniper"?"triangle":"square",.025);
 }
-function spawnEnemy(){const a=Math.random()*Math.PI*2,d=rand(760,1050),s=getStageData(player.stage),elite=Math.random()<Math.min(.6,MODS.enemies.eliteRate+s.id*.01),hp=(35+player.stage*14)*(elite?3.5:1),types=["chaser","flanker","curver","sniper"],type=types[Math.floor(Math.random()*types.length)];enemies.push({x:player.worldX+Math.cos(a)*d,y:player.worldY+Math.sin(a)*d,vx:0,vy:0,r:(24+Math.random()*13)*(elite?1.45:1),hp,maxHp:hp,speed:(1.5+player.stage*.12)*(elite?.82:1),type,elite,aiTimer:0,curveDir:Math.random()<.5?-1:1,orbitSide:Math.random()<.5?-1:1,dashCooldown:rand(80,180),dashPower:0,shotCooldown:rand(60,160)})}
-function enemyShoot(e){const a=Math.atan2(player.worldY-e.y,player.worldX-e.x),count=e.elite?3:1;for(let i=0;i<count;i++){const off=(i-(count-1)/2)*.18;enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(a+off)*(e.elite?6.2:4.8),vy:Math.sin(a+off)*(e.elite?6.2:4.8),r:e.elite?7:5,life:145,damage:e.elite?14:8,color:e.elite?"#ffbe0b":"#ff4d6d"})}}
+const ENEMY_TYPES={
+  chaser:{label:"追跡",color:"#ff4d6d",hp:1,speed:1,r:1},
+  flanker:{label:"回り込み",color:"#fb7185",hp:.9,speed:1.08,r:.95},
+  curver:{label:"蛇行",color:"#a78bfa",hp:1,speed:1,r:1},
+  sniper:{label:"狙撃",color:"#f97316",hp:.82,speed:.82,r:.9},
+  tank:{label:"重装甲",color:"#facc15",hp:2.6,speed:.46,r:1.45},
+  swarm:{label:"高速小型",color:"#22d3ee",hp:.52,speed:1.9,r:.62},
+  bomber:{label:"拡散弾",color:"#ef4444",hp:1.35,speed:.7,r:1.18}
+};
+function spawnEnemy(){
+  const a=Math.random()*Math.PI*2,d=rand(760,1050),s=getStageData(player.stage),elite=Math.random()<Math.min(.6,MODS.enemies.eliteRate+s.id*.01);
+  const baseTypes=["chaser","flanker","curver","sniper"];
+  if(s.id>=2)baseTypes.push("swarm");
+  if(s.id>=3)baseTypes.push("tank");
+  if(s.id>=4)baseTypes.push("bomber");
+  const type=baseTypes[Math.floor(Math.random()*baseTypes.length)],info=ENEMY_TYPES[type]||ENEMY_TYPES.chaser;
+  const hp=(35+player.stage*14)*info.hp*(elite?3.5:1),r=(24+Math.random()*13)*info.r*(elite?1.45:1),speed=(1.5+player.stage*.12)*info.speed*(elite?.82:1);
+  enemies.push({x:player.worldX+Math.cos(a)*d,y:player.worldY+Math.sin(a)*d,vx:0,vy:0,r,hp,maxHp:hp,speed,type,elite,aiTimer:0,curveDir:Math.random()<.5?-1:1,orbitSide:Math.random()<.5?-1:1,dashCooldown:rand(type==="swarm"?42:80,type==="swarm"?96:180),dashPower:0,shotCooldown:rand(type==="bomber"?45:60,type==="bomber"?115:160)})
+}
+function enemyShoot(e){
+  const a=Math.atan2(player.worldY-e.y,player.worldX-e.x),isBomber=e.type==="bomber",isSniper=e.type==="sniper";
+  const count=isBomber?(e.elite?7:5):(e.elite?3:1),spread=isBomber?.28:.18,speed=isSniper?7.2:(e.elite?6.2:4.8);
+  for(let i=0;i<count;i++){const off=(i-(count-1)/2)*spread;enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(a+off)*speed,vy:Math.sin(a+off)*speed,r:isBomber?6:(e.elite?7:5),life:isSniper?170:145,damage:isBomber?7:(e.elite?14:8),color:e.elite?"#ffbe0b":(ENEMY_TYPES[e.type]?.color||"#ff4d6d")})}
+}
 function burst(x,y,color,n){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=rand(1,7);particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(20,45),color})}}
 function dropItem(x,y,elite=false){const r=Math.random();let type=null;if(r<.18)type="coin";else if(r<.28)type="heal";else if(r<.36)type="shield";else if(r<.42)type="rapid";if(elite&&Math.random()<.45)type="magnet";if(type)items.push({x,y,type,r:13,life:60*18})}
 function collectItem(it){if(it.type==="coin")player.coins+=25;else if(it.type==="heal")player.hp=Math.min(player.maxHp,player.hp+35);else if(it.type==="shield")player.shield+=45;else if(it.type==="rapid")player.rapidTimer=60*12;else if(it.type==="magnet")player.magnetTimer=60*25;it.life=0;sound(980,.08,"triangle",.05)}
 
-function update(t){if(state!=="play")return;let ax=0,ay=0;if(keys.w||keys.arrowup)ay-=1;if(keys.s||keys.arrowdown)ay+=1;if(keys.a||keys.arrowleft)ax-=1;if(keys.d||keys.arrowright)ax+=1;if(mobileControlsEnabled){ax+=touchMove.x;ay+=touchMove.y}if(ax||ay){const l=Math.hypot(ax,ay);ax/=l;ay/=l}const skinMods=getSkinMods();const acc=.34*player.engine*skinMods.speed,fr=.985,max=8.5*player.engine*skinMods.speed;player.vx+=ax*acc;player.vy+=ay*acc;player.vx*=fr;player.vy*=fr;let sp=Math.hypot(player.vx,player.vy);if(sp>max){player.vx=player.vx/sp*max;player.vy=player.vy/sp*max}player.worldX+=player.vx;player.worldY+=player.vy;if(mouse.down)shoot(t);const s=getStageData(player.stage);if(!s.challenge&&t-lastSpawn>Math.max(210,850-player.stage*45)/(MODS.stages.spawnBoost*s.enemyBoost)){lastSpawn=t;spawnEnemy()}bullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.life--});bullets=bullets.filter(b=>b.life>0);enemyBullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.life--;if(Math.hypot(b.x-player.worldX,b.y-player.worldY)<b.r+21){if(player.shield>0){player.shield-=b.damage;if(player.shield<0){player.hp+=player.shield;player.shield=0}}else player.hp-=b.damage;b.life=0;burst(player.worldX,player.worldY,"#ff3b3b",12)}});enemyBullets=enemyBullets.filter(b=>b.life>0);enemies.forEach(e=>{e.aiTimer++;e.dashCooldown--;e.shotCooldown--;const dx=player.worldX-e.x,dy=player.worldY-e.y,dist=Math.hypot(dx,dy)||1;let tx=player.worldX,ty=player.worldY;if(e.type==="flanker"){const base=Math.atan2(dy,dx),sa=base+Math.PI/2*e.orbitSide;tx=player.worldX+Math.cos(sa)*360;ty=player.worldY+Math.sin(sa)*360;if(dist<430){tx=player.worldX;ty=player.worldY}}if(e.type==="curver"){const base=Math.atan2(dy,dx)+.75*e.curveDir;tx=e.x+Math.cos(base)*500;ty=e.y+Math.sin(base)*500;if(e.aiTimer%120<2)e.curveDir*=-1}if(e.type==="sniper"){const keep=620;if(dist<keep){tx=e.x-dx;ty=e.y-dy}}if(e.dashCooldown<=0&&dist>180){e.dashPower=3.5;e.dashCooldown=rand(180,320)}const dd=Math.hypot(tx-e.x,ty-e.y)||1,dvx=(tx-e.x)/dd*e.speed*(1+e.dashPower*.35),dvy=(ty-e.y)/dd*e.speed*(1+e.dashPower*.35);e.vx+=(dvx-e.vx)*.045;e.vy+=(dvy-e.vy)*.045;e.vx*=.992;e.vy*=.992;e.dashPower*=.93;e.x+=e.vx;e.y+=e.vy;if(e.shotCooldown<=0&&dist<900){enemyShoot(e);e.shotCooldown=rand(e.elite?55:100,e.elite?115:190)/s.bulletBoost}if(Math.hypot(e.x-player.worldX,e.y-player.worldY)<e.r+22){const hit=e.elite?1.2:.6;if(player.shield>0){player.shield-=hit;if(player.shield<0){player.hp+=player.shield;player.shield=0}}else player.hp-=hit;burst(player.worldX,player.worldY,"#ff3b3b",2)}});for(const b of bullets)for(const e of enemies)if(b.life>0&&Math.hypot(b.x-e.x,b.y-e.y)<b.r+e.r){e.hp-=b.damage;b.life=0;burst(b.x,b.y,"#7df9ff",8)}enemies=enemies.filter(e=>{if(e.hp<=0){score+=e.elite?120:20;player.coins+=Math.floor((e.elite?35:8)*getSkinMods().coin);addExp((e.elite?80:20)*getSkinMods().exp);runStats.kills++;if(e.elite)runStats.eliteKills++;dropItem(e.x,e.y,e.elite);burst(e.x,e.y,e.elite?"#ffbe0b":"#ff006e",e.elite?80:36);checkMissionClear();return false}return true});if(player.magnetTimer>0)player.magnetTimer--;if(player.rapidTimer>0)player.rapidTimer--;items.forEach(it=>{it.life--;const dx=player.worldX-it.x,dy=player.worldY-it.y,d=Math.hypot(dx,dy)||1,range=player.magnetTimer>0?420:42;if(d<range){it.x+=dx/d*(player.magnetTimer>0?8:2);it.y+=dy/d*(player.magnetTimer>0?8:2)}if(d<34)collectItem(it)});items=items.filter(i=>i.life>0);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--});particles=particles.filter(p=>p.life>0);checkMissionClear();checkAutoQuests();checkMissionClear();/*CLEAR_CONDITION_FIX_TICK*/if(challengeState&&challengeState.active){updateChallengeMode(1);balanceChallengeEnemies();}else{checkMissionClear();}hardBalanceTick();/*HARD_CAP_HP*/applyBulletEnemyDamageFix();/*DAMAGE_FIX_HP*/if(player.hp<=0){if(!(challengeState&&challengeState.active&&respawnPlayerChallenge()))endGame();}}
+function update(t){if(state!=="play")return;let ax=0,ay=0;if(keys.w||keys.arrowup)ay-=1;if(keys.s||keys.arrowdown)ay+=1;if(keys.a||keys.arrowleft)ax-=1;if(keys.d||keys.arrowright)ax+=1;if(mobileControlsEnabled){ax+=touchMove.x;ay+=touchMove.y}if(ax||ay){const l=Math.hypot(ax,ay);ax/=l;ay/=l}const skinMods=getSkinMods();const acc=.34*player.engine*skinMods.speed,fr=.985,max=8.5*player.engine*skinMods.speed;player.vx+=ax*acc;player.vy+=ay*acc;player.vx*=fr;player.vy*=fr;let sp=Math.hypot(player.vx,player.vy);if(sp>max){player.vx=player.vx/sp*max;player.vy=player.vy/sp*max}player.worldX+=player.vx;player.worldY+=player.vy;if(mouse.down)shoot(t);const s=getStageData(player.stage);if(!s.challenge&&t-lastSpawn>Math.max(210,850-player.stage*45)/(MODS.stages.spawnBoost*s.enemyBoost)){lastSpawn=t;spawnEnemy()}bullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.life--});bullets=bullets.filter(b=>b.life>0);enemyBullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.life--;if(Math.hypot(b.x-player.worldX,b.y-player.worldY)<b.r+21){if(player.shield>0){player.shield-=b.damage;if(player.shield<0){player.hp+=player.shield;player.shield=0}}else player.hp-=b.damage;b.life=0;burst(player.worldX,player.worldY,"#ff3b3b",12)}});enemyBullets=enemyBullets.filter(b=>b.life>0);enemies.forEach(e=>{e.aiTimer++;e.dashCooldown--;e.shotCooldown--;const dx=player.worldX-e.x,dy=player.worldY-e.y,dist=Math.hypot(dx,dy)||1;let tx=player.worldX,ty=player.worldY;if(e.type==="flanker"){const base=Math.atan2(dy,dx),sa=base+Math.PI/2*e.orbitSide;tx=player.worldX+Math.cos(sa)*360;ty=player.worldY+Math.sin(sa)*360;if(dist<430){tx=player.worldX;ty=player.worldY}}if(e.type==="curver"){const base=Math.atan2(dy,dx)+.75*e.curveDir;tx=e.x+Math.cos(base)*500;ty=e.y+Math.sin(base)*500;if(e.aiTimer%120<2)e.curveDir*=-1}if(e.type==="sniper"){const keep=620;if(dist<keep){tx=e.x-dx;ty=e.y-dy}}if(e.type==="tank"){tx=player.worldX-dx*.18;ty=player.worldY-dy*.18}if(e.type==="swarm"){const wiggle=Math.sin(e.aiTimer*.18)*.55;const base=Math.atan2(dy,dx)+wiggle;tx=e.x+Math.cos(base)*480;ty=e.y+Math.sin(base)*480}if(e.type==="bomber"){const keep=520;if(dist<keep){tx=e.x-dx;ty=e.y-dy}else{const base=Math.atan2(dy,dx)+Math.PI/2*e.orbitSide;tx=player.worldX+Math.cos(base)*keep;ty=player.worldY+Math.sin(base)*keep}}if(e.dashCooldown<=0&&dist>180){e.dashPower=e.type==="swarm"?5.2:3.5;e.dashCooldown=e.type==="swarm"?rand(65,140):rand(180,320)}const dd=Math.hypot(tx-e.x,ty-e.y)||1,dvx=(tx-e.x)/dd*e.speed*(1+e.dashPower*.35),dvy=(ty-e.y)/dd*e.speed*(1+e.dashPower*.35);e.vx+=(dvx-e.vx)*.045;e.vy+=(dvy-e.vy)*.045;e.vx*=.992;e.vy*=.992;e.dashPower*=.93;e.x+=e.vx;e.y+=e.vy;if(e.shotCooldown<=0&&dist<(e.type==="bomber"?760:900)){enemyShoot(e);e.shotCooldown=rand(e.elite?55:100,e.elite?115:190)/s.bulletBoost}if(Math.hypot(e.x-player.worldX,e.y-player.worldY)<e.r+22){const hit=e.type==="tank"?1.4:(e.elite?1.2:.6);if(player.shield>0){player.shield-=hit;if(player.shield<0){player.hp+=player.shield;player.shield=0}}else player.hp-=hit;burst(player.worldX,player.worldY,"#ff3b3b",2)}});for(const b of bullets)for(const e of enemies)if(b.life>0&&Math.hypot(b.x-e.x,b.y-e.y)<b.r+e.r){e.hp-=b.damage;b.life=0;burst(b.x,b.y,"#7df9ff",8)}enemies=enemies.filter(e=>{if(e.hp<=0){score+=e.elite?120:20;player.coins+=Math.floor((e.elite?35:8)*getSkinMods().coin);addExp((e.elite?80:20)*getSkinMods().exp);runStats.kills++;if(e.elite)runStats.eliteKills++;dropItem(e.x,e.y,e.elite);burst(e.x,e.y,e.elite?"#ffbe0b":(ENEMY_TYPES[e.type]?.color||"#ff006e"),e.elite?80:36);checkMissionClear();return false}return true});if(player.magnetTimer>0)player.magnetTimer--;if(player.rapidTimer>0)player.rapidTimer--;items.forEach(it=>{it.life--;const dx=player.worldX-it.x,dy=player.worldY-it.y,d=Math.hypot(dx,dy)||1,range=player.magnetTimer>0?420:42;if(d<range){it.x+=dx/d*(player.magnetTimer>0?8:2);it.y+=dy/d*(player.magnetTimer>0?8:2)}if(d<34)collectItem(it)});items=items.filter(i=>i.life>0);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--});particles=particles.filter(p=>p.life>0);checkMissionClear();checkAutoQuests();checkMissionClear();/*CLEAR_CONDITION_FIX_TICK*/if(challengeState&&challengeState.active){updateChallengeMode(1);balanceChallengeEnemies();}else{checkMissionClear();}hardBalanceTick();/*HARD_CAP_HP*/applyBulletEnemyDamageFix();/*DAMAGE_FIX_HP*/if(player.hp<=0){if(!(challengeState&&challengeState.active&&respawnPlayerChallenge()))endGame();}}
 function drawPlayer(){
   const x=canvas.width/2,y=canvas.height/2,a=Math.atan2(mouse.y-y,mouse.x-x);
   const skin=getEquippedSkin();
@@ -1846,7 +1909,25 @@ function drawPlayer(){
   ctx.shadowColor="#ff9f1c";ctx.fillStyle="#ff9f1c";ctx.beginPath();ctx.moveTo(-8,30);ctx.lineTo(0,50+Math.random()*8);ctx.lineTo(8,30);ctx.fill();
   ctx.restore();ctx.shadowBlur=0
 }
-function drawEnemy(e){const x=screenX(e.x),y=screenY(e.y);if(x<-120||x>canvas.width+120||y<-120||y>canvas.height+120)return;ctx.save();ctx.translate(x,y);ctx.shadowBlur=e.elite?24:12;ctx.shadowColor=e.elite?"#facc15":"#ff4d6d";ctx.fillStyle=e.elite?"#7f1d1d":"#8b0000";ctx.beginPath();ctx.moveTo(0,-e.r);ctx.lineTo(e.r*.95,-e.r*.15);ctx.lineTo(e.r*.5,e.r);ctx.lineTo(0,e.r*.55);ctx.lineTo(-e.r*.5,e.r);ctx.lineTo(-e.r*.95,-e.r*.15);ctx.closePath();ctx.fill();ctx.fillStyle=e.elite?"#fde047":"#ffc2d1";ctx.beginPath();ctx.arc(0,0,e.r*.34,0,Math.PI*2);ctx.fill();ctx.restore();ctx.fillStyle="#000";ctx.fillRect(x-e.r,y-e.r-14,e.r*2,5);ctx.fillStyle=e.elite?"#facc15":"#70e000";ctx.fillRect(x-e.r,y-e.r-14,e.r*2*(e.hp/e.maxHp),5)}
+function drawEnemy(e){
+  const x=screenX(e.x),y=screenY(e.y);if(x<-120||x>canvas.width+120||y<-120||y>canvas.height+120)return;
+  const info=ENEMY_TYPES[e.type]||ENEMY_TYPES.chaser,color=e.elite?"#facc15":info.color;
+  ctx.save();ctx.translate(x,y);ctx.shadowBlur=e.elite?24:14;ctx.shadowColor=color;ctx.fillStyle=e.elite?"#7f1d1d":"#111827";
+  ctx.strokeStyle=color;ctx.lineWidth=Math.max(2,e.r*.12);ctx.beginPath();
+  if(e.type==="tank"){
+    ctx.rect(-e.r*.9,-e.r*.72,e.r*1.8,e.r*1.44);
+  }else if(e.type==="swarm"){
+    ctx.moveTo(0,-e.r);ctx.lineTo(e.r*.9,e.r*.65);ctx.lineTo(0,e.r*.28);ctx.lineTo(-e.r*.9,e.r*.65);
+  }else if(e.type==="bomber"){
+    ctx.moveTo(0,-e.r);ctx.lineTo(e.r*.92,-e.r*.32);ctx.lineTo(e.r*.7,e.r*.82);ctx.lineTo(0,e.r*.55);ctx.lineTo(-e.r*.7,e.r*.82);ctx.lineTo(-e.r*.92,-e.r*.32);
+  }else{
+    ctx.moveTo(0,-e.r);ctx.lineTo(e.r*.95,-e.r*.15);ctx.lineTo(e.r*.5,e.r);ctx.lineTo(0,e.r*.55);ctx.lineTo(-e.r*.5,e.r);ctx.lineTo(-e.r*.95,-e.r*.15);
+  }
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=color;ctx.globalAlpha=.9;ctx.beginPath();ctx.arc(0,0,e.r*(e.type==="swarm"?.28:.34),0,Math.PI*2);ctx.fill();
+  if(e.type==="bomber"){ctx.globalAlpha=.55;ctx.beginPath();ctx.arc(0,0,e.r*.72,0,Math.PI*2);ctx.stroke()}
+  ctx.restore();ctx.globalAlpha=1;ctx.fillStyle="#000";ctx.fillRect(x-e.r,y-e.r-14,e.r*2,5);ctx.fillStyle=e.elite?"#facc15":"#70e000";ctx.fillRect(x-e.r,y-e.r-14,e.r*2*(e.hp/e.maxHp),5)
+}
 function drawItem(it){const x=screenX(it.x),y=screenY(it.y);let color="#facc15",label="C";if(it.type==="heal"){color="#22c55e";label="+"}if(it.type==="shield"){color="#38bdf8";label="S"}if(it.type==="rapid"){color="#fb7185";label="R"}if(it.type==="magnet"){color="#a78bfa";label="M"}ctx.save();ctx.shadowBlur=16;ctx.shadowColor=color;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,it.r,0,Math.PI*2);ctx.fill();ctx.fillStyle="#020617";ctx.font="bold 14px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(label,x,y);ctx.restore()}
 function getNearestEnemyInfo(){
   if(!Array.isArray(enemies)||!enemies.length)return null;
@@ -2160,6 +2241,23 @@ function renderHomeShipPreview(){
   g.restore();
 
   if(text)text.innerHTML=`現在の機体：<b style="color:${skin.color}">${skin.name}</b><br>${evo.name} / ${skin.ability}`;
+  renderHomeCommandDeck();
+}
+
+function renderHomeCommandDeck(){
+  const brief=document.getElementById("homeMissionBrief");
+  const intel=document.getElementById("homeEnemyIntel");
+  const nextStage=Math.max(1,(player.maxClearedStage||0)+1);
+  const stageData=typeof getStageData==="function"?getStageData(nextStage):null;
+  if(brief){
+    const weapon=(typeof getCurrentWeapon==="function"?getCurrentWeapon():null);
+    brief.innerHTML=`次の推奨作戦：STAGE ${nextStage}<br>${stageData?stageData.name:"銀河哨戒"} / 武器 ${weapon?weapon.name:"M16"}`;
+  }
+  if(intel){
+    const stage=player.maxStage||1;
+    const ids=["chaser","flanker","curver","sniper"].concat(stage>=2?["swarm"]:[],stage>=3?["tank"]:[],stage>=4?["bomber"]:[]);
+    intel.innerHTML=ids.map(id=>`<span class="enemyIntelBadge" style="border-color:${ENEMY_TYPES[id].color};color:${ENEMY_TYPES[id].color}">${ENEMY_TYPES[id].label}</span>`).join("");
+  }
 }
 
 function openHomeAfterAnyChange(){
