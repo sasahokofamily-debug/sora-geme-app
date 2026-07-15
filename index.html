@@ -942,6 +942,15 @@ textarea{height:110px;resize:vertical}
   opacity:.9;
   margin:6px 0;
 }
+.weaponPreview{
+  display:block;
+  width:100%;
+  height:88px;
+  margin:8px 0;
+  border:1px solid #334155;
+  border-radius:10px;
+  background:radial-gradient(circle at 20% 50%,rgba(125,249,255,.14),transparent 28%),#020617;
+}
 .weaponMiniButton{
   margin:6px 0 0;
   padding:10px;
@@ -1439,7 +1448,8 @@ function renderWeaponShop(){
   ensureWeaponSave();
   const box=document.getElementById("weaponShopList");
   if(!box)return;
-  box.innerHTML=Object.values(WEAPON_CATALOG).map(w=>{
+  const weapons=Object.values(WEAPON_CATALOG).sort((a,b)=>(a.price||0)-(b.price||0)||a.name.localeCompare(b.name,"ja"));
+  box.innerHTML=weapons.map(w=>{
     const owned=player.unlockedWeapons.includes(w.id);
     const equipped=player.weapon===w.id;
     const action=equipped?"装備中":(owned?"装備する":`${w.price}コインで購入`);
@@ -1447,11 +1457,122 @@ function renderWeaponShop(){
       <div class="weaponName">${w.name}</div>
       <div class="small">${w.desc}</div>
       <div class="weaponStats">価格 ${w.price? w.price+"コイン":"無料"}<br>威力 ${w.damageBase} / 弾数 ${w.shots} / 連射 ${w.fireRate}x / 速度 ${Math.round(WORLD_UNITS.pxPerFrameToKmh(w.bulletSpeed))}km/h</div>
+      <canvas class="weaponPreview" width="260" height="88" data-weapon-preview="${w.id}" aria-label="${w.name}の試し撃ち"></canvas>
       <button class="weaponMiniButton" onclick="buyOrEquipWeapon('${w.id}')" ${equipped?"disabled":""}>${action}</button>
     </div>`;
   }).join("");
+  requestAnimationFrame(renderWeaponPreviews);
 }
 ensureWeaponSave();
+
+function getWeaponVisualType(id){
+  if(["laser","aurora","ion","railgun","comet"].includes(id))return"beam";
+  if(["shotgun","flak","nebula","starstorm","supernova"].includes(id))return"diamond";
+  if(["rocket","plasma","nova","gravity"].includes(id))return"core";
+  if(["smg","minigun","twin","pulse","burst"].includes(id))return"bolt";
+  return"round";
+}
+function drawWeaponBulletMark(targetCtx,x,y,r,color,angle,type,crit=false){
+  targetCtx.save();
+  targetCtx.translate(x,y);
+  targetCtx.rotate(angle||0);
+  targetCtx.shadowBlur=crit?24:16;
+  targetCtx.shadowColor=crit?"#fde047":color;
+  targetCtx.fillStyle=crit?"#fde047":color;
+  targetCtx.strokeStyle=crit?"#fff7ad":color;
+  targetCtx.lineWidth=Math.max(2,r*.45);
+  if(type==="beam"){
+    targetCtx.beginPath();
+    targetCtx.moveTo(-r*3.2,0);
+    targetCtx.lineTo(r*3.2,0);
+    targetCtx.stroke();
+    targetCtx.fillStyle="#ffffff";
+    targetCtx.globalAlpha=.9;
+    targetCtx.beginPath();
+    targetCtx.arc(r*2.6,0,Math.max(2,r*.45),0,Math.PI*2);
+    targetCtx.fill();
+  }else if(type==="diamond"){
+    targetCtx.beginPath();
+    targetCtx.moveTo(r*1.55,0);
+    targetCtx.lineTo(0,-r);
+    targetCtx.lineTo(-r*1.25,0);
+    targetCtx.lineTo(0,r);
+    targetCtx.closePath();
+    targetCtx.fill();
+  }else if(type==="core"){
+    targetCtx.beginPath();
+    targetCtx.arc(0,0,r*1.05,0,Math.PI*2);
+    targetCtx.fill();
+    targetCtx.globalAlpha=.42;
+    targetCtx.beginPath();
+    targetCtx.arc(0,0,r*1.8,0,Math.PI*2);
+    targetCtx.stroke();
+  }else if(type==="bolt"){
+    targetCtx.beginPath();
+    targetCtx.moveTo(r*1.7,0);
+    targetCtx.lineTo(-r*.15,-r*.85);
+    targetCtx.lineTo(-r*.55,-r*.18);
+    targetCtx.lineTo(-r*1.7,-r*.18);
+    targetCtx.lineTo(r*.05,r*.95);
+    targetCtx.lineTo(r*.46,r*.18);
+    targetCtx.closePath();
+    targetCtx.fill();
+  }else{
+    targetCtx.beginPath();
+    targetCtx.arc(0,0,r,0,Math.PI*2);
+    targetCtx.fill();
+  }
+  targetCtx.restore();
+}
+function drawWeaponProjectile(targetCtx,b,x,y){
+  const w=WEAPON_CATALOG[b.weaponId]||{};
+  const color=b.color||w.color||"#7df9ff";
+  drawWeaponBulletMark(targetCtx,x,y,b.r,color,Math.atan2(b.vy||0,b.vx||1),getWeaponVisualType(w.id||b.weaponId),!!b.crit);
+}
+function renderWeaponPreviews(){
+  document.querySelectorAll("[data-weapon-preview]").forEach(c=>{
+    const w=WEAPON_CATALOG[c.dataset.weaponPreview];
+    const pctx=c.getContext("2d");
+    if(!w||!pctx)return;
+    const dpr=window.devicePixelRatio||1,cssW=c.clientWidth||260,cssH=c.clientHeight||88;
+    if(c.width!==Math.round(cssW*dpr)||c.height!==Math.round(cssH*dpr)){c.width=Math.round(cssW*dpr);c.height=Math.round(cssH*dpr)}
+    pctx.setTransform(dpr,0,0,dpr,0,0);
+    pctx.clearRect(0,0,cssW,cssH);
+    pctx.fillStyle="#020617";
+    pctx.fillRect(0,0,cssW,cssH);
+    pctx.strokeStyle="rgba(125,249,255,.08)";
+    for(let x=16;x<cssW;x+=26){pctx.beginPath();pctx.moveTo(x,0);pctx.lineTo(x,cssH);pctx.stroke()}
+    pctx.fillStyle="#7df9ff";
+    pctx.beginPath();
+    pctx.moveTo(20,cssH/2);
+    pctx.lineTo(48,cssH/2-13);
+    pctx.lineTo(42,cssH/2);
+    pctx.lineTo(48,cssH/2+13);
+    pctx.closePath();
+    pctx.fill();
+    pctx.strokeStyle="rgba(255,255,255,.18)";
+    pctx.beginPath();
+    pctx.arc(cssW-34,cssH/2,18,0,Math.PI*2);
+    pctx.stroke();
+    const count=Math.min(10,w.shots||1),baseX=80,span=Math.min(cssW-128,150),type=getWeaponVisualType(w.id);
+    for(let i=0;i<count;i++){
+      const offset=(i-(count-1)/2)*(w.spread||0)*120;
+      const t=count===1 ? .68 : i/(Math.max(1,count-1));
+      const x=baseX+span*(.34+.46*((i%3)/2));
+      const y=cssH/2+offset+Math.sin(i*1.7)*4;
+      pctx.globalAlpha=.2;
+      pctx.strokeStyle=w.color||"#7df9ff";
+      pctx.lineWidth=2;
+      pctx.beginPath();
+      pctx.moveTo(49,cssH/2);
+      pctx.lineTo(x-8,y);
+      pctx.stroke();
+      pctx.globalAlpha=1;
+      drawWeaponBulletMark(pctx,x+span*.22*t,y,w.bulletSize||5,w.color||"#7df9ff",0,type,i===0&&w.damageBase>80);
+    }
+    pctx.globalAlpha=1;
+  });
+}
 
 let bullets=[],enemyBullets=[],enemies=[],particles=[],stars=[],items=[],score=0,lastSpawn=0,stageTimer=0;
 for(let i=0;i<260;i++)stars.push({x:rand(-3300,3300),y:rand(-3300,3300),z:rand(.4,2.8)});
@@ -1778,7 +1899,7 @@ function drawEnemyDirectionArrows(){
     ctx.restore();
   });
 }
-function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#02030a";ctx.fillRect(0,0,canvas.width,canvas.height);for(const s of stars){let x=screenX(s.x),y=screenY(s.y);x=((x%canvas.width)+canvas.width)%canvas.width;y=((y%canvas.height)+canvas.height)%canvas.height;ctx.globalAlpha=s.z/2.6;ctx.fillStyle="#fff";ctx.fillRect(x,y,s.z*2,s.z*2)}ctx.globalAlpha=1;ctx.strokeStyle="#11345f";const grid=120,ox=(-player.worldX%grid+grid)%grid,oy=(-player.worldY%grid+grid)%grid;for(let x=ox;x<canvas.width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke()}for(let y=oy;y<canvas.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke()}bullets.forEach(b=>{ctx.shadowBlur=b.crit?24:14;ctx.shadowColor=b.crit?"#fde047":"#7df9ff";ctx.fillStyle=b.crit?"#fde047":"#7df9ff";ctx.beginPath();ctx.arc(screenX(b.x),screenY(b.y),b.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0});enemyBullets.forEach(b=>{ctx.fillStyle=b.color;ctx.beginPath();ctx.arc(screenX(b.x),screenY(b.y),b.r,0,Math.PI*2);ctx.fill()});enemies.forEach(drawEnemy);items.forEach(drawItem);particles.forEach(p=>{ctx.globalAlpha=p.life/45;ctx.fillStyle=p.color;ctx.fillRect(screenX(p.x),screenY(p.y),4,4)});ctx.globalAlpha=1;drawChallengeAllies();drawPlayer();const s=getStageData(player.stage),surv=Math.floor((performance.now()-runStats.startTime)/1000);let mission=`撃破 ${runStats.kills}/${s.targetKills||"-"}`;if(s.targetElites!==undefined)mission+=` 強敵 ${runStats.eliteKills}/${s.targetElites}`;if(s.targetSurvive!==undefined)mission=`生存 ${surv}/${s.targetSurvive}秒`;document.getElementById("itemStatus").innerHTML=`Shield ${Math.max(0,Math.floor(player.shield))}<br>Rapid ${Math.ceil(player.rapidTimer/60)}s<br>Magnet ${Math.ceil(player.magnetTimer/60)}s`;ui.innerHTML=`HP ${Math.max(0,Math.floor(player.hp))}/${player.maxHp}<br>Lv ${player.level} EXP ${Math.floor(player.exp)}/${player.needExp}<br>コイン ${player.coins} ステージ ${player.stage}<br>ミッション：${mission}<br>敵弾 ${enemyBullets.length} 敵 ${enemies.length}<br>速度 ${Math.floor(WORLD_UNITS.pxPerFrameToKmh(Math.hypot(player.vx,player.vy)))} km/h<br>スコア ${score}`}
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#02030a";ctx.fillRect(0,0,canvas.width,canvas.height);for(const s of stars){let x=screenX(s.x),y=screenY(s.y);x=((x%canvas.width)+canvas.width)%canvas.width;y=((y%canvas.height)+canvas.height)%canvas.height;ctx.globalAlpha=s.z/2.6;ctx.fillStyle="#fff";ctx.fillRect(x,y,s.z*2,s.z*2)}ctx.globalAlpha=1;ctx.strokeStyle="#11345f";const grid=120,ox=(-player.worldX%grid+grid)%grid,oy=(-player.worldY%grid+grid)%grid;for(let x=ox;x<canvas.width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke()}for(let y=oy;y<canvas.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke()}bullets.forEach(b=>drawWeaponProjectile(ctx,b,screenX(b.x),screenY(b.y)));enemyBullets.forEach(b=>{ctx.fillStyle=b.color;ctx.beginPath();ctx.arc(screenX(b.x),screenY(b.y),b.r,0,Math.PI*2);ctx.fill()});enemies.forEach(drawEnemy);items.forEach(drawItem);particles.forEach(p=>{ctx.globalAlpha=p.life/45;ctx.fillStyle=p.color;ctx.fillRect(screenX(p.x),screenY(p.y),4,4)});ctx.globalAlpha=1;drawChallengeAllies();drawPlayer();const s=getStageData(player.stage),surv=Math.floor((performance.now()-runStats.startTime)/1000);let mission=`撃破 ${runStats.kills}/${s.targetKills||"-"}`;if(s.targetElites!==undefined)mission+=` 強敵 ${runStats.eliteKills}/${s.targetElites}`;if(s.targetSurvive!==undefined)mission=`生存 ${surv}/${s.targetSurvive}秒`;document.getElementById("itemStatus").innerHTML=`Shield ${Math.max(0,Math.floor(player.shield))}<br>Rapid ${Math.ceil(player.rapidTimer/60)}s<br>Magnet ${Math.ceil(player.magnetTimer/60)}s`;ui.innerHTML=`HP ${Math.max(0,Math.floor(player.hp))}/${player.maxHp}<br>Lv ${player.level} EXP ${Math.floor(player.exp)}/${player.needExp}<br>コイン ${player.coins} ステージ ${player.stage}<br>ミッション：${mission}<br>敵弾 ${enemyBullets.length} 敵 ${enemies.length}<br>速度 ${Math.floor(WORLD_UNITS.pxPerFrameToKmh(Math.hypot(player.vx,player.vy)))} km/h<br>スコア ${score}`}
 const drawWithoutEnemyRadar=draw;
 draw=function(){
   drawWithoutEnemyRadar();
