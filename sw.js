@@ -1,9 +1,10 @@
-const CACHE_NAME = "shooking-ii-v6";
+const CACHE_NAME = "shooking-ii-v7";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./ui-patch.js",
   "./google-login.js",
+  "./firebase-error-patch.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -28,7 +29,10 @@ async function addAppPatches(response) {
     html = html.replace("</body>", '<script src="./ui-patch.js?v=1"></script></body>');
   }
   if (!html.includes("google-login.js")) {
-    html = html.replace("</body>", '<script src="./google-login.js?v=6"></script></body>');
+    html = html.replace("</body>", '<script src="./google-login.js?v=7"></script></body>');
+  }
+  if (!html.includes("firebase-error-patch.js")) {
+    html = html.replace("</body>", '<script src="./firebase-error-patch.js?v=7"></script></body>');
   }
 
   const headers = new Headers(response.headers);
