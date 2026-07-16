@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="theme-color" content="#02030a">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="SHOO KING II">
 <meta name="description" content="SHOO KING II - 宇宙を進むシューティングWebアプリ">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -50,6 +50,7 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
 @media(max-width:700px){#ui{font-size:12px;max-width:170px}.choiceGrid{grid-template-columns:1fr}#galaxyMap{height:420px}.stageNode{width:50px;height:50px;font-size:13px}}
 @media(max-width:700px),(pointer:coarse){
   body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+  .screen{padding-top:max(58px,calc(env(safe-area-inset-top) + 18px));padding-bottom:max(18px,env(safe-area-inset-bottom))}
   button{min-height:48px;padding:14px 13px;border-radius:10px}
   .panel{width:min(720px,92vw);padding:18px;max-height:calc(100dvh - 28px)}
   h1{font-size:clamp(28px,9vw,36px)}
@@ -161,20 +162,22 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
 }
 .homeMenuDetails summary::-webkit-details-marker{display:none}
 @media(max-width:700px){
-  #home .panel{padding:14px;max-height:calc(100dvh - 18px)}
-  #home h1{font-size:30px;margin-bottom:6px}
+  #home.screen{padding-top:max(68px,calc(env(safe-area-inset-top) + 22px))}
+  #home .panel{padding:12px 14px;max-height:calc(100dvh - 86px)}
+  #home h1{font-size:28px;margin-bottom:5px;line-height:1.05}
   #home .authStatus{padding:7px;margin:6px 0;font-size:12px}
   #homeShipPreview{display:none}
-  #homeShipText{margin:4px 0 2px}
-  #homeStats{font-size:12px;line-height:1.35;margin:6px 0}
-  #home .homeCommandGrid{grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-  #home .homeCommandCard{min-height:54px;padding:8px;border-radius:10px}
+  #homeShipText{margin:3px 0 2px}
+  #homeStats{font-size:12px;line-height:1.28;margin:5px 0}
+  #home .homeCommandGrid{grid-template-columns:1fr 1fr;gap:7px;margin:7px 0}
+  #home .homeCommandCard{min-height:50px;padding:7px;border-radius:10px}
   #home .homeCommandTitle{font-size:10px;margin-bottom:4px}
   #home .homeCommandText,.enemyIntelBadge{font-size:11px}
-  #home button{min-height:44px;padding:10px 9px;font-size:14px}
-  .homePrimaryActions{gap:8px;margin:8px 0}
-  .homeSecondaryActions,.homeUtilityActions{gap:8px;margin:8px 0;grid-template-columns:1fr 1fr}
-  .homePrimaryActions button:first-child{min-height:52px;font-size:17px}
+  #home button{min-height:42px;padding:9px 9px;font-size:14px}
+  .homePrimaryActions{gap:7px;margin:7px 0}
+  .homeSecondaryActions,.homeUtilityActions{gap:7px;margin:7px 0;grid-template-columns:1fr 1fr}
+  .homePrimaryActions button:first-child{min-height:48px;font-size:17px}
+  .homeMenuDetails{margin:8px 0;padding:7px 10px}
   .installCard{padding:9px;margin:8px 0;font-size:12px}
 }
 .reportBox{
