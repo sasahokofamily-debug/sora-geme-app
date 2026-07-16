@@ -129,6 +129,54 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
   font-size:12px;
 }
 @media(max-width:700px){.homeCommandGrid{grid-template-columns:1fr}}
+.homePrimaryActions,.homeSecondaryActions,.homeUtilityActions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:10px 0;
+}
+.homePrimaryActions button,.homeSecondaryActions button,.homeUtilityActions button{
+  margin:0;
+}
+.homePrimaryActions button:first-child{
+  grid-column:1/-1;
+  min-height:58px;
+  font-size:18px;
+  background:linear-gradient(90deg,#2563eb,#06b6d4);
+}
+.homeMenuDetails{
+  text-align:left;
+  border:1px solid #334155;
+  border-radius:12px;
+  background:rgba(15,23,42,.76);
+  padding:8px 10px;
+  margin:10px 0;
+}
+.homeMenuDetails summary{
+  cursor:pointer;
+  color:#7df9ff;
+  font-weight:900;
+  text-align:center;
+  list-style:none;
+}
+.homeMenuDetails summary::-webkit-details-marker{display:none}
+@media(max-width:700px){
+  #home .panel{padding:14px;max-height:calc(100dvh - 18px)}
+  #home h1{font-size:30px;margin-bottom:6px}
+  #home .authStatus{padding:7px;margin:6px 0;font-size:12px}
+  #homeShipPreview{display:none}
+  #homeShipText{margin:4px 0 2px}
+  #homeStats{font-size:12px;line-height:1.35;margin:6px 0}
+  #home .homeCommandGrid{grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+  #home .homeCommandCard{min-height:54px;padding:8px;border-radius:10px}
+  #home .homeCommandTitle{font-size:10px;margin-bottom:4px}
+  #home .homeCommandText,.enemyIntelBadge{font-size:11px}
+  #home button{min-height:44px;padding:10px 9px;font-size:14px}
+  .homePrimaryActions{gap:8px;margin:8px 0}
+  .homeSecondaryActions,.homeUtilityActions{gap:8px;margin:8px 0;grid-template-columns:1fr 1fr}
+  .homePrimaryActions button:first-child{min-height:52px;font-size:17px}
+  .installCard{padding:9px;margin:8px 0;font-size:12px}
+}
 .reportBox{
   text-align:left;background:rgba(15,23,42,.9);border:1px solid #334155;
   border-radius:14px;padding:14px;margin:12px 0;line-height:1.6
@@ -1095,7 +1143,7 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
 <div id="ui"></div><div id="itemStatus"></div><div id="missionToast"></div>
 <div id="mobileControls"><div id="joystick"><div id="stick"></div></div><div id="aimPad"></div><button id="fireButton">FIRE</button></div>
 
-<div id="home" class="screen"><div class="panel"><h1>SHOO KING II</h1><div class="authStatus" id="accountStatusHome">未ログイン</div><div id="installCard" class="installCard"><b>Webアプリとして追加できます</b><div class="small" id="installHelp">ホーム画面に追加すると、アプリのように全画面で起動できます。</div><button id="installButton" onclick="installWebApp()">ホーム画面に追加</button></div><button onclick="openLogin()">ログイン / サインイン</button><button onclick="openRegister()">新規登録</button><p>ボタン無反応修正版</p><canvas id="homeShipPreview" width="220" height="170"></canvas><p class="small" id="homeShipText"></p><div class="homeCommandGrid"><div class="homeCommandCard"><div class="homeCommandTitle">TODAY'S OPS</div><div class="homeCommandText" id="homeMissionBrief">作戦データを読み込み中...</div></div><div class="homeCommandCard"><div class="homeCommandTitle">ENEMY INTEL</div><div class="enemyIntelList" id="homeEnemyIntel"></div></div></div><button onclick="openStageSelect()">出撃</button><button class="shop" onclick="openScreen('shop')">ショップ</button><button onclick="openHangar()">格納庫(Hangar)</button><button class="gacha" onclick="openScreen('gacha')">ガチャ</button><button onclick="openOnlinePlay()">オンラインPlay / オンちゃ</button><button onclick="openSaveManager()">セーブコード</button><button class="gacha" onclick="openAchievements()">実績</button><button onclick="openSettings()">設定</button><button onclick="openFamilyMessageSettings()">父の日・母の日メッセージ設定</button><button class="mod" onclick="openModEditor()">MOD保存・読み込み</button><button onclick="openRequestLog()">リクエスト/応答ログ</button><button onclick="openSavedReports()">保存済み報告書</button><p class="small" id="homeStats"></p></div></div>
+<div id="home" class="screen"><div class="panel"><h1>SHOO KING II</h1><div class="authStatus" id="accountStatusHome">未ログイン</div><div class="homePrimaryActions"><button onclick="openStageSelect()">出撃</button><button class="shop" onclick="openScreen('shop')">ショップ</button><button onclick="openHangar()">格納庫</button></div><div class="homeSecondaryActions"><button class="gacha" onclick="openScreen('gacha')">ガチャ</button><button class="gacha" onclick="openAchievements()">実績</button></div><p class="small" id="homeStats"></p><div class="homeCommandGrid"><div class="homeCommandCard"><div class="homeCommandTitle">TODAY'S OPS</div><div class="homeCommandText" id="homeMissionBrief">作戦データを読み込み中...</div></div><div class="homeCommandCard"><div class="homeCommandTitle">ENEMY INTEL</div><div class="enemyIntelList" id="homeEnemyIntel"></div></div></div><canvas id="homeShipPreview" width="220" height="170"></canvas><p class="small" id="homeShipText"></p><details class="homeMenuDetails"><summary>その他メニュー</summary><div id="installCard" class="installCard"><b>Webアプリとして追加できます</b><div class="small" id="installHelp">ホーム画面に追加すると、アプリのように全画面で起動できます。</div><button id="installButton" onclick="installWebApp()">ホーム画面に追加</button></div><div class="homeUtilityActions"><button onclick="openLogin()">ログイン</button><button onclick="openRegister()">新規登録</button><button onclick="openSettings()">設定</button><button onclick="openSaveManager()">セーブコード</button><button onclick="openOnlinePlay()">オンライン</button><button onclick="openSavedReports()">報告書</button><button onclick="openFamilyMessageSettings()">家族メッセージ</button><button class="mod" onclick="openModEditor()">MOD</button><button onclick="openRequestLog()">リクエストログ</button></div></details></div></div>
 
 <div id="loginScreen" class="screen hidden">
   <div class="panel">
