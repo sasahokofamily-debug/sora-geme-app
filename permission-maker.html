@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SHOO KING II 権限発行所</title>
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,sans-serif;background:radial-gradient(circle at top,#16265a,#02030a 68%);color:#fff;padding:24px}.wrap{width:min(900px,100%);margin:auto}.panel{background:rgba(2,6,23,.92);border:1px solid #38bdf8;border-radius:22px;padding:22px;box-shadow:0 0 34px rgba(56,189,248,.25)}h1{margin-top:0;color:#7df9ff}h2{font-size:17px;color:#fde68a;margin-top:24px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}label{display:block;font-size:13px;color:#cbd5e1;margin-bottom:5px}input,select,textarea,button{width:100%;padding:12px;border-radius:12px;border:1px solid #334155;background:#07111f;color:#fff;font:inherit}textarea{min-height:190px;resize:vertical;font-family:ui-monospace,monospace;font-size:12px}button{border:0;background:#2563eb;font-weight:800;cursor:pointer}button.secondary{background:#475569}button.gold{background:linear-gradient(90deg,#ca8a04,#f59e0b);color:#111827}.checks{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.check{display:flex;align-items:center;gap:8px;padding:10px;background:#0f172a;border:1px solid #334155;border-radius:10px}.check input{width:auto}.status{margin:12px 0;padding:10px;border-radius:10px;background:#0f172a;border:1px solid #334155;color:#bfdbfe}.warn{color:#fca5a5;font-size:12px;line-height:1.6}@media(max-width:700px){.grid,.checks{grid-template-columns:1fr}}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,sans-serif;background:radial-gradient(circle at top,#16265a,#02030a 68%);color:#fff;padding:24px}.wrap{width:min(900px,100%);margin:auto}.panel{background:rgba(2,6,23,.92);border:1px solid #38bdf8;border-radius:22px;padding:22px;box-shadow:0 0 34px rgba(56,189,248,.25)}h1{margin-top:0;color:#7df9ff}h2{font-size:17px;color:#fde68a;margin-top:24px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}label{display:block;font-size:13px;color:#cbd5e1;margin-bottom:5px}input,select,textarea,button,.linkButton{width:100%;padding:12px;border-radius:12px;border:1px solid #334155;background:#07111f;color:#fff;font:inherit}textarea{min-height:190px;resize:vertical;font-family:ui-monospace,monospace;font-size:12px}button,.linkButton{border:0;background:#2563eb;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block}button.secondary{background:#475569}button.gold{background:linear-gradient(90deg,#ca8a04,#f59e0b);color:#111827}.linkButton.vercel{background:linear-gradient(90deg,#111827,#334155);border:1px solid #94a3b8;margin:0 0 18px}.checks{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.check{display:flex;align-items:center;gap:8px;padding:10px;background:#0f172a;border:1px solid #334155;border-radius:10px}.check input{width:auto}.status{margin:12px 0;padding:10px;border-radius:10px;background:#0f172a;border:1px solid #334155;color:#bfdbfe}.warn{color:#fca5a5;font-size:12px;line-height:1.6}@media(max-width:700px){.grid,.checks{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap"><div class="panel">
 <h1>SHOO KING II 権限発行所</h1>
 <p>ゲーム用の権限JSONを作成します。</p>
+<a class="linkButton vercel" href="https://sora-geme-app-vfud.vercel.app/">Vercel版ゲームへ移動</a>
 <div class="grid">
 <div><label>対象プレイヤー名</label><input id="playerName" placeholder="例：sora_player"></div>
 <div><label>権限名</label><input id="permissionName" placeholder="例：開発者権限"></div>
@@ -62,7 +63,7 @@ async function generatePermission(){
   const exp=$('expiresAt').value;
   const payload={app:'SHOO KING II',type:'permission',version:2,id:randomId(),playerName,permissionName:$('permissionName').value.trim()||'ゲーム権限',role:$('role').value,permissions:selectedPermissions(),grants:{coins:Number($('coins').value||0),maxStage:Number($('maxStage').value||1),damageBoost:Number($('damageBoost').value||1),hangarLevel:Number($('hangarLevel').value||1)},note:$('note').value.trim(),issuedAt:new Date().toISOString(),expiresAt:exp?new Date(exp).toISOString():null,issuer:'SHOO KING II Permission Maker'};
   const signature=await signPayload(payload,adminKey);
-  resultEl.value=JSON.stringify({payload,signature,algorithm:(crypto&&crypto.subtle)?'HMAC-SHA256':'FNV-FALLBACK'},null,2);
+  resultEl.value=JSON.stringify({payload,signature,algorithm:(window.crypto&&crypto.subtle)?'HMAC-SHA256':'FNV-FALLBACK'},null,2);
   setStatus(payload.role.toUpperCase()+' 権限を発行しました');
  }catch(e){console.error(e);setStatus('発行エラー：'+(e.message||e))}
 }
