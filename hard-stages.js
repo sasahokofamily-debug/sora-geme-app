@@ -1,88 +1,42 @@
 (()=>{
   "use strict";
-
-  const HARD_MAP={
-    id:"abyss",
-    name:"深淵戦線",
-    desc:"クリア後向けの超高難度星域。高速敵・弾幕・連続ボスが出現する。",
-    stages:[
-      {id:201,name:"赤色警戒宙域",x:12,y:70,theme:"高速包囲",mission:"敵を55体倒す",targetKills:55,reward:1000,enemyBoost:2.4,bulletBoost:2.2,hardMode:true,spawnBoost:1.8,eliteBoost:.45,desc:"高速小型敵と狙撃機が同時に押し寄せる。"},
-      {id:202,name:"黒雷回廊",x:28,y:42,theme:"極大弾幕",mission:"100秒生き残る",targetSurvive:100,reward:1400,enemyBoost:2.7,bulletBoost:2.8,hardMode:true,spawnBoost:2.1,eliteBoost:.55,desc:"敵弾速度と発射頻度が大幅上昇。停止すると即座に包囲される。"},
-      {id:203,name:"処刑艦隊",x:46,y:66,theme:"精鋭連戦",mission:"強敵を12体倒す",targetKills:70,targetElites:12,reward:1900,enemyBoost:3.0,bulletBoost:2.6,hardMode:true,spawnBoost:2.25,eliteBoost:.75,desc:"重装甲・拡散弾・狙撃型の精鋭だけで構成された艦隊。"},
-      {id:204,name:"虚無の門",x:64,y:34,theme:"一撃危険",mission:"敵を85体倒す",targetKills:85,reward:2600,enemyBoost:3.5,bulletBoost:3.2,hardMode:true,spawnBoost:2.6,eliteBoost:.85,desc:"敵の耐久と火力が極端に高い。最大強化前提。"},
-      {id:205,name:"双皇要塞",x:82,y:58,theme:"連続ボス",mission:"双皇要塞を撃破",targetKills:95,targetElites:14,reward:3800,enemyBoost:4.0,bulletBoost:3.5,hardMode:true,doubleBoss:true,spawnBoost:2.8,eliteBoost:.9,desc:"ボス級戦艦が連続出現する最終決戦。"},
-      {id:206,name:"終焉チャレンジ",x:92,y:24,theme:"最高難度",mission:"120秒生き残る",targetSurvive:120,reward:6000,enemyBoost:4.8,bulletBoost:4.2,hardMode:true,spawnBoost:3.2,eliteBoost:1,desc:"回復ほぼなし。全敵種・最大弾幕・最高速度。"}
-    ]
-  };
-
-  function installMap(){
-    if(!Array.isArray(window.MAPS))return false;
-    if(!window.MAPS.some(map=>map.id===HARD_MAP.id))window.MAPS.push(HARD_MAP);
-    return true;
-  }
-
+  const names=[
+    ["赤色警戒宙域","高速包囲"],["黒雷回廊","極大弾幕"],["処刑艦隊","精鋭連戦"],["虚無の門","一撃危険"],["双皇要塞","連続ボス"],["終焉チャレンジ","最高難度"],
+    ["灼熱星雲","視界妨害"],["断罪航路","狙撃地獄"],["機雷墓場","接近禁止"],["紅蓮要塞","重装甲ボス"],["零度監獄","低速戦"],["狂乱リング","全周包囲"],
+    ["紫電峡谷","高速弾幕"],["滅亡前線","補給なし"],["三皇決戦","三連ボス"],["死線突破","90秒耐久"],["亡霊艦隊","透明奇襲"],["黒翼回廊","高速精鋭"],
+    ["星喰いの巣","巨大敵群"],["天罰砲台群","固定砲撃"],["無限追撃戦","逃走不能"],["崩壊銀河","全性能強化"],["絶望中枢","精鋭率最大"],["神殺し戦線","超大型ボス"],
+    ["時空断層","速度変動"],["終末機雷原","弾幕迷路"],["覇王連合","五連戦"],["虚空の王座","最終要塞"],["深淵無限戦","150秒耐久"],["SHOO KING 終極戦","究極難度"]
+  ];
+  const stages=names.map((n,i)=>{
+    const id=201+i, tier=Math.floor(i/6), pos=i%6;
+    const boost=2.4+i*.13, bullets=2.2+i*.12, spawn=1.8+i*.06;
+    const survive=[1,5,10,15,20,24,28,29].includes(i);
+    return {
+      id,name:n[0],theme:n[1],x:10+pos*16,y:pos%2?38+tier*4:70-tier*5,
+      mission:survive?`${90+Math.floor(i/5)*15}秒生き残る`:`敵を${55+i*6}体倒す`,
+      ...(survive?{targetSurvive:90+Math.floor(i/5)*15}:{targetKills:55+i*6}),
+      targetElites:i>=2?Math.min(30,8+Math.floor(i/2)):undefined,
+      reward:1000+i*450,enemyBoost:Number(boost.toFixed(2)),bulletBoost:Number(bullets.toFixed(2)),spawnBoost:Number(spawn.toFixed(2)),
+      eliteBoost:Math.min(1,.42+i*.025),hardMode:true,doubleBoss:[4,8,14,23,26,27,29].includes(i),
+      desc:`敵性能${boost.toFixed(1)}倍、弾幕${bullets.toFixed(1)}倍。${n[1]}を突破せよ。`
+    };
+  });
+  const HARD_MAP={id:"abyss",name:"深淵戦線・全30区画",desc:"クリア後向けの超高難度星域。高速敵・弾幕・連続ボス・長時間耐久が出現する。",stages};
+  function installMap(){if(!Array.isArray(window.MAPS))return false;const old=window.MAPS.findIndex(m=>m.id===HARD_MAP.id);if(old>=0)window.MAPS[old]=HARD_MAP;else window.MAPS.push(HARD_MAP);return true;}
   function installDifficultyPatch(){
-    if(typeof window.spawnEnemy!=="function"||window.__hardStagePatched)return false;
-    window.__hardStagePatched=true;
-    const originalSpawnEnemy=window.spawnEnemy;
+    if(typeof window.spawnEnemy!=="function"||window.__hardStagePatched)return !!window.__hardStagePatched;
+    window.__hardStagePatched=true;const originalSpawnEnemy=window.spawnEnemy;
     window.spawnEnemy=function(){
-      const before=Array.isArray(window.enemies)?window.enemies.length:0;
-      originalSpawnEnemy.apply(this,arguments);
+      const before=Array.isArray(window.enemies)?window.enemies.length:0;originalSpawnEnemy.apply(this,arguments);
       const stage=typeof window.getStageData==="function"?window.getStageData(window.player?.stage):null;
       if(!stage?.hardMode||!Array.isArray(window.enemies))return;
-      const created=window.enemies.slice(before);
-      created.forEach(enemy=>{
-        enemy.hp*=stage.enemyBoost||2;
-        enemy.maxHp=enemy.hp;
-        enemy.speed*=Math.min(2.2,1+(stage.enemyBoost||2)*.18);
-        enemy.shotCooldown=Math.max(25,(enemy.shotCooldown||180)/(stage.bulletBoost||2));
-        enemy.elite=Math.random()<(stage.eliteBoost||.5);
-        if(enemy.elite){enemy.hp*=1.8;enemy.maxHp=enemy.hp;enemy.r*=1.18;}
-      });
-      const extra=Math.max(0,Math.floor((stage.spawnBoost||1)-1));
-      for(let i=0;i<extra;i++)originalSpawnEnemy.apply(this,arguments);
+      const tune=e=>{e.hp*=stage.enemyBoost||2;e.maxHp=e.hp;e.speed*=Math.min(2.65,1+(stage.enemyBoost||2)*.18);e.shotCooldown=Math.max(18,(e.shotCooldown||180)/(stage.bulletBoost||2));e.elite=Math.random()<(stage.eliteBoost||.5);if(e.elite){e.hp*=1.9;e.maxHp=e.hp;e.r*=1.2;}};
+      window.enemies.slice(before).forEach(tune);
+      const extra=Math.max(0,Math.floor((stage.spawnBoost||1)-1));for(let i=0;i<extra;i++){const b=window.enemies.length;originalSpawnEnemy.apply(this,arguments);window.enemies.slice(b).forEach(tune);}
     };
-
-    const originalStartGame=window.startGame;
-    if(typeof originalStartGame==="function"){
-      window.startGame=function(stageId){
-        originalStartGame.apply(this,arguments);
-        const stage=typeof window.getStageData==="function"?window.getStageData(Number(stageId||1)):null;
-        if(stage?.hardMode&&typeof window.showToast==="function"){
-          window.showToast(`DANGER ZONE<br>${stage.name}<br>敵性能 ${stage.enemyBoost}倍 / 弾幕 ${stage.bulletBoost}倍`);
-        }
-      };
-    }
     return true;
   }
-
-  function installUi(){
-    const panel=document.querySelector("#stageSelect .panel");
-    if(!panel||document.getElementById("hardStageNotice"))return;
-    const notice=document.createElement("div");
-    notice.id="hardStageNotice";
-    notice.className="onlineCard";
-    notice.style.cssText="border-color:#ef4444;background:rgba(127,29,29,.24);margin:12px 0";
-    notice.innerHTML="<b>⚠ 超高難度マップ追加</b><br><span class='small'>深淵戦線は後半強化済みプレイヤー向け。敵HP・速度・弾幕・出現数が大幅上昇します。</span>";
-    const map=document.getElementById("galaxyMap");
-    panel.insertBefore(notice,map||panel.children[2]);
-  }
-
-  function install(){
-    let tries=0;
-    const timer=setInterval(()=>{
-      tries++;
-      const mapReady=installMap();
-      const patchReady=installDifficultyPatch();
-      installUi();
-      if(mapReady&&patchReady&&tries>2){
-        if(typeof window.renderMapTabs==="function")try{window.renderMapTabs();}catch(e){}
-        clearInterval(timer);
-      }
-      if(tries>30)clearInterval(timer);
-    },300);
-  }
-
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",install);
-  else install();
+  function installUi(){const panel=document.querySelector("#stageSelect .panel");if(!panel)return;let notice=document.getElementById("hardStageNotice");if(!notice){notice=document.createElement("div");notice.id="hardStageNotice";notice.className="onlineCard";notice.style.cssText="border-color:#ef4444;background:rgba(127,29,29,.24);margin:12px 0";const map=document.getElementById("galaxyMap");panel.insertBefore(notice,map||panel.children[2]);}notice.innerHTML="<b>⚠ 超高難度マップ：全30ステージ</b><br><span class='small'>高速包囲、弾幕、精鋭、長時間耐久、五連ボス、終極戦まで追加済み。</span>";}
+  function install(){let tries=0;const timer=setInterval(()=>{tries++;const a=installMap(),b=installDifficultyPatch();installUi();if(a&&b&&tries>2){try{window.renderMapTabs?.();}catch(e){}clearInterval(timer);}if(tries>40)clearInterval(timer);},300);}
+  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",install):install();
 })();
