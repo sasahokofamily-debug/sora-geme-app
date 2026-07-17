@@ -11,16 +11,15 @@
 <body>
 <div class="wrap"><div class="panel">
 <h1>SHOO KING II 権限発行所</h1>
-<p>ゲーム用の権限JSONを作成します。管理者キーで署名し、改ざんを検出できる形で保存できます。</p>
+<p>ゲーム用の権限JSONを作成します。</p>
 <div class="grid">
 <div><label>対象プレイヤー名</label><input id="playerName" placeholder="例：sora_player"></div>
 <div><label>権限名</label><input id="permissionName" placeholder="例：開発者権限"></div>
 <div><label>ロール</label><select id="role"><option value="player">PLAYER</option><option value="pro">PRO</option><option value="developer">DEVELOPER</option><option value="moderator">MODERATOR</option><option value="admin">ADMIN</option><option value="owner">OWNER</option></select></div>
 <div><label>有効期限</label><input id="expiresAt" type="datetime-local"></div>
-<div class="full"><label>管理者キー</label><input id="adminKey" type="password" placeholder="このキーを知っている人だけ発行可能"></div>
+<div class="full"><label>管理者キー</label><input id="adminKey" type="password" placeholder="8文字以上"></div>
 </div>
-<h2>許可する機能</h2>
-<div class="checks" id="permissionChecks"></div>
+<h2>許可する機能</h2><div class="checks" id="permissionChecks"></div>
 <h2>特別付与</h2>
 <div class="grid">
 <div><label>付与コイン</label><input id="coins" type="number" min="0" value="0"></div>
@@ -29,36 +28,59 @@
 <div><label>格納庫レベル</label><input id="hangarLevel" type="number" min="1" max="10" value="1"></div>
 <div class="full"><label>備考</label><input id="note" placeholder="発行理由など"></div>
 </div>
-<div class="status" id="status">未発行</div>
+<div class="status" id="status">準備完了</div>
 <div class="grid">
-<button class="gold" onclick="generatePermission()">権限を発行</button>
-<button class="secondary" onclick="copyResult()">結果をコピー</button>
-<button onclick="downloadResult()">JSONを保存</button>
-<button class="secondary" onclick="resetForm()">リセット</button>
+<button id="generateButton" class="gold" type="button">権限を発行</button>
+<button id="copyButton" class="secondary" type="button">結果をコピー</button>
+<button id="downloadButton" type="button">JSONを保存</button>
+<button id="resetButton" class="secondary" type="button">リセット</button>
 </div>
-<h2>発行結果</h2>
-<textarea id="result" readonly placeholder="ここに権限JSONが表示されます"></textarea>
-<p class="warn">注意：このHTMLだけではゲーム側に権限は反映されません。ゲーム側に「権限JSONを読み込み、同じ管理者キーで署名を検証する処理」を追加する必要があります。管理者キーを公開ページに直接書き込まないでください。</p>
+<h2>発行結果</h2><textarea id="result" readonly placeholder="ここに権限JSONが表示されます"></textarea>
+<p class="warn">このページで作ったJSONをゲーム側で読み込む処理は、別途追加が必要です。</p>
 </div></div>
 <script>
-const permissions=[
-["allStages","全ステージ解放"],["allWeapons","全武器解放"],["allSkins","全スキン解放"],["infiniteCoins","コイン無制限"],["godMode","無敵モード"],["developerMenu","開発者メニュー"],["editSave","セーブ編集"],["useMods","MOD使用"],["managePlayers","プレイヤー管理"],["issuePermissions","権限発行"],["viewLogs","ログ閲覧"],["banPlayers","利用停止操作"]
-];
-const box=document.getElementById('permissionChecks');
-permissions.forEach(([id,label])=>{const el=document.createElement('label');el.className='check';el.innerHTML=`<input type="checkbox" id="p_${id}"><span>${label}</span>`;box.appendChild(el)});
-function bytesToBase64(bytes){let s='';bytes.forEach(b=>s+=String.fromCharCode(b));return btoa(s)}
-async function signPayload(payload,keyText){const enc=new TextEncoder();const key=await crypto.subtle.importKey('raw',enc.encode(keyText),{name:'HMAC',hash:'SHA-256'},false,['sign']);const sig=await crypto.subtle.sign('HMAC',key,enc.encode(JSON.stringify(payload)));return bytesToBase64(new Uint8Array(sig))}
-function selectedPermissions(){return permissions.filter(([id])=>document.getElementById('p_'+id).checked).map(([id])=>id)}
-async function generatePermission(){
- const playerName=document.getElementById('playerName').value.trim();const adminKey=document.getElementById('adminKey').value;
- if(!playerName){status.textContent='プレイヤー名を入力してください';return}if(adminKey.length<8){status.textContent='管理者キーは8文字以上にしてください';return}
- const exp=document.getElementById('expiresAt').value;
- const payload={app:'SHOO KING II',type:'permission',version:1,id:crypto.randomUUID(),playerName,permissionName:document.getElementById('permissionName').value.trim()||'ゲーム権限',role:document.getElementById('role').value,permissions:selectedPermissions(),grants:{coins:Number(document.getElementById('coins').value||0),maxStage:Number(document.getElementById('maxStage').value||1),damageBoost:Number(document.getElementById('damageBoost').value||1),hangarLevel:Number(document.getElementById('hangarLevel').value||1)},note:document.getElementById('note').value.trim(),issuedAt:new Date().toISOString(),expiresAt:exp?new Date(exp).toISOString():null,issuer:'SHOO KING II Permission Maker'};
- const signature=await signPayload(payload,adminKey);const token={payload,signature,algorithm:'HMAC-SHA256'};result.value=JSON.stringify(token,null,2);status.textContent=`${payload.role.toUpperCase()} 権限を発行しました：${payload.id}`;
+(function(){
+'use strict';
+const permissions=[["allStages","全ステージ解放"],["allWeapons","全武器解放"],["allSkins","全スキン解放"],["infiniteCoins","コイン無制限"],["godMode","無敵モード"],["developerMenu","開発者メニュー"],["editSave","セーブ編集"],["useMods","MOD使用"],["managePlayers","プレイヤー管理"],["issuePermissions","権限発行"],["viewLogs","ログ閲覧"],["banPlayers","利用停止操作"]];
+const $=id=>document.getElementById(id);
+const statusEl=$('status'),resultEl=$('result'),checksEl=$('permissionChecks');
+permissions.forEach(([id,label])=>{const el=document.createElement('label');el.className='check';el.innerHTML='<input type="checkbox" id="p_'+id+'"><span>'+label+'</span>';checksEl.appendChild(el)});
+function setStatus(text){statusEl.textContent=text}
+function randomId(){if(window.crypto&&typeof crypto.randomUUID==='function')return crypto.randomUUID();return 'perm-'+Date.now()+'-'+Math.random().toString(36).slice(2)}
+function bytesToBase64(bytes){let s='';for(let i=0;i<bytes.length;i++)s+=String.fromCharCode(bytes[i]);return btoa(s)}
+async function signPayload(payload,keyText){
+ if(window.crypto&&crypto.subtle&&window.TextEncoder){const enc=new TextEncoder();const key=await crypto.subtle.importKey('raw',enc.encode(keyText),{name:'HMAC',hash:'SHA-256'},false,['sign']);const sig=await crypto.subtle.sign('HMAC',key,enc.encode(JSON.stringify(payload)));return bytesToBase64(new Uint8Array(sig));}
+ let hash=2166136261;const text=JSON.stringify(payload)+'|'+keyText;for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619)}return 'FALLBACK-'+(hash>>>0).toString(16);
 }
-async function copyResult(){if(!result.value)return;await navigator.clipboard.writeText(result.value);status.textContent='コピーしました'}
-function downloadResult(){if(!result.value)return;const data=new Blob([result.value],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(data);a.download=`shooking-permission-${Date.now()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function resetForm(){document.querySelectorAll('input').forEach(i=>{if(i.type==='checkbox')i.checked=false;else i.value=''});role.value='player';coins.value=0;maxStage.value=1;damageBoost.value=1;hangarLevel.value=1;result.value='';status.textContent='未発行'}
+function selectedPermissions(){return permissions.filter(([id])=>$('p_'+id).checked).map(([id])=>id)}
+async function generatePermission(){
+ try{
+  const playerName=$('playerName').value.trim(),adminKey=$('adminKey').value;
+  if(!playerName){setStatus('プレイヤー名を入力してください');return}
+  if(adminKey.length<8){setStatus('管理者キーは8文字以上にしてください');return}
+  setStatus('権限を作成中...');
+  const exp=$('expiresAt').value;
+  const payload={app:'SHOO KING II',type:'permission',version:2,id:randomId(),playerName,permissionName:$('permissionName').value.trim()||'ゲーム権限',role:$('role').value,permissions:selectedPermissions(),grants:{coins:Number($('coins').value||0),maxStage:Number($('maxStage').value||1),damageBoost:Number($('damageBoost').value||1),hangarLevel:Number($('hangarLevel').value||1)},note:$('note').value.trim(),issuedAt:new Date().toISOString(),expiresAt:exp?new Date(exp).toISOString():null,issuer:'SHOO KING II Permission Maker'};
+  const signature=await signPayload(payload,adminKey);
+  resultEl.value=JSON.stringify({payload,signature,algorithm:(crypto&&crypto.subtle)?'HMAC-SHA256':'FNV-FALLBACK'},null,2);
+  setStatus(payload.role.toUpperCase()+' 権限を発行しました');
+ }catch(e){console.error(e);setStatus('発行エラー：'+(e.message||e))}
+}
+async function copyResult(){
+ if(!resultEl.value){setStatus('先に権限を発行してください');return}
+ try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(resultEl.value)}else{resultEl.removeAttribute('readonly');resultEl.select();document.execCommand('copy');resultEl.setAttribute('readonly','readonly')}setStatus('コピーしました')}catch(e){setStatus('コピーできません。結果欄を長押ししてコピーしてください')}
+}
+function downloadResult(){
+ if(!resultEl.value){setStatus('先に権限を発行してください');return}
+ try{const data=new Blob([resultEl.value],{type:'application/json'});const a=document.createElement('a');const url=URL.createObjectURL(data);a.href=url;a.download='shooking-permission-'+Date.now()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);setStatus('JSONを保存しました')}catch(e){setStatus('保存エラー：'+(e.message||e))}
+}
+function resetForm(){document.querySelectorAll('input').forEach(i=>{if(i.type==='checkbox')i.checked=false;else i.value=''});$('role').value='player';$('coins').value=0;$('maxStage').value=1;$('damageBoost').value=1;$('hangarLevel').value=1;resultEl.value='';setStatus('リセットしました')}
+$('generateButton').addEventListener('click',generatePermission);
+$('copyButton').addEventListener('click',copyResult);
+$('downloadButton').addEventListener('click',downloadResult);
+$('resetButton').addEventListener('click',resetForm);
+setStatus('準備完了：ボタンを押せます');
+})();
 </script>
 </body>
 </html>
