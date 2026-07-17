@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v13";
+const CACHE_NAME = "shooking-ii-v14";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -7,6 +7,7 @@ const APP_SHELL = [
   "./firebase-error-patch.js",
   "./firebase-login-fallback.js",
   "./firebase-login-rescue.js",
+  "./hard-stages.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -41,6 +42,9 @@ async function addAppPatches(response) {
   }
   if (!html.includes("firebase-login-rescue.js")) {
     html = html.replace("</body>", '<script src="./firebase-login-rescue.js?v=9"></script></body>');
+  }
+  if (!html.includes("hard-stages.js")) {
+    html = html.replace("</body>", '<script src="./hard-stages.js?v=14"></script></body>');
   }
 
   const headers = new Headers(response.headers);
