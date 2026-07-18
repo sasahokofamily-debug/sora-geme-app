@@ -1,7 +1,8 @@
-const CACHE_NAME = "shooking-ii-v18";
+const CACHE_NAME = "shooking-ii-v19";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./details.html",
   "./ui-patch.js",
   "./google-login.js",
   "./firebase-error-patch.js",
@@ -29,7 +30,7 @@ self.addEventListener("activate", event => {
 
 async function addAppPatches(response) {
   let html = await response.text();
-  if (!html.includes("ui-patch.js")) html = html.replace("</body>", '<script src="./ui-patch.js?v=2"></script></body>');
+  if (!html.includes("ui-patch.js")) html = html.replace("</body>", '<script src="./ui-patch.js?v=3"></script></body>');
   if (!html.includes("google-login.js")) html = html.replace("</body>", '<script src="./google-login.js?v=9"></script></body>');
   if (!html.includes("firebase-error-patch.js")) html = html.replace("</body>", '<script src="./firebase-error-patch.js?v=9"></script></body>');
   if (!html.includes("firebase-login-fallback.js")) html = html.replace("</body>", '<script src="./firebase-login-fallback.js?v=9"></script></body>');
