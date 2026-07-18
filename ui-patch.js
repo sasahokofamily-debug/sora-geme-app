@@ -110,35 +110,47 @@
   }
 
   function addDetailsFooterLink() {
+    if (location.pathname.endsWith('/details.html') || location.pathname.endsWith('details.html')) return;
     if (document.getElementById('shookingDetailsFooter')) return;
-
-    const footer = document.createElement('footer');
+    const footer = document.createElement('div');
     footer.id = 'shookingDetailsFooter';
-    footer.style.cssText = 'width:min(760px,calc(100% - 24px));margin:28px auto 18px;padding:18px 14px;text-align:center;border-top:1px solid rgba(125,249,255,.28);color:#94a3b8;font-size:12px;line-height:1.8;position:relative;z-index:5;';
-
-    const link = document.createElement('a');
-    link.href = './details.html';
-    link.textContent = 'ゲーム詳細・利用条件・著作権表示';
-    link.style.cssText = 'display:inline-block;color:#7df9ff;text-decoration:none;font-weight:800;padding:8px 12px;border:1px solid rgba(125,249,255,.38);border-radius:999px;';
-
-    const copyright = document.createElement('div');
-    copyright.textContent = '© 2026 SHOO KING II Project. All rights reserved.';
-    copyright.style.marginTop = '9px';
-
-    footer.append(link, copyright);
+    footer.style.cssText = 'margin:28px auto 14px;padding:18px 12px;text-align:center;color:#94a3b8;font-size:12px;';
+    footer.innerHTML = '<a href="./details.html" style="display:inline-block;padding:10px 14px;border:1px solid #334155;border-radius:10px;color:#cbd5e1;text-decoration:none;background:#07111f;font-weight:800;">ゲーム詳細・利用条件・著作権表示</a><div style="margin-top:10px">© 2026 SHOO KING II Project. All rights reserved.</div>';
     document.body.appendChild(footer);
+  }
+
+  function addEmbeddedDownloadToDetails() {
+    if (!(location.pathname.endsWith('/details.html') || location.pathname.endsWith('details.html'))) return;
+    if (document.getElementById('embeddedDownloadSection')) return;
+    const main = document.querySelector('main.wrap') || document.querySelector('main');
+    if (!main) return;
+    const section = document.createElement('section');
+    section.id = 'embeddedDownloadSection';
+    section.innerHTML = '<h2>コード埋め込み式ダウンロード</h2><p>ゲーム本体と同一サイト内のJavaScript・CSSを、1つのHTMLファイルへまとめて保存できます。</p><p>これを実行すると、すぐにアクセスできるようになります。</p><p class="note">保存版では、ログインや外部通信など一部機能が制限される場合があります。</p><div class="actions"><a class="button gold" href="./download-builder.html">コード埋め込み式HTMLを作成</a></div>';
+    const contact = document.getElementById('contact');
+    if (contact) main.insertBefore(section, contact);
+    else main.appendChild(section);
+    const navWrap = document.querySelector('nav .wrap');
+    if (navWrap && !navWrap.querySelector('a[href="#embeddedDownloadSection"]')) {
+      const link = document.createElement('a');
+      link.href = '#embeddedDownloadSection';
+      link.textContent = 'ダウンロード';
+      navWrap.appendChild(link);
+    }
   }
 
   function installPatches() {
     moveFamilyMessageButtonIntoSettings();
     addWebAppInstallButton();
     addDetailsFooterLink();
+    addEmbeddedDownloadToDetails();
     let tries = 0;
     const timer = setInterval(() => {
       tries++;
       addWebAppInstallButton();
       addDetailsFooterLink();
-      if ((document.getElementById('webAppInstallButton') && document.getElementById('shookingDetailsFooter')) || tries > 30) clearInterval(timer);
+      addEmbeddedDownloadToDetails();
+      if ((document.getElementById('webAppInstallButton') || tries > 30) && tries > 5) clearInterval(timer);
     }, 300);
   }
 
