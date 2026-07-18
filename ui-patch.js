@@ -109,14 +109,36 @@
     updateInstallButton();
   }
 
+  function addDetailsFooterLink() {
+    if (document.getElementById('shookingDetailsFooter')) return;
+
+    const footer = document.createElement('footer');
+    footer.id = 'shookingDetailsFooter';
+    footer.style.cssText = 'width:min(760px,calc(100% - 24px));margin:28px auto 18px;padding:18px 14px;text-align:center;border-top:1px solid rgba(125,249,255,.28);color:#94a3b8;font-size:12px;line-height:1.8;position:relative;z-index:5;';
+
+    const link = document.createElement('a');
+    link.href = './details.html';
+    link.textContent = 'ゲーム詳細・利用条件・著作権表示';
+    link.style.cssText = 'display:inline-block;color:#7df9ff;text-decoration:none;font-weight:800;padding:8px 12px;border:1px solid rgba(125,249,255,.38);border-radius:999px;';
+
+    const copyright = document.createElement('div');
+    copyright.textContent = '© 2026 SHOO KING II Project. All rights reserved.';
+    copyright.style.marginTop = '9px';
+
+    footer.append(link, copyright);
+    document.body.appendChild(footer);
+  }
+
   function installPatches() {
     moveFamilyMessageButtonIntoSettings();
     addWebAppInstallButton();
+    addDetailsFooterLink();
     let tries = 0;
     const timer = setInterval(() => {
       tries++;
       addWebAppInstallButton();
-      if (document.getElementById('webAppInstallButton') || tries > 30) clearInterval(timer);
+      addDetailsFooterLink();
+      if ((document.getElementById('webAppInstallButton') && document.getElementById('shookingDetailsFooter')) || tries > 30) clearInterval(timer);
     }, 300);
   }
 
