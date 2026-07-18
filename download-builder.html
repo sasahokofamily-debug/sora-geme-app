@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#02030a">
+<title>SHOO KING II｜コード埋め込み式ダウンロード</title>
+<style>
+:root{color-scheme:dark;--cyan:#7df9ff;--blue:#38bdf8;--gold:#fbbf24;--muted:#aac0d2}*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:24px;background:radial-gradient(circle at 50% -10%,#153765,#071225 32%,#02030a 72%);color:#eef8ff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.7}.wrap{width:min(850px,100%);margin:auto}.panel{padding:26px;border:1px solid rgba(56,189,248,.35);border-radius:22px;background:rgba(7,17,31,.96);box-shadow:0 18px 54px rgba(0,0,0,.35)}h1{margin:0;color:var(--cyan);font-size:clamp(28px,6vw,48px)}h2{margin-top:28px;color:#dffcff}.lead{color:#d7e8f5}.note{padding:15px;border-left:4px solid var(--gold);border-radius:10px;background:#211a09;color:#fde9a9}.status{margin:16px 0;padding:13px;border:1px solid #274965;border-radius:12px;background:#08182a;color:#ccecff}.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}button,a.button{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:12px 16px;border:1px solid var(--blue);border-radius:13px;background:linear-gradient(135deg,#075985,#1d4ed8);color:white;font:inherit;font-weight:900;text-decoration:none;cursor:pointer}button.gold{border-color:#fde68a;background:linear-gradient(135deg,#f59e0b,#facc15);color:#171006}button:disabled{opacity:.58;cursor:wait}.small{font-size:13px;color:var(--muted)}code{padding:2px 6px;border-radius:6px;background:#071827;color:#b8f7ff}@media(max-width:650px){body{padding:12px}.panel{padding:20px}.actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="wrap"><section class="panel">
+<h1>コード埋め込み式ダウンロード</h1>
+<p class="lead">公開中のSHOO KING IIを読み込み、参照しているJavaScriptとCSSを可能な範囲でHTML内へ埋め込み、1つのHTMLファイルとして保存します。</p>
+<p>これを実行すると、すぐにアクセスできるようになります。</p>
+<div class="note">保存されたHTMLは、ブラウザから直接開けます。ログイン、Firebase、外部通信、PWA更新など、サーバーを必要とする一部機能はオフラインHTMLでは動作しない場合があります。</div>
+<div id="status" class="status">準備完了</div>
+<div class="actions">
+<button id="downloadButton" class="gold" type="button">HTMLを生成してダウンロード</button>
+<a class="button" href="./details.html">詳細ページへ戻る</a>
+<a class="button" href="./index.html">ゲームを開く</a>
+<a class="button" href="https://sora-geme-app-vfud.vercel.app/">Vercel版を開く</a>
+</div>
+<h2>保存内容</h2>
+<ul>
+<li><code>index.html</code>の本文</li>
+<li>同一サイト内の外部JavaScript</li>
+<li>同一サイト内の外部CSS</li>
+<li>ダウンロード日時と元URLの記録</li>
+</ul>
+<p class="small">画像や音声などは、元データ形式やブラウザ制限により外部参照のまま残る場合があります。</p>
+</section></main>
+<script>
+(()=>{
+'use strict';
+const button=document.getElementById('downloadButton');
+const status=document.getElementById('status');
+const setStatus=text=>status.textContent=text;
+const escapeScript=text=>text.replace(/<\/script/gi,'<\\/script');
+async function fetchText(url){const response=await fetch(url,{cache:'no-store'});if(!response.ok)throw new Error(url+' の取得に失敗しました ('+response.status+')');return response.text()}
+async function buildStandalone(){
+ button.disabled=true;
+ try{
+  setStatus('ゲーム本体を読み込んでいます…');
+  const sourceUrl=new URL('./index.html',location.href);
+  const parser=new DOMParser();
+  const htmlText=await fetchText(sourceUrl.href);
+  const doc=parser.parseFromString(htmlText,'text/html');
+  const scripts=[...doc.querySelectorAll('script[src]')];
+  for(let i=0;i<scripts.length;i++){
+   const old=scripts[i];
+   const url=new URL(old.getAttribute('src'),sourceUrl);
+   if(url.origin!==location.origin)continue;
+   setStatus('JavaScriptを埋め込み中 '+(i+1)+'/'+scripts.length+'…');
+   try{const code=await fetchText(url.href);const inline=doc.createElement('script');inline.textContent='\n/* Embedded from '+url.pathname+' */\n'+escapeScript(code)+'\n';old.replaceWith(inline)}catch(error){console.warn(error)}
+  }
+  const styles=[...doc.querySelectorAll('link[rel="stylesheet"][href]')];
+  for(let i=0;i<styles.length;i++){
+   const old=styles[i];
+   const url=new URL(old.getAttribute('href'),sourceUrl);
+   if(url.origin!==location.origin)continue;
+   setStatus('CSSを埋め込み中 '+(i+1)+'/'+styles.length+'…');
+   try{const css=await fetchText(url.href);const inline=doc.createElement('style');inline.textContent='\n/* Embedded from '+url.pathname+' */\n'+css;old.replaceWith(inline)}catch(error){console.warn(error)}
+  }
+  doc.querySelectorAll('link[rel="manifest"]').forEach(el=>el.remove());
+  const meta=doc.createElement('meta');meta.name='generator';meta.content='SHOO KING II Embedded HTML Builder';doc.head.appendChild(meta);
+  const comment='<!-- SHOO KING II standalone export | source: '+sourceUrl.href+' | generated: '+new Date().toISOString()+' -->\n';
+  const output='<!doctype html>\n'+comment+doc.documentElement.outerHTML;
+  const blob=new Blob([output],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='SHOO-KING-II-embedded-'+new Date().toISOString().slice(0,10)+'.html';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  setStatus('コード埋め込み式HTMLをダウンロードしました。');
+ }catch(error){console.error(error);setStatus('作成エラー：'+(error.message||error))}finally{button.disabled=false}
+}
+button.addEventListener('click',buildStandalone);
+})();
+</script>
+</body>
+</html>
