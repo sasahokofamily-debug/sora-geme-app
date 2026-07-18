@@ -1,6 +1,6 @@
-const CACHE_NAME = "shooking-ii-v21";
+const CACHE_NAME = "shooking-ii-v22";
 const APP_SHELL = [
-  "./",
+  "./landing.html",
   "./index.html",
   "./details.html",
   "./download-builder.html",
@@ -31,7 +31,7 @@ self.addEventListener("activate", event => {
 
 async function addAppPatches(response) {
   let html = await response.text();
-  if (!html.includes("ui-patch.js")) html = html.replace("</body>", '<script src="./ui-patch.js?v=5"></script></body>');
+  if (!html.includes("ui-patch.js")) html = html.replace("</body>", '<script src="./ui-patch.js?v=6"></script></body>');
   if (!html.includes("google-login.js")) html = html.replace("</body>", '<script src="./google-login.js?v=9"></script></body>');
   if (!html.includes("firebase-error-patch.js")) html = html.replace("</body>", '<script src="./firebase-error-patch.js?v=9"></script></body>');
   if (!html.includes("firebase-login-fallback.js")) html = html.replace("</body>", '<script src="./firebase-login-fallback.js?v=9"></script></body>');
@@ -48,14 +48,42 @@ async function addAppPatches(response) {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+
   if (event.request.mode === "navigate") {
+    const url = new URL(event.request.url);
+
+    if (url.origin === self.location.origin && url.pathname === "/") {
+      event.respondWith((async () => {
+        try {
+          return await fetch(new Request("./landing.html", { cache: "no-store" }));
+        } catch {
+          return (await caches.match("./landing.html")) || Response.error();
+        }
+      })());
+      return;
+    }
+
     event.respondWith((async () => {
-      try { return await addAppPatches(await fetch(event.request)); }
-      catch { const cachedResponse = await caches.match("./index.html"); return cachedResponse ? addAppPatches(cachedResponse) : Response.error(); }
+      try {
+        const response = await fetch(event.request);
+        const isGame = url.pathname === "/game" || url.pathname.endsWith("/index.html");
+        return isGame ? addAppPatches(response) : response;
+      } catch {
+        if (url.pathname === "/game" || url.pathname.endsWith("/index.html")) {
+          const cachedGame = await caches.match("./index.html");
+          return cachedGame ? addAppPatches(cachedGame) : Response.error();
+        }
+        return (await caches.match("./landing.html")) || Response.error();
+      }
     })());
     return;
   }
-  event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-    const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;
-  }).catch(()=>caches.match("./index.html"))));
+
+  event.respondWith(
+    caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+      return response;
+    }))
+  );
 });
