@@ -91,7 +91,7 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
 }
 .homeCommandGrid{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:repeat(2,minmax(0,1fr));
   gap:10px;
   margin:10px 0 12px;
   text-align:left;
@@ -163,6 +163,36 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
   list-style:none;
 }
 .homeMenuDetails summary::-webkit-details-marker{display:none}
+.homeBottomDock{
+  display:none;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin-top:auto;
+  padding-top:10px;
+}
+.homeDockItem{
+  min-width:0;
+  border:1px solid rgba(125,249,255,.28);
+  border-radius:10px;
+  background:linear-gradient(180deg,rgba(15,23,42,.88),rgba(2,6,23,.92));
+  box-shadow:inset 0 1px 0 rgba(125,249,255,.18);
+  padding:8px 6px;
+}
+.homeDockLabel{
+  color:#94a3b8;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.homeDockValue{
+  color:#e0faff;
+  font-size:13px;
+  font-weight:900;
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 @media(max-width:700px){
   #home.screen{
     justify-content:stretch;
@@ -178,6 +208,9 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
     width:100%;
     min-height:calc(100dvh - 38px);
     max-height:none;
+    display:flex;
+    flex-direction:column;
+    overflow-x:hidden;
     padding:8px 12px max(10px,env(safe-area-inset-bottom));
     border-right:0;
     border-bottom:0;
@@ -199,17 +232,19 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
   }
   #homeShipText{margin:2px 0 4px;font-size:11px;line-height:1.2}
   #homeStats{display:none}
-  #home .homeCommandGrid{grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}
+  #home .homeCommandGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:6px 0}
   #home .homeCommandCard{min-height:44px;padding:6px;border-radius:9px}
   #home .homeCommandTitle{font-size:9px;margin-bottom:3px}
   #home .homeCommandText,.enemyIntelBadge{font-size:10px;line-height:1.25}
   #home button{min-height:40px;padding:8px 8px;font-size:13px}
   .homePrimaryActions{gap:6px;margin:5px 0}
-  .homeSecondaryActions,.homeUtilityActions{gap:6px;margin:6px 0;grid-template-columns:1fr 1fr}
+  .homePrimaryActions,.homeSecondaryActions,.homeUtilityActions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .homeSecondaryActions,.homeUtilityActions{gap:6px;margin:6px 0}
   .homePrimaryActions button:first-child{min-height:46px;font-size:16px}
   .homeMenuDetails{margin:6px 0;padding:6px 9px}
   .homeMenuDetails summary{font-size:13px}
   .installCard{padding:8px;margin:6px 0;font-size:11px}
+  .homeBottomDock{display:grid}
   body.simple-touch-controls #joystick{
     left:50%;
     bottom:max(14px,env(safe-area-inset-bottom));
@@ -1187,7 +1222,7 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
 <div id="ui"></div><div id="itemStatus"></div><div id="missionToast"></div>
 <div id="mobileControls"><div id="joystick"><div id="stick"></div></div><div id="aimPad"></div><button id="fireButton">FIRE</button></div>
 
-<div id="home" class="screen"><div class="panel"><h1>SHOO KING II</h1><div class="authStatus" id="accountStatusHome">未ログイン</div><canvas id="homeShipPreview" width="220" height="170"></canvas><p class="small" id="homeShipText"></p><div class="homePrimaryActions"><button onclick="openStageSelect()">出撃</button><button class="shop" onclick="openScreen('shop')">ショップ</button><button onclick="openHangar()">格納庫</button></div><div class="homeSecondaryActions"><button class="gacha" onclick="openScreen('gacha')">ガチャ</button><button class="gacha" onclick="openAchievements()">実績</button></div><p class="small" id="homeStats"></p><div class="homeCommandGrid"><div class="homeCommandCard"><div class="homeCommandTitle">TODAY'S OPS</div><div class="homeCommandText" id="homeMissionBrief">作戦データを読み込み中...</div></div><div class="homeCommandCard"><div class="homeCommandTitle">ENEMY INTEL</div><div class="enemyIntelList" id="homeEnemyIntel"></div></div></div><details class="homeMenuDetails"><summary>その他メニュー</summary><div id="installCard" class="installCard"><b>Webアプリとして追加できます</b><div class="small" id="installHelp">ホーム画面に追加すると、アプリのように全画面で起動できます。</div><button id="installButton" onclick="installWebApp()">ホーム画面に追加</button></div><div class="homeUtilityActions"><button onclick="openLogin()">ログイン</button><button onclick="openRegister()">新規登録</button><button onclick="openSettings()">設定</button><button onclick="openSaveManager()">セーブコード</button><button onclick="openOnlinePlay()">オンライン</button><button onclick="openSavedReports()">報告書</button><button onclick="openFamilyMessageSettings()">家族メッセージ</button><button class="mod" onclick="openModEditor()">MOD</button><button onclick="openRequestLog()">リクエストログ</button></div></details></div></div>
+<div id="home" class="screen"><div class="panel"><h1>SHOO KING II</h1><div class="authStatus" id="accountStatusHome">未ログイン</div><canvas id="homeShipPreview" width="220" height="170"></canvas><p class="small" id="homeShipText"></p><div class="homePrimaryActions"><button onclick="openStageSelect()">出撃</button><button class="shop" onclick="openScreen('shop')">ショップ</button><button onclick="openHangar()">格納庫</button></div><div class="homeSecondaryActions"><button class="gacha" onclick="openScreen('gacha')">ガチャ</button><button class="gacha" onclick="openAchievements()">実績</button></div><p class="small" id="homeStats"></p><div class="homeCommandGrid"><div class="homeCommandCard"><div class="homeCommandTitle">TODAY'S OPS</div><div class="homeCommandText" id="homeMissionBrief">作戦データを読み込み中...</div></div><div class="homeCommandCard"><div class="homeCommandTitle">ENEMY INTEL</div><div class="enemyIntelList" id="homeEnemyIntel"></div></div></div><details class="homeMenuDetails"><summary>その他メニュー</summary><div id="installCard" class="installCard"><b>Webアプリとして追加できます</b><div class="small" id="installHelp">ホーム画面に追加すると、アプリのように全画面で起動できます。</div><button id="installButton" onclick="installWebApp()">ホーム画面に追加</button></div><div class="homeUtilityActions"><button onclick="openLogin()">ログイン</button><button onclick="openRegister()">新規登録</button><button onclick="openSettings()">設定</button><button onclick="openSaveManager()">セーブコード</button><button onclick="openOnlinePlay()">オンライン</button><button onclick="openSavedReports()">報告書</button><button onclick="openFamilyMessageSettings()">家族メッセージ</button><button class="mod" onclick="openModEditor()">MOD</button><button onclick="openRequestLog()">リクエストログ</button></div></details><div class="homeBottomDock"><div class="homeDockItem"><div class="homeDockLabel">LEVEL</div><div class="homeDockValue" id="homeDockLevel">Lv 1</div></div><div class="homeDockItem"><div class="homeDockLabel">COINS</div><div class="homeDockValue" id="homeDockCoins">0</div></div><div class="homeDockItem"><div class="homeDockLabel">BEST</div><div class="homeDockValue" id="homeDockBest">STAGE 1</div></div></div></div></div>
 
 <div id="loginScreen" class="screen hidden">
   <div class="panel">
@@ -2030,7 +2065,20 @@ function loadSaveFile(event){
   reader.onerror=()=>saveManagerMessage("ファイルを読めませんでした。");
   reader.readAsText(file);
 }
-function updateStats(){ensureWeaponSave();const w=getCurrentWeapon();const text=`Lv ${player.level} / EXP ${Math.floor(player.exp)}/${player.needExp}<br>コイン ${player.coins}<br>武器 ${w.name}<br>攻撃力 ${player.damage.toFixed(1)}倍 / 最大HP ${player.maxHp}<br>連射 ${player.fire.toFixed(1)}倍 / エンジン ${player.engine.toFixed(1)}倍<br>最高到達ステージ ${player.maxStage}<br>クリア済み ${player.maxClearedStage}`;["homeStats","shopStats","gachaStats"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=text});if(typeof renderWeaponShop==="function")renderWeaponShop()}updateStats();setTimeout(()=>{if(typeof renderHomeShipPreview==="function")renderHomeShipPreview()},0);
+function updateStats(){
+  ensureWeaponSave();
+  const w=getCurrentWeapon();
+  const text=`Lv ${player.level} / EXP ${Math.floor(player.exp)}/${player.needExp}<br>コイン ${player.coins}<br>武器 ${w.name}<br>攻撃力 ${player.damage.toFixed(1)}倍 / 最大HP ${player.maxHp}<br>連射 ${player.fire.toFixed(1)}倍 / エンジン ${player.engine.toFixed(1)}倍<br>最高到達ステージ ${player.maxStage}<br>クリア済み ${player.maxClearedStage}`;
+  ["homeStats","shopStats","gachaStats"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=text});
+  const dockLevel=document.getElementById("homeDockLevel");
+  const dockCoins=document.getElementById("homeDockCoins");
+  const dockBest=document.getElementById("homeDockBest");
+  if(dockLevel)dockLevel.textContent=`Lv ${player.level}`;
+  if(dockCoins)dockCoins.textContent=String(player.coins);
+  if(dockBest)dockBest.textContent=`STAGE ${player.maxStage}`;
+  if(typeof renderWeaponShop==="function")renderWeaponShop();
+}
+updateStats();setTimeout(()=>{if(typeof renderHomeShipPreview==="function")renderHomeShipPreview()},0);
 function openScreen(name){showScreen(name);if(name==="home")setTimeout(renderHomeShipPreview,0);if(name==="shop"&&typeof renderWeaponShop==="function")renderWeaponShop();state=["home","loginScreen","registerScreen","stageSelect","shop","gacha","onlinePlay","settings","familyMessageSettings","modEditor","requestLog","questScreen","progressScreen","hangar","skinChangeScreen","savedReportsScreen","achievementScreen","saveManagerScreen"].includes(name)?"home":name;saveData()}
 function showToast(text){const t=document.getElementById("missionToast");t.innerHTML=text;t.style.display="block";setTimeout(()=>t.style.display="none",2200)}
 
