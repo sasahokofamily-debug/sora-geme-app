@@ -1836,6 +1836,7 @@ function renderWeaponPreviews(){
 }
 
 let bullets=[],enemyBullets=[],enemies=[],particles=[],combatTexts=[],stars=[],items=[],score=0,lastSpawn=0,stageTimer=0,boss=null,screenShake=0,damageFlash=0;
+const PERF_LIMITS={enemies:54,bullets:130,enemyBullets:170,particles:260,combatTexts:48,items:42};
 for(let i=0;i<260;i++)stars.push({x:rand(-3300,3300),y:rand(-3300,3300),z:rand(.4,2.8)});
 function rand(a,b){return Math.random()*(b-a)+a}function screenX(wx){return canvas.width/2+(wx-player.worldX)}function screenY(wy){return canvas.height/2+(wy-player.worldY)}
 function triggerCombatFeedback(shake=4,flash=0){screenShake=Math.max(screenShake,shake);damageFlash=Math.max(damageFlash,flash)}
@@ -1860,7 +1861,7 @@ function drawDamageFlash(){
   ctx.restore();
 }
 function addCombatText(x,y,text,color="#fef3c7",size=16){
-  if(combatTexts.length>80)combatTexts.shift();
+  if(combatTexts.length>PERF_LIMITS.combatTexts)combatTexts.shift();
   combatTexts.push({x,y,text,color,size,life:46,vy:-1.15});
 }
 function drawCombatText(t){
@@ -2121,6 +2122,7 @@ function shoot(t){
       color:w.color||"#7df9ff"
     });
   }
+  if(bullets.length>PERF_LIMITS.bullets)bullets.splice(0,bullets.length-PERF_LIMITS.bullets);
   sound(w.sound||520,.035,w.id==="sniper"?"triangle":"square",.025);
 }
 const ENEMY_TYPES={
@@ -2133,6 +2135,7 @@ const ENEMY_TYPES={
   bomber:{label:"拡散弾",color:"#ef4444",hp:1.35,speed:.7,r:1.18}
 };
 function spawnEnemy(){
+  if(enemies.length>=PERF_LIMITS.enemies)return;
   const a=Math.random()*Math.PI*2,d=rand(760,1050),s=getStageData(player.stage),elite=Math.random()<Math.min(.6,MODS.enemies.eliteRate+s.id*.01);
   const baseTypes=["chaser","flanker","curver","sniper"];
   if(s.id>=2)baseTypes.push("swarm");
@@ -2143,17 +2146,20 @@ function spawnEnemy(){
   enemies.push({x:player.worldX+Math.cos(a)*d,y:player.worldY+Math.sin(a)*d,vx:0,vy:0,r,hp,maxHp:hp,speed,type,elite,aiTimer:0,curveDir:Math.random()<.5?-1:1,orbitSide:Math.random()<.5?-1:1,dashCooldown:rand(type==="swarm"?42:80,type==="swarm"?96:180),dashPower:0,shotCooldown:rand(type==="bomber"?45:60,type==="bomber"?115:160)})
 }
 function enemyShoot(e){
+  if(enemyBullets.length>=PERF_LIMITS.enemyBullets)return;
   const a=Math.atan2(player.worldY-e.y,player.worldX-e.x),isBomber=e.type==="bomber",isSniper=e.type==="sniper";
   const count=isBomber?(e.elite?7:5):(e.elite?3:1),spread=isBomber?.28:.18,speed=isSniper?7.2:(e.elite?6.2:4.8);
-  for(let i=0;i<count;i++){const off=(i-(count-1)/2)*spread;enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(a+off)*speed,vy:Math.sin(a+off)*speed,r:isBomber?6:(e.elite?7:5),life:isSniper?170:145,damage:isBomber?7:(e.elite?14:8),color:e.elite?"#ffbe0b":(ENEMY_TYPES[e.type]?.color||"#ff4d6d")})}
+  for(let i=0;i<count&&enemyBullets.length<PERF_LIMITS.enemyBullets;i++){const off=(i-(count-1)/2)*spread;enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(a+off)*speed,vy:Math.sin(a+off)*speed,r:isBomber?6:(e.elite?7:5),life:isSniper?170:145,damage:isBomber?7:(e.elite?14:8),color:e.elite?"#ffbe0b":(ENEMY_TYPES[e.type]?.color||"#ff4d6d")})}
 }
 function burst(x,y,color,n){
+  if(particles.length>PERF_LIMITS.particles*.72)n=Math.min(n,Math.ceil(n*.45));
   if(n>=36)addCombatText(x,y,n>=70?"ELITE BREAK":"BREAK",color,n>=70?20:16);
   else if(color==="#7df9ff"&&n>=8)addCombatText(x,y,"HIT","#7df9ff",13);
   else if(color==="#ff3b3b"&&n>=12)addCombatText(x,y,"DAMAGE","#fb7185",14);
   for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=rand(1,7);particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(20,45),color,size:rand(2.5,7),spin:Math.random()*Math.PI})}
+  if(particles.length>PERF_LIMITS.particles)particles.splice(0,particles.length-PERF_LIMITS.particles);
 }
-function dropItem(x,y,elite=false){const r=Math.random();let type=null;if(r<.18)type="coin";else if(r<.28)type="heal";else if(r<.36)type="shield";else if(r<.42)type="rapid";if(elite&&Math.random()<.45)type="magnet";if(type)items.push({x,y,type,r:13,life:60*18})}
+function dropItem(x,y,elite=false){const r=Math.random();let type=null;if(r<.18)type="coin";else if(r<.28)type="heal";else if(r<.36)type="shield";else if(r<.42)type="rapid";if(elite&&Math.random()<.45)type="magnet";if(type&&items.length<PERF_LIMITS.items)items.push({x,y,type,r:13,life:60*18})}
 function collectItem(it){if(it.type==="coin")player.coins+=25;else if(it.type==="heal")player.hp=Math.min(player.maxHp,player.hp+35);else if(it.type==="shield")player.shield+=45;else if(it.type==="rapid")player.rapidTimer=60*12;else if(it.type==="magnet")player.magnetTimer=60*25;it.life=0;sound(980,.08,"triangle",.05)}
 
 function isBossStage(stageId){return Number(stageId)%5===0}
@@ -2374,7 +2380,7 @@ function applySimpleMobileCombatAim(){
   mouse.down=true;
 }
 
-function update(t){if(state!=="play")return;stageTimer++;let ax=0,ay=0;if(keys.w||keys.arrowup)ay-=1;if(keys.s||keys.arrowdown)ay+=1;if(keys.a||keys.arrowleft)ax-=1;if(keys.d||keys.arrowright)ax+=1;if(mobileControlsEnabled){ax+=touchMove.x;ay+=touchMove.y}if(ax||ay){const l=Math.hypot(ax,ay);ax/=l;ay/=l}const skinMods=getSkinMods();const acc=.34*player.engine*skinMods.speed,fr=.985,max=8.5*player.engine*skinMods.speed;player.vx+=ax*acc;player.vy+=ay*acc;player.vx*=fr;player.vy*=fr;let sp=Math.hypot(player.vx,player.vy);if(sp>max){player.vx=player.vx/sp*max;player.vy=player.vy/sp*max}player.worldX+=player.vx;player.worldY+=player.vy;applySimpleMobileCombatAim();if(mouse.down)shoot(t);const s=getStageData(player.stage);if(!s.challenge&&t-lastSpawn>Math.max(210,850-player.stage*45)/(MODS.stages.spawnBoost*s.enemyBoost)){lastSpawn=t;spawnEnemy()}bullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.life--});bullets=bullets.filter(b=>b.life>0);enemyBullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.life--;if(Math.hypot(b.x-player.worldX,b.y-player.worldY)<b.r+21){if(player.shield>0){player.shield-=b.damage;if(player.shield<0){player.hp+=player.shield;player.shield=0}}else player.hp-=b.damage;b.life=0;triggerCombatFeedback(9,.28);burst(player.worldX,player.worldY,"#ff3b3b",12)}});enemyBullets=enemyBullets.filter(b=>b.life>0);if(boss)updateBoss(t);enemies.forEach(e=>{e.aiTimer++;e.dashCooldown--;e.shotCooldown--;const dx=player.worldX-e.x,dy=player.worldY-e.y,dist=Math.hypot(dx,dy)||1;let tx=player.worldX,ty=player.worldY;if(e.type==="flanker"){const base=Math.atan2(dy,dx),sa=base+Math.PI/2*e.orbitSide;tx=player.worldX+Math.cos(sa)*360;ty=player.worldY+Math.sin(sa)*360;if(dist<430){tx=player.worldX;ty=player.worldY}}if(e.type==="curver"){const base=Math.atan2(dy,dx)+.75*e.curveDir;tx=e.x+Math.cos(base)*500;ty=e.y+Math.sin(base)*500;if(e.aiTimer%120<2)e.curveDir*=-1}if(e.type==="sniper"){const keep=620;if(dist<keep){tx=e.x-dx;ty=e.y-dy}}if(e.type==="tank"){tx=player.worldX-dx*.18;ty=player.worldY-dy*.18}if(e.type==="swarm"){const wiggle=Math.sin(e.aiTimer*.18)*.55;const base=Math.atan2(dy,dx)+wiggle;tx=e.x+Math.cos(base)*480;ty=e.y+Math.sin(base)*480}if(e.type==="bomber"){const keep=520;if(dist<keep){tx=e.x-dx;ty=e.y-dy}else{const base=Math.atan2(dy,dx)+Math.PI/2*e.orbitSide;tx=player.worldX+Math.cos(base)*keep;ty=player.worldY+Math.sin(base)*keep}}if(e.dashCooldown<=0&&dist>180){e.dashPower=e.type==="swarm"?5.2:3.5;e.dashCooldown=e.type==="swarm"?rand(65,140):rand(180,320)}const dd=Math.hypot(tx-e.x,ty-e.y)||1,dvx=(tx-e.x)/dd*e.speed*(1+e.dashPower*.35),dvy=(ty-e.y)/dd*e.speed*(1+e.dashPower*.35);e.vx+=(dvx-e.vx)*.045;e.vy+=(dvy-e.vy)*.045;e.vx*=.992;e.vy*=.992;e.dashPower*=.93;e.x+=e.vx;e.y+=e.vy;if(e.shotCooldown<=0&&dist<(e.type==="bomber"?760:900)){enemyShoot(e);e.shotCooldown=rand(e.elite?55:100,e.elite?115:190)/s.bulletBoost}if(Math.hypot(e.x-player.worldX,e.y-player.worldY)<e.r+22){const hit=e.type==="tank"?1.4:(e.elite?1.2:.6);if(player.shield>0){player.shield-=hit;if(player.shield<0){player.hp+=player.shield;player.shield=0}}else player.hp-=hit;triggerCombatFeedback(e.elite?10:6,.18);burst(player.worldX,player.worldY,"#ff3b3b",2)}});for(const b of bullets)for(const e of enemies)if(b.life>0&&Math.hypot(b.x-e.x,b.y-e.y)<b.r+e.r){e.hp-=b.damage;b.life=0;triggerCombatFeedback(b.crit?4:2,b.crit?.08:.03);burst(b.x,b.y,"#7df9ff",8)}enemies=enemies.filter(e=>{if(e.hp<=0){score+=e.elite?120:20;player.coins+=Math.floor((e.elite?35:8)*getSkinMods().coin);addExp((e.elite?80:20)*getSkinMods().exp);runStats.kills++;if(e.elite)runStats.eliteKills++;dropItem(e.x,e.y,e.elite);triggerCombatFeedback(e.elite?12:6,e.elite?.16:.08);burst(e.x,e.y,e.elite?"#ffbe0b":(ENEMY_TYPES[e.type]?.color||"#ff006e"),e.elite?80:36);checkMissionClear();return false}return true});if(player.magnetTimer>0)player.magnetTimer--;if(player.rapidTimer>0)player.rapidTimer--;items.forEach(it=>{it.life--;const dx=player.worldX-it.x,dy=player.worldY-it.y,d=Math.hypot(dx,dy)||1,range=player.magnetTimer>0?420:42;if(d<range){it.x+=dx/d*(player.magnetTimer>0?8:2);it.y+=dy/d*(player.magnetTimer>0?8:2)}if(d<34)collectItem(it)});items=items.filter(i=>i.life>0);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--});particles=particles.filter(p=>p.life>0);checkMissionClear();checkAutoQuests();checkMissionClear();/*CLEAR_CONDITION_FIX_TICK*/if(challengeState&&challengeState.active){updateChallengeMode(1);balanceChallengeEnemies();}else{checkMissionClear();}hardBalanceTick();/*HARD_CAP_HP*/applyBulletEnemyDamageFix();/*DAMAGE_FIX_HP*/if(player.hp<=0){if(!(challengeState&&challengeState.active&&respawnPlayerChallenge()))endGame();}}
+function update(t){if(state!=="play")return;stageTimer++;let ax=0,ay=0;if(keys.w||keys.arrowup)ay-=1;if(keys.s||keys.arrowdown)ay+=1;if(keys.a||keys.arrowleft)ax-=1;if(keys.d||keys.arrowright)ax+=1;if(mobileControlsEnabled){ax+=touchMove.x;ay+=touchMove.y}if(ax||ay){const l=Math.hypot(ax,ay);ax/=l;ay/=l}const skinMods=getSkinMods();const acc=.34*player.engine*skinMods.speed,fr=.985,max=8.5*player.engine*skinMods.speed;player.vx+=ax*acc;player.vy+=ay*acc;player.vx*=fr;player.vy*=fr;let sp=Math.hypot(player.vx,player.vy);if(sp>max){player.vx=player.vx/sp*max;player.vy=player.vy/sp*max}player.worldX+=player.vx;player.worldY+=player.vy;applySimpleMobileCombatAim();if(mouse.down)shoot(t);const s=getStageData(player.stage);if(!s.challenge&&t-lastSpawn>Math.max(210,850-player.stage*45)/(MODS.stages.spawnBoost*s.enemyBoost)){lastSpawn=t;spawnEnemy()}bullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.life--});bullets=bullets.filter(b=>b.life>0);enemyBullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.life--;if(Math.hypot(b.x-player.worldX,b.y-player.worldY)<b.r+21){if(player.shield>0){player.shield-=b.damage;if(player.shield<0){player.hp+=player.shield;player.shield=0}}else player.hp-=b.damage;b.life=0;triggerCombatFeedback(9,.28);burst(player.worldX,player.worldY,"#ff3b3b",12)}});enemyBullets=enemyBullets.filter(b=>b.life>0);if(boss)updateBoss(t);enemies.forEach(e=>{e.aiTimer++;e.dashCooldown--;e.shotCooldown--;const dx=player.worldX-e.x,dy=player.worldY-e.y,dist=Math.hypot(dx,dy)||1;let tx=player.worldX,ty=player.worldY;if(e.type==="flanker"){const base=Math.atan2(dy,dx),sa=base+Math.PI/2*e.orbitSide;tx=player.worldX+Math.cos(sa)*360;ty=player.worldY+Math.sin(sa)*360;if(dist<430){tx=player.worldX;ty=player.worldY}}if(e.type==="curver"){const base=Math.atan2(dy,dx)+.75*e.curveDir;tx=e.x+Math.cos(base)*500;ty=e.y+Math.sin(base)*500;if(e.aiTimer%120<2)e.curveDir*=-1}if(e.type==="sniper"){const keep=620;if(dist<keep){tx=e.x-dx;ty=e.y-dy}}if(e.type==="tank"){tx=player.worldX-dx*.18;ty=player.worldY-dy*.18}if(e.type==="swarm"){const wiggle=Math.sin(e.aiTimer*.18)*.55;const base=Math.atan2(dy,dx)+wiggle;tx=e.x+Math.cos(base)*480;ty=e.y+Math.sin(base)*480}if(e.type==="bomber"){const keep=520;if(dist<keep){tx=e.x-dx;ty=e.y-dy}else{const base=Math.atan2(dy,dx)+Math.PI/2*e.orbitSide;tx=player.worldX+Math.cos(base)*keep;ty=player.worldY+Math.sin(base)*keep}}if(e.dashCooldown<=0&&dist>180){e.dashPower=e.type==="swarm"?5.2:3.5;e.dashCooldown=e.type==="swarm"?rand(65,140):rand(180,320)}const dd=Math.hypot(tx-e.x,ty-e.y)||1,dvx=(tx-e.x)/dd*e.speed*(1+e.dashPower*.35),dvy=(ty-e.y)/dd*e.speed*(1+e.dashPower*.35);e.vx+=(dvx-e.vx)*.045;e.vy+=(dvy-e.vy)*.045;e.vx*=.992;e.vy*=.992;e.dashPower*=.93;e.x+=e.vx;e.y+=e.vy;if(e.shotCooldown<=0&&dist<(e.type==="bomber"?760:900)){enemyShoot(e);e.shotCooldown=rand(e.elite?55:100,e.elite?115:190)/s.bulletBoost}if(Math.hypot(e.x-player.worldX,e.y-player.worldY)<e.r+22){const hit=e.type==="tank"?1.4:(e.elite?1.2:.6);if(player.shield>0){player.shield-=hit;if(player.shield<0){player.hp+=player.shield;player.shield=0}}else player.hp-=hit;triggerCombatFeedback(e.elite?10:6,.18);burst(player.worldX,player.worldY,"#ff3b3b",2)}});for(const b of bullets)for(const e of enemies)if(b.life>0){const dx=b.x-e.x,dy=b.y-e.y,rr=b.r+e.r;if(dx*dx+dy*dy<rr*rr){e.hp-=b.damage;b.life=0;triggerCombatFeedback(b.crit?4:2,b.crit?.08:.03);burst(b.x,b.y,"#7df9ff",8)}}enemies=enemies.filter(e=>{if(e.hp<=0){score+=e.elite?120:20;player.coins+=Math.floor((e.elite?35:8)*getSkinMods().coin);addExp((e.elite?80:20)*getSkinMods().exp);runStats.kills++;if(e.elite)runStats.eliteKills++;dropItem(e.x,e.y,e.elite);triggerCombatFeedback(e.elite?12:6,e.elite?.16:.08);burst(e.x,e.y,e.elite?"#ffbe0b":(ENEMY_TYPES[e.type]?.color||"#ff006e"),e.elite?80:36);checkMissionClear();return false}return true});if(player.magnetTimer>0)player.magnetTimer--;if(player.rapidTimer>0)player.rapidTimer--;items.forEach(it=>{it.life--;const dx=player.worldX-it.x,dy=player.worldY-it.y,d=Math.hypot(dx,dy)||1,range=player.magnetTimer>0?420:42;if(d<range){it.x+=dx/d*(player.magnetTimer>0?8:2);it.y+=dy/d*(player.magnetTimer>0?8:2)}if(d<34)collectItem(it)});items=items.filter(i=>i.life>0);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--});particles=particles.filter(p=>p.life>0);checkMissionClear();checkAutoQuests();checkMissionClear();/*CLEAR_CONDITION_FIX_TICK*/if(challengeState&&challengeState.active){updateChallengeMode(1);balanceChallengeEnemies();}else{checkMissionClear();}hardBalanceTick();/*HARD_CAP_HP*/applyBulletEnemyDamageFix();/*DAMAGE_FIX_HP*/if(player.hp<=0){if(!(challengeState&&challengeState.active&&respawnPlayerChallenge()))endGame();}}
 function drawPlayer(){
   const x=canvas.width/2,y=canvas.height/2,a=Math.atan2(mouse.y-y,mouse.x-x);
   const skin=getEquippedSkin();
@@ -4113,6 +4119,8 @@ function exportSavedReportsJson(){
 
 
 function applyBulletEnemyDamageFix(){
+  // Main update() already handles bullet/enemy hits; avoid a second O(bullets * enemies) pass.
+  return;
   if(typeof bullets==="undefined" || typeof enemies==="undefined")return;
   if(!Array.isArray(bullets)||!Array.isArray(enemies))return;
 
