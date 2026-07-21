@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v35";
+const CACHE_NAME = "shooking-ii-v36";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -14,6 +14,7 @@ const APP_SHELL = [
   "./firebase-config.js",
   "./online-pve.js",
   "./anti-cheat.js",
+  "./admin-mode.js",
   "./online-team-fix.js",
   "./multiplayer-sync.js",
   "./shared-enemy-sync.js",
@@ -49,6 +50,7 @@ async function patchHtml(response, isGame) {
     if (!html.includes("firebase-login-rescue.js")) html = html.replace("</body>", '<script src="./firebase-login-rescue.js?v=9"></script></body>');
     if (!html.includes("online-pve.js")) html = html.replace("</body>", '<script src="./online-pve.js?v=4"></script></body>');
     if (!html.includes("anti-cheat.js")) html = html.replace("</body>", '<script src="./anti-cheat.js?v=1"></script></body>');
+    if (!html.includes("admin-mode.js")) html = html.replace("</body>", '<script src="./admin-mode.js?v=1"></script></body>');
     if (!html.includes("online-team-fix.js")) html = html.replace("</body>", '<script src="./online-team-fix.js?v=1"></script></body>');
     if (!html.includes("multiplayer-sync.js")) html = html.replace("</body>", '<script src="./multiplayer-sync.js?v=2"></script></body>');
     if (!html.includes("shared-enemy-sync.js")) html = html.replace("</body>", '<script src="./shared-enemy-sync.js?v=1"></script></body>');
