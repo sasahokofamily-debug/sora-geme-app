@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v47";
+const CACHE_NAME = "shooking-ii-v48";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -107,7 +107,6 @@ self.addEventListener("fetch", event => {
     })());
     return;
   }
-
   if (
     requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
     requestUrl.pathname.endsWith("/seasonal-gacha-fix.js") ||

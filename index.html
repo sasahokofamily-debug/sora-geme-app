@@ -196,7 +196,7 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
 @media(max-width:700px){
   #home.screen{
     justify-content:stretch;
-    padding-top:max(38px,calc(env(safe-area-inset-top) + 6px));
+    padding-top:max(24px,calc(env(safe-area-inset-top) + 2px));
     padding-right:0;
     padding-bottom:0;
     padding-left:0;
@@ -206,12 +206,12 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
   }
   #home .panel{
     width:100%;
-    min-height:calc(100dvh - 38px);
+    min-height:0;
     max-height:none;
     display:flex;
     flex-direction:column;
     overflow-x:hidden;
-    padding:8px 12px max(10px,env(safe-area-inset-bottom));
+    padding:5px 10px max(8px,env(safe-area-inset-bottom));
     border-right:0;
     border-bottom:0;
     border-left:0;
@@ -221,30 +221,44 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
       rgba(0,0,0,.62);
     box-shadow:inset 0 1px 0 rgba(125,249,255,.55);
   }
-  #home h1{font-size:24px;margin-bottom:3px;line-height:1.02}
-  #home .authStatus{padding:6px;margin:4px 0;font-size:11px}
+  #home h1{font-size:22px;margin-bottom:2px;line-height:1}
+  #home .authStatus{padding:5px;margin:3px 0;font-size:10px}
   #homeShipPreview{
     display:block;
-    width:min(136px,42vw);
+    width:min(112px,35vw);
     height:auto;
-    margin:3px auto 3px;
+    margin:2px auto;
     border-radius:12px;
   }
-  #homeShipText{margin:2px 0 4px;font-size:11px;line-height:1.2}
+  #homeShipText{margin:1px 0 3px;font-size:10px;line-height:1.12}
   #homeStats{display:none}
-  #home .homeCommandGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:6px 0}
-  #home .homeCommandCard{min-height:44px;padding:6px;border-radius:9px}
-  #home .homeCommandTitle{font-size:9px;margin-bottom:3px}
-  #home .homeCommandText,.enemyIntelBadge{font-size:10px;line-height:1.25}
-  #home button{min-height:40px;padding:8px 8px;font-size:13px}
-  .homePrimaryActions{gap:6px;margin:5px 0}
+  #home .homeCommandGrid{grid-template-columns:1fr;gap:4px;margin:4px 0}
+  #home .homeCommandCard{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:center;
+    gap:7px;
+    min-height:0;
+    padding:5px 7px;
+    border-radius:8px;
+  }
+  #home .homeCommandTitle{font-size:8px;margin-bottom:0;white-space:nowrap}
+  #home .homeCommandText{font-size:9px;line-height:1.18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #home .enemyIntelList{flex-wrap:nowrap;overflow:hidden}
+  #home .enemyIntelBadge{font-size:9px;line-height:1;padding:3px 6px;white-space:nowrap}
+  #home .enemyIntelBadge:nth-child(n+5){display:none}
+  #home button{min-height:36px;padding:7px 8px;font-size:12px}
+  .homePrimaryActions{gap:5px;margin:4px 0}
   .homePrimaryActions,.homeSecondaryActions,.homeUtilityActions{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .homeSecondaryActions,.homeUtilityActions{gap:6px;margin:6px 0}
-  .homePrimaryActions button:first-child{min-height:46px;font-size:16px}
-  .homeMenuDetails{margin:6px 0;padding:6px 9px}
-  .homeMenuDetails summary{font-size:13px}
+  .homeSecondaryActions,.homeUtilityActions{gap:5px;margin:5px 0}
+  .homePrimaryActions button:first-child{min-height:40px;font-size:15px}
+  .homeMenuDetails{margin:4px 0;padding:5px 8px}
+  .homeMenuDetails summary{font-size:12px}
   .installCard{padding:8px;margin:6px 0;font-size:11px}
-  .homeBottomDock{display:grid}
+  .homeBottomDock{display:grid;gap:5px;margin-top:4px;padding-top:0}
+  .homeDockItem{padding:5px 4px;border-radius:8px}
+  .homeDockLabel{font-size:8px}
+  .homeDockValue{font-size:11px;margin-top:1px}
   body.simple-touch-controls #joystick{
     left:50%;
     bottom:max(14px,env(safe-area-inset-bottom));
@@ -255,6 +269,44 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
 }
 @media(max-width:360px){
   body.simple-touch-controls #joystick{width:112px;height:112px}
+}
+@media(max-width:700px){
+  .screen:not(#home){padding-top:max(22px,calc(env(safe-area-inset-top) + 4px));padding-bottom:max(6px,env(safe-area-inset-bottom))}
+  .screen:not(#home) .panel{padding:10px 10px max(10px,env(safe-area-inset-bottom));max-height:calc(100dvh - 30px)}
+  .screen:not(#home) h1{font-size:22px;line-height:1.05;margin-bottom:6px}
+  .screen:not(#home) h2{font-size:15px;line-height:1.1;margin:8px 0 5px}
+  .screen:not(#home) .small{font-size:11px;line-height:1.32;margin:5px 0}
+  .screen:not(#home) button{min-height:38px;padding:8px 9px;margin:6px 0;font-size:12px;border-radius:9px}
+  .screen:not(#home) input,.screen:not(#home) select,.screen:not(#home) textarea{margin:5px 0;padding:8px;font-size:16px;border-radius:8px}
+  .screen:not(#home) textarea{height:76px}
+  #stageSelect .panel{padding-top:8px}
+  #stageSelect .mapNameTitle{font-size:13px;margin:4px 0}
+  #stageSelect .mapTabs{gap:5px;margin:4px 0}
+  #stageSelect #galaxyMap{height:min(300px,38dvh);margin:6px 0;border-radius:12px}
+  #stageSelect .onlineCard,#stageInfo{padding:8px;margin:6px 0;font-size:11px;line-height:1.3}
+  #shop .weaponShopBox{padding:0;margin:0;border:0;background:transparent}
+  #shop .weaponShopBox h2,#shop .weaponShopBox>p,#shopStats,#gachaStats{display:none}
+  #shop .weaponGrid{gap:7px;max-height:42dvh;overflow-y:auto;padding-right:2px}
+  #shop .weaponCard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:center;padding:8px;border-radius:9px}
+  #shop .weaponName{font-size:13px;margin:0}
+  #shop .weaponStats{font-size:10px;line-height:1.25;margin:0}
+  #shop .weaponPreview{display:none}
+  #shop .weaponMiniButton{grid-column:2;grid-row:1/3;min-width:74px;margin:0}
+  #gacha #gachaResult{font-size:11px;margin:4px 0}
+  #hangar .onlineCard,.familyConfigCard,.dangerBox{padding:8px;margin:6px 0;border-radius:10px}
+  #hangar .hangarLevel{font-size:17px}
+  #hangar .skinGrid,#skinChangeScreen .skinGrid,#achievementScreen .achievementGrid{gap:7px;max-height:46dvh;overflow-y:auto;padding-right:2px}
+  #hangar .skinCard,#skinChangeScreen .skinCard,.achievementCard,.savedReportCard{padding:8px;border-radius:9px}
+  #hangar .evoTree{gap:5px;margin:6px 0}
+  #hangar .evoNode{padding:7px 8px;border-radius:8px;font-size:11px}
+  #achievementScreen .achievementSummary{gap:6px;margin:6px 0}
+  #achievementScreen .achievementTitle{font-size:12px}
+  #achievementScreen .achievementDesc,#achievementScreen .achievementProgress{font-size:10px}
+  #saveManagerScreen .saveManagerNote{display:none}
+  #saveManagerScreen .saveManagerGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  #saveManagerScreen .saveManagerCode,#savedReportsScreen .reportJsonBox{height:120px;min-height:120px}
+  #missionReportScreen .finalReportScreenPaper{padding:12px;margin:8px 0;border-radius:12px;max-height:56dvh;overflow:auto}
+  #onlinePlay .chatbox,.logbox{max-height:30dvh}
 }
 .reportBox{
   text-align:left;background:rgba(15,23,42,.9);border:1px solid #334155;
