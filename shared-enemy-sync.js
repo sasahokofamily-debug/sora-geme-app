@@ -1,0 +1,24 @@
+(()=>{
+'use strict';
+if(window.ShooSharedEnemySync)return;
+const ROOM_KEY='shooking2_online_room';
+const S={db:null,auth:null,room:'',roomRef:null,enemies:new Map(),unsub:null,patched:new Set(),ending:false,lastScreen:''};
+const now=()=>firebase.firestore.FieldValue.serverTimestamp();
+const finite=n=>Number.isFinite(Number(n));
+function roomCode(){return localStorage.getItem(ROOM_KEY)||''}
+function enemyId(e,i=0){return String(e?.id??e?.enemyId??e?.uid??e?.name??`enemy-${i}`)}
+function enemyRoots(){const candidates=[window.enemies,window.gameState?.enemies,window.state?.enemies,window.game?.enemies,window.enemyList];return candidates.find(Array.isArray)||[]}
+function applyRemoteEnemy(id,data){const list=enemyRoots();for(let i=0;i<list.length;i++){const e=list[i];if(enemyId(e,i)!==id)continue;if(finite(data.hp)){if('hp'in e)e.hp=Number(data.hp);else if('health'in e)e.health=Number(data.hp)}if(data.dead===true){if('dead'in e)e.dead=true;if('alive'in e)e.alive=false;if('hp'in e)e.hp=0;if('health'in e)e.health=0}break}}
+async function publishEnemy(e,i=0){if(!S.roomRef||!e)return;const id=enemyId(e,i),hp=Number(e.hp??e.health??0),maxHp=Number(e.maxHp??e.maxHealth??hp),dead=e.dead===true||e.alive===false||hp<=0;try{await S.roomRef.collection('enemies').doc(id).set({id,hp:Number.isFinite(hp)?hp:0,maxHp:Number.isFinite(maxHp)?maxHp:0,dead,x:Number(e.x??0),y:Number(e.y??0),updatedAt:now(),updatedBy:S.auth.currentUser.uid},{merge:true})}catch{}}
+async function damageShared(id,damage){if(!S.roomRef||!finite(damage)||Number(damage)<=0)return false;const ref=S.roomRef.collection('enemies').doc(String(id));try{await S.db.runTransaction(async tx=>{const s=await tx.get(ref);const d=s.exists?s.data():{};const hp=Math.max(0,Number(d.hp??d.maxHp??0)-Number(damage));tx.set(ref,{hp,dead:hp<=0,updatedAt:now(),updatedBy:S.auth.currentUser.uid},{merge:true})});return true}catch{return false}}
+function patchDamageFunction(name){const fn=window[name];if(typeof fn!=='function'||fn.__sharedEnemyPatched)return;const wrapped=function(...args){const enemy=args[0],damage=Number(args[1]??args[0]?.damage??0),id=typeof enemy==='object'?enemyId(enemy):String(enemy);if(S.roomRef&&finite(damage)&&damage>0)damageShared(id,damage);return fn.apply(this,args)};wrapped.__sharedEnemyPatched=true;window[name]=wrapped;S.patched.add(name)}
+function patchEndFunction(name,result){const fn=window[name];if(typeof fn!=='function'||fn.__onlineEndPatched)return;const wrapped=function(...args){const out=fn.apply(this,args);finishMission(result);return out};wrapped.__onlineEndPatched=true;window[name]=wrapped}
+async function finishMission(result='finished'){if(S.ending||!roomCode())return;S.ending=true;window.dispatchEvent(new CustomEvent('shoo:mission-ended',{detail:{result}}));setTimeout(()=>{S.ending=false},2500)}
+function inspectScreens(){const visible=[...document.querySelectorAll('.screen:not(.hidden)')].map(x=>x.id).filter(Boolean);const name=visible.join(',');if(name===S.lastScreen)return;S.lastScreen=name;if(!roomCode())return;if(visible.some(id=>/result|clear|gameover|defeat|victory|home|stageSelect/i.test(id))&&S.roomRef){const result=visible.some(id=>/gameover|defeat/i.test(id))?'defeat':'finished';finishMission(result)}}
+async function connect(){const code=roomCode();if(!code||!window.firebase?.apps?.length)return;if(S.room===code&&S.roomRef)return;disconnect(false);S.auth=firebase.auth();S.db=firebase.firestore();if(!S.auth.currentUser)return;S.room=code;S.roomRef=S.db.collection('pveRooms').doc(code);S.unsub=S.roomRef.collection('enemies').onSnapshot(s=>{S.enemies.clear();s.forEach(d=>{const data={id:d.id,...d.data()};S.enemies.set(d.id,data);applyRemoteEnemy(d.id,data)})});const snap=await S.roomRef.get();if(snap.exists&&snap.data()?.hostUid===S.auth.currentUser.uid){enemyRoots().forEach((e,i)=>publishEnemy(e,i))}}
+function disconnect(clear=true){S.unsub?.();S.unsub=null;S.roomRef=null;S.room='';S.enemies.clear();if(clear)S.ending=false}
+function scan(){connect();['damageEnemy','hitEnemy','applyEnemyDamage','enemyHit','damageBoss'].forEach(patchDamageFunction);patchEndFunction('showGameClear','victory');patchEndFunction('gameClear','victory');patchEndFunction('showResult','finished');patchEndFunction('gameOver','defeat');patchEndFunction('showGameOver','defeat');patchEndFunction('endGame','finished');inspectScreens()}
+window.addEventListener('shoo:enemy-hit',e=>{const d=e.detail||{};damageShared(d.id,d.damage)});window.addEventListener('shoo:enemy-spawn',e=>publishEnemy(e.detail?.enemy||e.detail));window.addEventListener('shoo:enemy-dead',e=>damageShared(e.detail?.id,Number.MAX_SAFE_INTEGER));
+window.ShooSharedEnemySync={damage:damageShared,publish:publishEnemy,finishMission,disconnect,get enemies(){return [...S.enemies.values()]}};
+setInterval(scan,700);scan();
+})();
