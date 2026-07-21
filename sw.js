@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v44";
+const CACHE_NAME = "shooking-ii-v45";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -18,6 +18,7 @@ const APP_SHELL = [
   "./hard-stages.js",
   "./hangar-fix.js",
   "./gacha-upgrade.js",
+  "./seasonal-gacha-fix.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -61,9 +62,9 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendScript(html, "hard-stages.js", 16);
     html = appendScript(html, "hangar-fix.js", 17);
 
-    // 古いガチャ強化スクリプトを残さず、必ず最新版を本体コードの後に読み込む。
     html = html.replace(/<script[^>]+src=["'][^"']*gacha-upgrade\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=6"></script></body>');
+    html = html.replace(/<script[^>]+src=["'][^"']*seasonal-gacha-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script><script src="./seasonal-gacha-fix.js?v=1"></script></body>');
   }
 
   const headers = new Headers(response.headers);
@@ -95,8 +96,7 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // ガチャ強化ファイルだけは常にネットワーク優先。古いガチャをキャッシュから出さない。
-  if (requestUrl.pathname.endsWith("/gacha-upgrade.js")) {
+  if (requestUrl.pathname.endsWith("/gacha-upgrade.js") || requestUrl.pathname.endsWith("/seasonal-gacha-fix.js")) {
     event.respondWith((async () => {
       try {
         const fresh = await fetch(new Request(event.request, {cache:"no-store"}));
