@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v43";
+const CACHE_NAME = "shooking-ii-v44";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -36,27 +36,40 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-async function patchHtml(response, isGame) {
+function appendScript(html, filename, version) {
+  if (html.includes(filename)) return html;
+  return html.replace("</body>", `<script src="./${filename}?v=${version}"></script></body>`);
+}
+
+async function patchHtml(response, routeLooksLikeGame) {
   let html = await response.text();
-  if (!html.includes("common-nav.js")) html = html.replace("</body>", '<script src="./common-nav.js?v=2"></script></body>');
+  const contentIsGame = html.includes("realGachaOverlay") || html.includes("function startRealGacha") || html.includes('id="game"');
+  const isGame = routeLooksLikeGame || contentIsGame;
+
+  html = appendScript(html, "common-nav.js", 2);
+
   if (isGame) {
-    if (!html.includes("ui-patch.js")) html = html.replace("</body>", '<script src="./ui-patch.js?v=6"></script></body>');
-    if (!html.includes("firebase-config.js")) html = html.replace("</body>", '<script src="./firebase-config.js?v=2"></script></body>');
-    if (!html.includes("google-login.js")) html = html.replace("</body>", '<script src="./google-login.js?v=10"></script></body>');
-    if (!html.includes("online-pve.js")) html = html.replace("</body>", '<script src="./online-pve.js?v=5"></script></body>');
-    if (!html.includes("anti-cheat.js")) html = html.replace("</body>", '<script src="./anti-cheat.js?v=1"></script></body>');
-    if (!html.includes("admin-mode.js")) html = html.replace("</body>", '<script src="./admin-mode.js?v=1"></script></body>');
-    if (!html.includes("online-team-fix.js")) html = html.replace("</body>", '<script src="./online-team-fix.js?v=2"></script></body>');
-    if (!html.includes("multiplayer-sync.js")) html = html.replace("</body>", '<script src="./multiplayer-sync.js?v=2"></script></body>');
-    if (!html.includes("shared-enemy-sync.js")) html = html.replace("</body>", '<script src="./shared-enemy-sync.js?v=1"></script></body>');
-    if (!html.includes("hard-stages.js")) html = html.replace("</body>", '<script src="./hard-stages.js?v=16"></script></body>');
-    if (!html.includes("hangar-fix.js")) html = html.replace("</body>", '<script src="./hangar-fix.js?v=17"></script></body>');
-    if (!html.includes("gacha-upgrade.js")) html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=5"></script></body>');
+    html = appendScript(html, "ui-patch.js", 6);
+    html = appendScript(html, "firebase-config.js", 2);
+    html = appendScript(html, "google-login.js", 10);
+    html = appendScript(html, "online-pve.js", 5);
+    html = appendScript(html, "anti-cheat.js", 1);
+    html = appendScript(html, "admin-mode.js", 1);
+    html = appendScript(html, "online-team-fix.js", 2);
+    html = appendScript(html, "multiplayer-sync.js", 2);
+    html = appendScript(html, "shared-enemy-sync.js", 1);
+    html = appendScript(html, "hard-stages.js", 16);
+    html = appendScript(html, "hangar-fix.js", 17);
+
+    // 古いガチャ強化スクリプトを残さず、必ず最新版を本体コードの後に読み込む。
+    html = html.replace(/<script[^>]+src=["'][^"']*gacha-upgrade\.js[^"']*["'][^>]*><\/script>/gi, "");
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=6"></script></body>');
   }
+
   const headers = new Headers(response.headers);
   headers.set("content-type", "text/html; charset=utf-8");
   headers.delete("content-length");
-  headers.set("cache-control", "no-cache");
+  headers.set("cache-control", "no-store, no-cache, must-revalidate");
   return new Response(html, {status:response.status,statusText:response.statusText,headers});
 }
 
@@ -64,22 +77,41 @@ self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const requestUrl = new URL(event.request.url);
   if (requestUrl.protocol !== "http:" && requestUrl.protocol !== "https:") return;
+
   if (event.request.mode === "navigate") {
     event.respondWith((async () => {
       const path = requestUrl.pathname.replace(/\/+$/, "") || "/";
       const isRoot = requestUrl.origin === self.location.origin && path === "/";
-      const isGame = path === "/game" || path.endsWith("/index.html") || requestUrl.searchParams.get("play") === "1";
+      const routeLooksLikeGame = path === "/game" || path.endsWith("/index.html") || requestUrl.searchParams.get("play") === "1";
       try {
-        const request = isRoot ? new Request("./landing.html", {cache:"no-store"}) : event.request;
-        return await patchHtml(await fetch(request), isGame);
+        const request = isRoot ? new Request("./landing.html", {cache:"no-store"}) : new Request(event.request, {cache:"no-store"});
+        return await patchHtml(await fetch(request), routeLooksLikeGame);
       } catch {
         const fallbackPath = requestUrl.pathname.startsWith("/") ? `.${requestUrl.pathname}` : `./${requestUrl.pathname}`;
-        const fallback = await caches.match(isGame ? "./index.html" : isRoot ? "./landing.html" : fallbackPath);
-        return fallback ? patchHtml(fallback, isGame) : (await caches.match("./landing.html")) || Response.error();
+        const fallback = await caches.match(routeLooksLikeGame ? "./index.html" : isRoot ? "./landing.html" : fallbackPath);
+        return fallback ? patchHtml(fallback, routeLooksLikeGame) : (await caches.match("./landing.html")) || Response.error();
       }
     })());
     return;
   }
+
+  // ガチャ強化ファイルだけは常にネットワーク優先。古いガチャをキャッシュから出さない。
+  if (requestUrl.pathname.endsWith("/gacha-upgrade.js")) {
+    event.respondWith((async () => {
+      try {
+        const fresh = await fetch(new Request(event.request, {cache:"no-store"}));
+        if (fresh && fresh.ok) {
+          const copy = fresh.clone();
+          event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(()=>{}));
+        }
+        return fresh;
+      } catch {
+        return (await caches.match(event.request)) || Response.error();
+      }
+    })());
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       if (!response || !response.ok) return response;
