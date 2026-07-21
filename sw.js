@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v46";
+const CACHE_NAME = "shooking-ii-v47";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -19,6 +19,7 @@ const APP_SHELL = [
   "./hangar-fix.js",
   "./gacha-upgrade.js",
   "./seasonal-gacha-fix.js",
+  "./gmail-seat-invite.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -71,9 +72,10 @@ async function patchHtml(response, routeLooksLikeGame) {
 
     html = html.replace(/<script[^>]+src=["'][^"']*gacha-upgrade\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*seasonal-gacha-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
+    html = html.replace(/<script[^>]+src=["'][^"']*gmail-seat-invite\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(
       "</body>",
-      '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=2"></script>\n</body>'
+      '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=2"></script>\n<script src="./gmail-seat-invite.js?v=1"></script>\n</body>'
     );
   }
 
@@ -106,7 +108,11 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  if (requestUrl.pathname.endsWith("/gacha-upgrade.js") || requestUrl.pathname.endsWith("/seasonal-gacha-fix.js")) {
+  if (
+    requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
+    requestUrl.pathname.endsWith("/seasonal-gacha-fix.js") ||
+    requestUrl.pathname.endsWith("/gmail-seat-invite.js")
+  ) {
     event.respondWith((async () => {
       try {
         const fresh = await fetch(new Request(event.request, {cache:"no-store"}));
