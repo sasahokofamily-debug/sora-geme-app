@@ -1,10 +1,10 @@
 (()=>{
 'use strict';
-if(window.ShooGachaUpgrade)return;
 
 const $=id=>document.getElementById(id);
 let audioCtx=null;
 let revealTimer=null;
+let bindTimer=null;
 
 function getAudio(){
   const Ctx=window.AudioContext||window.webkitAudioContext;
@@ -30,7 +30,7 @@ function tone(freq,start,duration,type='sine',gain=.06,endFreq=null){
   osc.stop(ctx.currentTime+start+duration+.03);
 }
 
-function noise(start,duration,gain=.035){
+function noise(start,duration,gain=.035,frequency=900){
   const ctx=getAudio();
   if(!ctx)return;
   const length=Math.max(1,Math.floor(ctx.sampleRate*duration));
@@ -40,56 +40,64 @@ function noise(start,duration,gain=.035){
   const src=ctx.createBufferSource();
   const filter=ctx.createBiquadFilter();
   const amp=ctx.createGain();
-  filter.type='bandpass';filter.frequency.value=900;filter.Q.value=.8;
+  filter.type='bandpass';filter.frequency.value=frequency;filter.Q.value=.8;
   amp.gain.value=gain;
   src.buffer=buffer;src.connect(filter).connect(amp).connect(ctx.destination);
   src.start(ctx.currentTime+start);
 }
 
 function playMachineSound(rare){
-  const base=rare?180:140;
-  tone(base,0,.24,'sawtooth',.045,base*1.5);
-  tone(base*1.35,.42,.20,'square',.035,base*1.9);
-  tone(base*1.7,.82,.20,'square',.04,base*2.4);
-  tone(base*2.1,1.20,.24,'sawtooth',.045,base*3.2);
-  noise(1.45,.35,.025);
-  tone(rare?110:85,1.78,.42,'sine',.11,45);
+  const base=rare?190:145;
+  tone(70,0,.55,'sine',.1,42);
+  for(let i=0;i<8;i++){
+    const t=.12+i*.18;
+    tone(base+i*26,t,.09,i%2?'square':'sawtooth',.035,base+i*36);
+    noise(t,.055,.018,rare?1300:1000);
+  }
+  tone(rare?520:410,1.62,.22,'triangle',.065,rare?1040:820);
+  noise(1.82,.22,.08,480);
+  tone(rare?105:82,1.84,.48,'sine',.13,38);
 }
 
 function playRevealSound(rare,legend){
-  noise(0,.18,.07);
-  tone(rare?440:330,0,.18,'sawtooth',.07,rare?880:660);
-  const notes=legend?[523,659,784,1047,1319]:rare?[440,554,659,880]:[392,494,587,784];
-  notes.forEach((n,i)=>tone(n,.12+i*.11,.32,'triangle',rare?.07:.055,n*1.01));
-  if(rare){tone(110,.08,.75,'sine',.09,55);tone(1760,.5,.45,'sine',.045,2200)}
+  noise(0,.22,.09,1400);
+  tone(95,0,.5,'sine',.12,42);
+  const notes=legend?[523,659,784,1047,1319,1568]:rare?[440,554,659,880,1109]:[330,392,494,659];
+  notes.forEach((n,i)=>tone(n,.08+i*.105,.34,i%2?'triangle':'sine',legend?.085:rare?.07:.055,n*1.015));
+  if(rare||legend){
+    tone(1760,.48,.55,'sine',.05,2500);
+    noise(.58,.34,legend?.08:.045,2200);
+  }
 }
 
 function installStyle(){
-  if($('gachaUpgradeStyle'))return;
-  const style=document.createElement('style');
+  let style=$('gachaUpgradeStyle');
+  if(style)style.remove();
+  style=document.createElement('style');
   style.id='gachaUpgradeStyle';
   style.textContent=`
-  #realGachaOverlay .capsuleResultStage{display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(520px,92vw);min-height:430px;position:relative;animation:gachaStageIn .4s ease-out both}
-  #realGachaOverlay .capsuleReveal{position:relative;width:min(360px,82vw);height:250px;filter:drop-shadow(0 0 26px rgba(56,189,248,.65));animation:capsuleLand .65s cubic-bezier(.2,1.4,.35,1) both}
-  #realGachaOverlay .capsuleReveal.gold{filter:drop-shadow(0 0 34px rgba(250,204,21,.82))}
-  #realGachaOverlay .capsuleHalf{position:absolute;left:50%;width:300px;max-width:78vw;height:112px;transform:translateX(-50%);border:4px solid rgba(255,255,255,.72);background:linear-gradient(160deg,#38bdf8,#1d4ed8 62%,#0f172a);box-shadow:inset 0 0 22px rgba(255,255,255,.28);z-index:2}
-  #realGachaOverlay .capsuleReveal.gold .capsuleHalf{background:linear-gradient(160deg,#fff7ae,#f59e0b 58%,#78350f)}
-  #realGachaOverlay .capsuleTop{top:15px;border-radius:150px 150px 22px 22px;animation:capsuleTopOpen .72s .28s ease-out forwards;transform-origin:50% 100%}
-  #realGachaOverlay .capsuleBottom{bottom:15px;border-radius:22px 22px 150px 150px;animation:capsuleBottomOpen .72s .28s ease-out forwards;transform-origin:50% 0}
-  #realGachaOverlay .capsuleCore{position:absolute;inset:55px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:28px;background:radial-gradient(circle,rgba(255,255,255,.98),rgba(125,249,255,.9) 42%,rgba(37,99,235,.78));color:#06111f;padding:18px;box-sizing:border-box;z-index:5;opacity:0;transform:scale(.5);animation:coreReveal .5s .72s cubic-bezier(.2,1.5,.35,1) forwards;box-shadow:0 0 42px rgba(125,249,255,.95)}
-  #realGachaOverlay .capsuleReveal.gold .capsuleCore{background:radial-gradient(circle,#fff,#fde68a 42%,#f59e0b);box-shadow:0 0 55px rgba(250,204,21,.95)}
-  #realGachaOverlay .capsuleRarity{font-size:13px;font-weight:1000;letter-spacing:.16em;margin-bottom:6px}
-  #realGachaOverlay .capsuleRewardName{font-size:clamp(21px,6vw,31px);font-weight:1000;line-height:1.15}
-  #realGachaOverlay .capsuleRewardDesc{font-size:14px;font-weight:800;margin-top:8px}
-  #realGachaOverlay .capsuleClose{width:min(300px,76vw);margin-top:14px}
-  #realGachaOverlay .capsuleParticles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-  #realGachaOverlay .capsuleParticles i{position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:white;box-shadow:0 0 12px currentColor;animation:particleBurst 1.2s ease-out both}
-  @keyframes gachaStageIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
-  @keyframes capsuleLand{0%{opacity:0;transform:translateY(-180px) rotate(-16deg) scale(.65)}70%{opacity:1;transform:translateY(12px) rotate(3deg) scale(1.05)}100%{transform:translateY(0) rotate(0) scale(1)}}
-  @keyframes capsuleTopOpen{to{transform:translateX(-50%) translateY(-55px) rotate(-8deg)}}
-  @keyframes capsuleBottomOpen{to{transform:translateX(-50%) translateY(48px) rotate(7deg)}}
+  #realGachaOverlay{overflow:hidden}
+  #realGachaOverlay .capsuleResultStage{display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(540px,94vw);min-height:440px;position:relative;animation:gachaStageIn .4s ease-out both}
+  #realGachaOverlay .capsuleReveal{position:relative;width:min(380px,86vw);height:270px;filter:drop-shadow(0 0 30px rgba(56,189,248,.78));animation:capsuleLand .7s cubic-bezier(.2,1.4,.35,1) both}
+  #realGachaOverlay .capsuleReveal.gold{filter:drop-shadow(0 0 42px rgba(250,204,21,.92))}
+  #realGachaOverlay .capsuleHalf{position:absolute;left:50%;width:320px;max-width:82vw;height:120px;transform:translateX(-50%);border:4px solid rgba(255,255,255,.82);background:linear-gradient(160deg,#67e8f9,#2563eb 58%,#0f172a);box-shadow:inset 0 0 28px rgba(255,255,255,.34);z-index:2}
+  #realGachaOverlay .capsuleReveal.gold .capsuleHalf{background:linear-gradient(160deg,#fffbd1,#facc15 50%,#92400e)}
+  #realGachaOverlay .capsuleTop{top:15px;border-radius:160px 160px 24px 24px;animation:capsuleTopOpen .78s .3s ease-out forwards;transform-origin:50% 100%}
+  #realGachaOverlay .capsuleBottom{bottom:15px;border-radius:24px 24px 160px 160px;animation:capsuleBottomOpen .78s .3s ease-out forwards;transform-origin:50% 0}
+  #realGachaOverlay .capsuleCore{position:absolute;inset:58px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:30px;background:radial-gradient(circle,#fff 0,#a5f3fc 38%,#3b82f6 72%);color:#06111f;padding:18px;box-sizing:border-box;z-index:5;opacity:0;transform:scale(.45);animation:coreReveal .55s .78s cubic-bezier(.2,1.5,.35,1) forwards;box-shadow:0 0 50px rgba(125,249,255,.98)}
+  #realGachaOverlay .capsuleReveal.gold .capsuleCore{background:radial-gradient(circle,#fff 0,#fde68a 42%,#f59e0b 76%);box-shadow:0 0 70px rgba(250,204,21,1)}
+  #realGachaOverlay .capsuleRarity{font-size:13px;font-weight:1000;letter-spacing:.18em;margin-bottom:7px}
+  #realGachaOverlay .capsuleRewardName{font-size:clamp(22px,6vw,33px);font-weight:1000;line-height:1.1}
+  #realGachaOverlay .capsuleRewardDesc{font-size:14px;font-weight:900;margin-top:9px}
+  #realGachaOverlay .capsuleClose{width:min(320px,80vw);margin-top:18px}
+  #realGachaOverlay .capsuleParticles{position:absolute;inset:0;pointer-events:none;overflow:visible}
+  #realGachaOverlay .capsuleParticles i{position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:white;box-shadow:0 0 14px currentColor;animation:particleBurst 1.25s ease-out both}
+  @keyframes gachaStageIn{from{opacity:0;transform:scale(.84)}to{opacity:1;transform:scale(1)}}
+  @keyframes capsuleLand{0%{opacity:0;transform:translateY(-220px) rotate(-18deg) scale(.58)}68%{opacity:1;transform:translateY(14px) rotate(4deg) scale(1.07)}100%{transform:translateY(0) rotate(0) scale(1)}}
+  @keyframes capsuleTopOpen{to{transform:translateX(-50%) translateY(-64px) rotate(-10deg)}}
+  @keyframes capsuleBottomOpen{to{transform:translateX(-50%) translateY(56px) rotate(8deg)}}
   @keyframes coreReveal{to{opacity:1;transform:scale(1)}}
-  @keyframes particleBurst{from{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateX(0) scale(1)}to{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)) scale(.1)}}
+  @keyframes particleBurst{from{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateX(0) scale(1)}to{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)) scale(.05)}}
   `;
   document.head.appendChild(style);
 }
@@ -111,6 +119,7 @@ function reward(rare){
 
 function showCapsuleResult(rare,name,desc,legend){
   const overlay=$('realGachaOverlay');
+  if(!overlay)return;
   const wrap=$('realGachaMachineWrap');
   const old=$('realGachaResult');
   if(wrap)wrap.style.display='none';
@@ -118,11 +127,11 @@ function showCapsuleResult(rare,name,desc,legend){
   overlay.querySelector('.capsuleResultStage')?.remove();
   const stage=document.createElement('div');
   stage.className='capsuleResultStage';
-  const particles=Array.from({length:18},(_,i)=>`<i style="--a:${i*20}deg;--d:${90+Math.random()*100}px;animation-delay:${.55+Math.random()*.25}s"></i>`).join('');
+  const particles=Array.from({length:legend?34:rare?26:20},(_,i)=>`<i style="--a:${i*(360/(legend?34:rare?26:20))}deg;--d:${100+Math.random()*135}px;animation-delay:${.56+Math.random()*.28}s"></i>`).join('');
   stage.innerHTML=`<div class="capsuleReveal ${rare?'gold':''}"><div class="capsuleParticles">${particles}</div><div class="capsuleHalf capsuleTop"></div><div class="capsuleHalf capsuleBottom"></div><div class="capsuleCore"><div class="capsuleRarity">${legend?'LEGENDARY':rare?'GOLD RARE':'ITEM GET'}</div><div class="capsuleRewardName"></div><div class="capsuleRewardDesc"></div></div></div><button type="button" class="capsuleClose">受け取る</button>`;
   stage.querySelector('.capsuleRewardName').textContent=name;
   stage.querySelector('.capsuleRewardDesc').textContent=desc;
-  stage.querySelector('.capsuleClose').addEventListener('click',()=>window.closeRealGacha?.());
+  stage.querySelector('.capsuleClose').addEventListener('click',close);
   overlay.appendChild(stage);
   playRevealSound(rare,legend);
 }
@@ -145,7 +154,7 @@ function start(rareFlag){
   overlay.style.display='flex';wrap.style.display='block';if(old)old.style.display='none';
   if(machine)machine.className=rare?'realMachineBody gold':'realMachineBody';
   if(capsule)capsule.className=rare?'realFallingCapsule gold':'realFallingCapsule';
-  if(label)label.textContent=rare?'GOLD CAPSULE // SYSTEM READY':'CAPSULE DROP // SYSTEM READY';
+  if(label)label.textContent=rare?'GOLD CAPSULE // CHARGE MAX':'CAPSULE DROP // SYSTEM START';
   playMachineSound(rare);
   revealTimer=setTimeout(()=>{
     const [name,desc,legend]=reward(rare);
@@ -153,20 +162,39 @@ function start(rareFlag){
     if(typeof checkAchievements==='function')checkAchievements();
     const out=$('gachaResult');if(out)out.textContent=`${name}：${desc}`;
     showCapsuleResult(rare,name,desc,legend);
-  },2350);
+  },2250);
 }
 
-const oldClose=window.closeRealGacha;
-window.startRealGacha=start;
-window.normalGacha=()=>start(false);
-window.rareGacha=()=>start(true);
-window.closeRealGacha=()=>{
+function close(){
   clearTimeout(revealTimer);
-  $('realGachaOverlay')?.querySelector('.capsuleResultStage')?.remove();
-  if(typeof oldClose==='function')oldClose();
-  else if($('realGachaOverlay'))$('realGachaOverlay').style.display='none';
+  const overlay=$('realGachaOverlay');
+  overlay?.querySelector('.capsuleResultStage')?.remove();
+  if(overlay)overlay.style.display='none';
   if(typeof updateStats==='function')updateStats();
-};
-window.ShooGachaUpgrade={start};
+}
+
+function bindButtons(){
+  window.startRealGacha=start;
+  window.normalGacha=()=>start(false);
+  window.rareGacha=()=>start(true);
+  window.closeRealGacha=close;
+  document.querySelectorAll('button[onclick]').forEach(button=>{
+    const code=button.getAttribute('onclick')||'';
+    if(/\bnormalGacha\s*\(/.test(code)){
+      button.removeAttribute('onclick');
+      if(!button.dataset.gachaUpgradeBound){button.addEventListener('click',()=>start(false));button.dataset.gachaUpgradeBound='1'}
+    }else if(/\brareGacha\s*\(/.test(code)){
+      button.removeAttribute('onclick');
+      if(!button.dataset.gachaUpgradeBound){button.addEventListener('click',()=>start(true));button.dataset.gachaUpgradeBound='1'}
+    }
+  });
+}
+
+window.ShooGachaUpgrade={start,close,bindButtons,version:'2'};
 installStyle();
+bindButtons();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindButtons,{once:true});
+clearInterval(bindTimer);
+bindTimer=setInterval(bindButtons,1000);
+setTimeout(()=>clearInterval(bindTimer),15000);
 })();
