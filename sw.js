@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v45";
+const CACHE_NAME = "shooking-ii-v46";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -42,8 +42,15 @@ function appendScript(html, filename, version) {
   return html.replace("</body>", `<script src="./${filename}?v=${version}"></script></body>`);
 }
 
+function addModernMobileMeta(html) {
+  if (html.includes('name="mobile-web-app-capable"') || html.includes("name='mobile-web-app-capable'")) return html;
+  return html.replace("</head>", '<meta name="mobile-web-app-capable" content="yes">\n</head>');
+}
+
 async function patchHtml(response, routeLooksLikeGame) {
   let html = await response.text();
+  html = addModernMobileMeta(html);
+
   const contentIsGame = html.includes("realGachaOverlay") || html.includes("function startRealGacha") || html.includes('id="game"');
   const isGame = routeLooksLikeGame || contentIsGame;
 
@@ -64,7 +71,10 @@ async function patchHtml(response, routeLooksLikeGame) {
 
     html = html.replace(/<script[^>]+src=["'][^"']*gacha-upgrade\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*seasonal-gacha-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script><script src="./seasonal-gacha-fix.js?v=1"></script></body>');
+    html = html.replace(
+      "</body>",
+      '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=2"></script>\n</body>'
+    );
   }
 
   const headers = new Headers(response.headers);
