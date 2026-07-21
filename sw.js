@@ -73,7 +73,8 @@ self.addEventListener("fetch", event => {
         const request = isRoot ? new Request("./landing.html", {cache:"no-store"}) : event.request;
         return await patchHtml(await fetch(request), isGame);
       } catch {
-        const fallback = await caches.match(isGame ? "./index.html" : isRoot ? "./landing.html" : url.pathname.replace(/^\/,/,"./"));
+        const fallbackPath = url.pathname.startsWith("/") ? `.${url.pathname}` : `./${url.pathname}`;
+        const fallback = await caches.match(isGame ? "./index.html" : isRoot ? "./landing.html" : fallbackPath);
         return fallback ? patchHtml(fallback, isGame) : (await caches.match("./landing.html")) || Response.error();
       }
     })());
