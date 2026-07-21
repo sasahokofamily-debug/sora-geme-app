@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v29";
+const CACHE_NAME = "shooking-ii-v30";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -11,6 +11,7 @@ const APP_SHELL = [
   "./firebase-error-patch.js",
   "./firebase-login-fallback.js",
   "./firebase-login-rescue.js",
+  "./online-pve.js",
   "./hard-stages.js",
   "./hangar-fix.js",
   "./manifest.webmanifest",
@@ -40,6 +41,7 @@ async function patchHtml(response, isGame) {
     if (!html.includes("firebase-error-patch.js")) html = html.replace("</body>", '<script src="./firebase-error-patch.js?v=9"></script></body>');
     if (!html.includes("firebase-login-fallback.js")) html = html.replace("</body>", '<script src="./firebase-login-fallback.js?v=9"></script></body>');
     if (!html.includes("firebase-login-rescue.js")) html = html.replace("</body>", '<script src="./firebase-login-rescue.js?v=9"></script></body>');
+    if (!html.includes("online-pve.js")) html = html.replace("</body>", '<script src="./online-pve.js?v=1"></script></body>');
     if (!html.includes("hard-stages.js")) html = html.replace("</body>", '<script src="./hard-stages.js?v=16"></script></body>');
     if (!html.includes("hangar-fix.js")) html = html.replace("</body>", '<script src="./hangar-fix.js?v=17"></script></body>');
   }
