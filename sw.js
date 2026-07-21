@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v37";
+const CACHE_NAME = "shooking-ii-v38";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -42,7 +42,7 @@ async function patchHtml(response, isGame) {
     if (!html.includes("ui-patch.js")) html = html.replace("</body>", '<script src="./ui-patch.js?v=6"></script></body>');
     if (!html.includes("firebase-config.js")) html = html.replace("</body>", '<script src="./firebase-config.js?v=2"></script></body>');
     if (!html.includes("google-login.js")) html = html.replace("</body>", '<script src="./google-login.js?v=10"></script></body>');
-    if (!html.includes("online-pve.js")) html = html.replace("</body>", '<script src="./online-pve.js?v=4"></script></body>');
+    if (!html.includes("online-pve.js")) html = html.replace("</body>", '<script src="./online-pve.js?v=5"></script></body>');
     if (!html.includes("anti-cheat.js")) html = html.replace("</body>", '<script src="./anti-cheat.js?v=1"></script></body>');
     if (!html.includes("admin-mode.js")) html = html.replace("</body>", '<script src="./admin-mode.js?v=1"></script></body>');
     if (!html.includes("online-team-fix.js")) html = html.replace("</body>", '<script src="./online-team-fix.js?v=2"></script></body>');
