@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v39";
+const CACHE_NAME = "shooking-ii-v40";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -51,7 +51,7 @@ async function patchHtml(response, isGame) {
     if (!html.includes("shared-enemy-sync.js")) html = html.replace("</body>", '<script src="./shared-enemy-sync.js?v=1"></script></body>');
     if (!html.includes("hard-stages.js")) html = html.replace("</body>", '<script src="./hard-stages.js?v=16"></script></body>');
     if (!html.includes("hangar-fix.js")) html = html.replace("</body>", '<script src="./hangar-fix.js?v=17"></script></body>');
-    if (!html.includes("gacha-upgrade.js")) html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=1"></script></body>');
+    if (!html.includes("gacha-upgrade.js")) html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=2"></script></body>');
   }
   const headers = new Headers(response.headers);
   headers.set("content-type", "text/html; charset=utf-8");
@@ -68,8 +68,9 @@ self.addEventListener("fetch", event => {
 
   if (event.request.mode === "navigate") {
     event.respondWith((async () => {
-      const isRoot = requestUrl.origin === self.location.origin && requestUrl.pathname === "/";
-      const isGame = requestUrl.pathname === "/game" || requestUrl.pathname.endsWith("/index.html");
+      const path = requestUrl.pathname.replace(/\/+$/, "") || "/";
+      const isRoot = requestUrl.origin === self.location.origin && path === "/";
+      const isGame = path === "/game" || path.endsWith("/index.html") || requestUrl.searchParams.get("play") === "1";
       try {
         const request = isRoot ? new Request("./landing.html", {cache:"no-store"}) : event.request;
         return await patchHtml(await fetch(request), isGame);
