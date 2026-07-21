@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v34";
+const CACHE_NAME = "shooking-ii-v35";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -16,6 +16,7 @@ const APP_SHELL = [
   "./anti-cheat.js",
   "./online-team-fix.js",
   "./multiplayer-sync.js",
+  "./shared-enemy-sync.js",
   "./hard-stages.js",
   "./hangar-fix.js",
   "./manifest.webmanifest",
@@ -46,10 +47,11 @@ async function patchHtml(response, isGame) {
     if (!html.includes("firebase-error-patch.js")) html = html.replace("</body>", '<script src="./firebase-error-patch.js?v=9"></script></body>');
     if (!html.includes("firebase-login-fallback.js")) html = html.replace("</body>", '<script src="./firebase-login-fallback.js?v=9"></script></body>');
     if (!html.includes("firebase-login-rescue.js")) html = html.replace("</body>", '<script src="./firebase-login-rescue.js?v=9"></script></body>');
-    if (!html.includes("online-pve.js")) html = html.replace("</body>", '<script src="./online-pve.js?v=3"></script></body>');
+    if (!html.includes("online-pve.js")) html = html.replace("</body>", '<script src="./online-pve.js?v=4"></script></body>');
     if (!html.includes("anti-cheat.js")) html = html.replace("</body>", '<script src="./anti-cheat.js?v=1"></script></body>');
     if (!html.includes("online-team-fix.js")) html = html.replace("</body>", '<script src="./online-team-fix.js?v=1"></script></body>');
-    if (!html.includes("multiplayer-sync.js")) html = html.replace("</body>", '<script src="./multiplayer-sync.js?v=1"></script></body>');
+    if (!html.includes("multiplayer-sync.js")) html = html.replace("</body>", '<script src="./multiplayer-sync.js?v=2"></script></body>');
+    if (!html.includes("shared-enemy-sync.js")) html = html.replace("</body>", '<script src="./shared-enemy-sync.js?v=1"></script></body>');
     if (!html.includes("hard-stages.js")) html = html.replace("</body>", '<script src="./hard-stages.js?v=16"></script></body>');
     if (!html.includes("hangar-fix.js")) html = html.replace("</body>", '<script src="./hangar-fix.js?v=17"></script></body>');
   }
@@ -71,7 +73,7 @@ self.addEventListener("fetch", event => {
         const request = isRoot ? new Request("./landing.html", {cache:"no-store"}) : event.request;
         return await patchHtml(await fetch(request), isGame);
       } catch {
-        const fallback = await caches.match(isGame ? "./index.html" : isRoot ? "./landing.html" : url.pathname.replace(/^\//,"./"));
+        const fallback = await caches.match(isGame ? "./index.html" : isRoot ? "./landing.html" : url.pathname.replace(/^\/,/,"./"));
         return fallback ? patchHtml(fallback, isGame) : (await caches.match("./landing.html")) || Response.error();
       }
     })());
