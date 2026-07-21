@@ -2,199 +2,36 @@
 'use strict';
 
 const $=id=>document.getElementById(id);
-let audioCtx=null;
-let revealTimer=null;
-let bindTimer=null;
+let audioCtx=null,revealTimer=null,bindTimer=null;
 
-function getAudio(){
-  const Ctx=window.AudioContext||window.webkitAudioContext;
-  if(!Ctx)return null;
-  if(!audioCtx)audioCtx=new Ctx();
-  if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
-  return audioCtx;
-}
+function getAudio(){const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;if(!audioCtx)audioCtx=new Ctx();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}
+function tone(freq,start,duration,type='sine',gain=.06,endFreq=null){const ctx=getAudio();if(!ctx)return;const osc=ctx.createOscillator(),amp=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(freq,ctx.currentTime+start);if(endFreq)osc.frequency.exponentialRampToValueAtTime(Math.max(20,endFreq),ctx.currentTime+start+duration);amp.gain.setValueAtTime(.0001,ctx.currentTime+start);amp.gain.exponentialRampToValueAtTime(gain,ctx.currentTime+start+.015);amp.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+start+duration);osc.connect(amp).connect(ctx.destination);osc.start(ctx.currentTime+start);osc.stop(ctx.currentTime+start+duration+.03)}
+function noise(start,duration,gain=.035,frequency=900){const ctx=getAudio();if(!ctx)return;const length=Math.max(1,Math.floor(ctx.sampleRate*duration)),buffer=ctx.createBuffer(1,length,ctx.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*(1-i/length);const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),amp=ctx.createGain();filter.type='bandpass';filter.frequency.value=frequency;filter.Q.value=.8;amp.gain.value=gain;src.buffer=buffer;src.connect(filter).connect(amp).connect(ctx.destination);src.start(ctx.currentTime+start)}
 
-function tone(freq,start,duration,type='sine',gain=.06,endFreq=null){
-  const ctx=getAudio();
-  if(!ctx)return;
-  const osc=ctx.createOscillator();
-  const amp=ctx.createGain();
-  osc.type=type;
-  osc.frequency.setValueAtTime(freq,ctx.currentTime+start);
-  if(endFreq)osc.frequency.exponentialRampToValueAtTime(Math.max(20,endFreq),ctx.currentTime+start+duration);
-  amp.gain.setValueAtTime(.0001,ctx.currentTime+start);
-  amp.gain.exponentialRampToValueAtTime(gain,ctx.currentTime+start+.015);
-  amp.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+start+duration);
-  osc.connect(amp).connect(ctx.destination);
-  osc.start(ctx.currentTime+start);
-  osc.stop(ctx.currentTime+start+duration+.03);
-}
+function playMachineSound(kind){const seasonal=kind==='summer'||kind==='winter',rare=kind==='rare';if(kind==='summer'){noise(0,.7,.028,2500);[540,680,820,1040].forEach((n,i)=>tone(n,.15+i*.28,.22,'sine',.05,n*1.18));tone(95,1.45,.45,'sine',.1,48);return}if(kind==='winter'){tone(85,0,.8,'sine',.1,120);noise(.15,.9,.02,420);[220,277,330,440].forEach((n,i)=>tone(n,.35+i*.28,.3,'triangle',.055,n*1.04));tone(72,1.55,.5,'sine',.12,45);return}const base=rare?190:145;tone(70,0,.55,'sine',.1,42);for(let i=0;i<8;i++){const t=.12+i*.18;tone(base+i*26,t,.09,i%2?'square':'sawtooth',.035,base+i*36);noise(t,.055,.018,rare?1300:1000)}tone(rare?520:410,1.62,.22,'triangle',.065,rare?1040:820);noise(1.82,.22,.08,480);tone(rare?105:82,1.84,.48,'sine',.13,38)}
+function playRevealSound(kind,legend){const rare=kind!=='normal';noise(0,.22,.09,kind==='summer'?2600:kind==='winter'?650:1400);tone(kind==='winter'?75:95,0,.5,'sine',.12,42);const notes=legend?[523,659,784,1047,1319,1568]:kind==='summer'?[659,784,988,1319,1568]:kind==='winter'?[220,277,330,440,554]:rare?[440,554,659,880,1109]:[330,392,494,659];notes.forEach((n,i)=>tone(n,.08+i*.105,.34,i%2?'triangle':'sine',legend?.085:rare?.07:.055,n*1.015));if(rare||legend){tone(kind==='winter'?880:1760,.48,.55,'sine',.05,kind==='winter'?1320:2500);noise(.58,.34,legend?.08:.045,kind==='summer'?3000:kind==='winter'?900:2200)}}
 
-function noise(start,duration,gain=.035,frequency=900){
-  const ctx=getAudio();
-  if(!ctx)return;
-  const length=Math.max(1,Math.floor(ctx.sampleRate*duration));
-  const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
-  const data=buffer.getChannelData(0);
-  for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*(1-i/length);
-  const src=ctx.createBufferSource();
-  const filter=ctx.createBiquadFilter();
-  const amp=ctx.createGain();
-  filter.type='bandpass';filter.frequency.value=frequency;filter.Q.value=.8;
-  amp.gain.value=gain;
-  src.buffer=buffer;src.connect(filter).connect(amp).connect(ctx.destination);
-  src.start(ctx.currentTime+start);
-}
+function month(){return new Date().getMonth()+1}
+function activeSeason(kind){const m=month();return kind==='summer'?(m>=6&&m<=8):(m===12||m<=2)}
+function rememberItem(id,name){const key='shooking2_limited_items';let items=[];try{items=JSON.parse(localStorage.getItem(key)||'[]')}catch{}if(!items.some(x=>x.id===id))items.push({id,name,obtainedAt:new Date().toISOString()});localStorage.setItem(key,JSON.stringify(items))}
+function boost(prop,amount){if(typeof player==='undefined')return;player[prop]=(Number(player[prop])||0)+amount}
 
-function playMachineSound(rare){
-  const base=rare?190:145;
-  tone(70,0,.55,'sine',.1,42);
-  for(let i=0;i<8;i++){
-    const t=.12+i*.18;
-    tone(base+i*26,t,.09,i%2?'square':'sawtooth',.035,base+i*36);
-    noise(t,.055,.018,rare?1300:1000);
-  }
-  tone(rare?520:410,1.62,.22,'triangle',.065,rare?1040:820);
-  noise(1.82,.22,.08,480);
-  tone(rare?105:82,1.84,.48,'sine',.13,38);
-}
+function installStyle(){let style=$('gachaUpgradeStyle');if(style)style.remove();style=document.createElement('style');style.id='gachaUpgradeStyle';style.textContent=`
+#realGachaOverlay{overflow:hidden}.seasonGachaPanel{margin:14px 0;padding:14px;border:1px solid #38bdf8;border-radius:16px;background:rgba(2,20,40,.82)}.seasonGachaTitle{font-weight:1000;font-size:18px}.seasonGachaGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.seasonGachaButton{min-height:70px}.seasonGachaButton.summer{background:linear-gradient(135deg,#0891b2,#2563eb)}.seasonGachaButton.winter{background:linear-gradient(135deg,#ea580c,#991b1b)}.seasonGachaButton.locked{filter:grayscale(.7);opacity:.65}.seasonGachaNote{font-size:12px;opacity:.82;margin-top:8px}
+#realGachaOverlay .capsuleResultStage{display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(540px,94vw);min-height:440px;position:relative;animation:gachaStageIn .4s ease-out both}#realGachaOverlay .capsuleReveal{position:relative;width:min(380px,86vw);height:270px;filter:drop-shadow(0 0 30px rgba(56,189,248,.78));animation:capsuleLand .7s cubic-bezier(.2,1.4,.35,1) both}#realGachaOverlay .capsuleReveal.gold{filter:drop-shadow(0 0 42px rgba(250,204,21,.92))}#realGachaOverlay .capsuleReveal.summer{filter:drop-shadow(0 0 48px rgba(103,232,249,1))}#realGachaOverlay .capsuleReveal.winter{filter:drop-shadow(0 0 48px rgba(251,146,60,1))}#realGachaOverlay .capsuleHalf{position:absolute;left:50%;width:320px;max-width:82vw;height:120px;transform:translateX(-50%);border:4px solid rgba(255,255,255,.82);background:linear-gradient(160deg,#67e8f9,#2563eb 58%,#0f172a);box-shadow:inset 0 0 28px rgba(255,255,255,.34);z-index:2}#realGachaOverlay .capsuleReveal.gold .capsuleHalf{background:linear-gradient(160deg,#fffbd1,#facc15 50%,#92400e)}#realGachaOverlay .capsuleReveal.summer .capsuleHalf{background:linear-gradient(160deg,#ecfeff,#22d3ee 48%,#1d4ed8)}#realGachaOverlay .capsuleReveal.winter .capsuleHalf{background:linear-gradient(160deg,#fff7ed,#fb923c 48%,#7f1d1d)}#realGachaOverlay .capsuleTop{top:15px;border-radius:160px 160px 24px 24px;animation:capsuleTopOpen .78s .3s ease-out forwards;transform-origin:50% 100%}#realGachaOverlay .capsuleBottom{bottom:15px;border-radius:24px 24px 160px 160px;animation:capsuleBottomOpen .78s .3s ease-out forwards;transform-origin:50% 0}#realGachaOverlay .capsuleCore{position:absolute;inset:58px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:30px;background:radial-gradient(circle,#fff 0,#a5f3fc 38%,#3b82f6 72%);color:#06111f;padding:18px;box-sizing:border-box;z-index:5;opacity:0;transform:scale(.45);animation:coreReveal .55s .78s cubic-bezier(.2,1.5,.35,1) forwards;box-shadow:0 0 50px rgba(125,249,255,.98)}#realGachaOverlay .capsuleReveal.gold .capsuleCore{background:radial-gradient(circle,#fff 0,#fde68a 42%,#f59e0b 76%)}#realGachaOverlay .capsuleReveal.summer .capsuleCore{background:radial-gradient(circle,#fff,#cffafe 38%,#06b6d4 72%)}#realGachaOverlay .capsuleReveal.winter .capsuleCore{background:radial-gradient(circle,#fff,#fed7aa 38%,#f97316 72%)}#realGachaOverlay .capsuleRarity{font-size:13px;font-weight:1000;letter-spacing:.18em;margin-bottom:7px}#realGachaOverlay .capsuleRewardName{font-size:clamp(22px,6vw,33px);font-weight:1000;line-height:1.1}#realGachaOverlay .capsuleRewardDesc{font-size:14px;font-weight:900;margin-top:9px}#realGachaOverlay .capsuleClose{width:min(320px,80vw);margin-top:18px}#realGachaOverlay .capsuleParticles{position:absolute;inset:0;pointer-events:none;overflow:visible}#realGachaOverlay .capsuleParticles i{position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:white;box-shadow:0 0 14px currentColor;animation:particleBurst 1.25s ease-out both}@keyframes gachaStageIn{from{opacity:0;transform:scale(.84)}to{opacity:1;transform:scale(1)}}@keyframes capsuleLand{0%{opacity:0;transform:translateY(-220px) rotate(-18deg) scale(.58)}68%{opacity:1;transform:translateY(14px) rotate(4deg) scale(1.07)}100%{transform:translateY(0) rotate(0) scale(1)}}@keyframes capsuleTopOpen{to{transform:translateX(-50%) translateY(-64px) rotate(-10deg)}}@keyframes capsuleBottomOpen{to{transform:translateX(-50%) translateY(56px) rotate(8deg)}}@keyframes coreReveal{to{opacity:1;transform:scale(1)}}@keyframes particleBurst{from{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateX(0) scale(1)}to{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)) scale(.05)}}`;document.head.appendChild(style)}
 
-function playRevealSound(rare,legend){
-  noise(0,.22,.09,1400);
-  tone(95,0,.5,'sine',.12,42);
-  const notes=legend?[523,659,784,1047,1319,1568]:rare?[440,554,659,880,1109]:[330,392,494,659];
-  notes.forEach((n,i)=>tone(n,.08+i*.105,.34,i%2?'triangle':'sine',legend?.085:rare?.07:.055,n*1.015));
-  if(rare||legend){
-    tone(1760,.48,.55,'sine',.05,2500);
-    noise(.58,.34,legend?.08:.045,2200);
-  }
-}
+function reward(kind){const r=Math.random();if(kind==='summer'){if(r<.25){boost('fire',.45);rememberItem('cool-lizard','すずしーれんしゃトカゲ');return ['すずしーれんしゃトカゲ','連射力 +45%・冷気弾を解放',false]}if(r<.48){boost('knockback',1.4);rememberItem('giant-wind','巨大ノックバック風');return ['巨大ノックバック風','敵を猛烈に吹き飛ばす風圧を解放',false]}if(r<.68){boost('engine',.35);rememberItem('water-booster','ウォーターブースター');return ['ウォーターブースター','移動性能 +35%・水しぶき走行',false]}if(r<.86){boost('damage',.3);rememberItem('ice-missile','かき氷ミサイル');return ['かき氷ミサイル','攻撃力 +30%・冷却爆発',false]}if(r<.97){boost('maxHp',60);player.hp=player.maxHp;rememberItem('penguin-drone','ペンギンドローン');return ['ペンギンドローン','最大HP +60・援護ドローン獲得',true]}boost('damage',.5);boost('fire',.5);boost('knockback',2);rememberItem('summer-dragon','サマードラゴン');return ['サマードラゴン','超激レア！攻撃・連射・ノックバック大強化',true]}
+if(kind==='winter'){if(r<.25){boost('maxHp',55);player.hp=player.maxHp;rememberItem('heater-armor','暖房装甲ヒーター');return ['暖房装甲ヒーター','最大HP +55・凍結耐性',false]}if(r<.48){boost('damage',.4);rememberItem('stove-cannon','石油ストーブ砲');return ['石油ストーブ砲','攻撃力 +40%・熱風爆発',false]}if(r<.68){boost('fire',.38);rememberItem('kotatsu-turret','こたつ連射タレット');return ['こたつ連射タレット','連射力 +38%・自動援護',false]}if(r<.86){boost('engine',.32);rememberItem('hot-air-engine','温風エンジン');return ['温風エンジン','エンジン +32%・熱気加速',false]}if(r<.97){boost('maxHp',80);player.hp=player.maxHp;rememberItem('floor-heating','床暖フィールド');return ['床暖フィールド','最大HP +80・回復床を解放',true]}boost('damage',.55);boost('maxHp',100);player.hp=player.maxHp;rememberItem('sun-furnace','太陽炉ヒーター');return ['太陽炉ヒーター','超激レア！攻撃 +55%・最大HP +100',true]}
+const rare=kind==='rare';if(rare){if(r<.28){boost('damage',.35);return ['レア攻撃コア','攻撃力 大アップ +35%',false]}if(r<.52){boost('maxHp',50);player.hp=player.maxHp;return ['黄金装甲','最大HP +50',false]}if(r<.76){boost('fire',.35);return ['高速連射機構','連射力 大アップ +35%',false]}if(r<.94){boost('engine',.4);return ['金色エンジン','エンジン 大強化 +40%',false]}player.coins+=1000;return ['LEGEND JACKPOT','超大当たり！1000コイン獲得',true]}if(r<.35){boost('damage',.12);return ['攻撃チップ','攻撃力 +12%',false]}if(r<.65){boost('maxHp',15);player.hp=player.maxHp;return ['装甲プレート','最大HP +15',false]}if(r<.88){boost('fire',.12);return ['連射モジュール','連射力 +12%',false]}boost('engine',.12);return ['小型エンジン','エンジン +12%',false]}
 
-function installStyle(){
-  let style=$('gachaUpgradeStyle');
-  if(style)style.remove();
-  style=document.createElement('style');
-  style.id='gachaUpgradeStyle';
-  style.textContent=`
-  #realGachaOverlay{overflow:hidden}
-  #realGachaOverlay .capsuleResultStage{display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(540px,94vw);min-height:440px;position:relative;animation:gachaStageIn .4s ease-out both}
-  #realGachaOverlay .capsuleReveal{position:relative;width:min(380px,86vw);height:270px;filter:drop-shadow(0 0 30px rgba(56,189,248,.78));animation:capsuleLand .7s cubic-bezier(.2,1.4,.35,1) both}
-  #realGachaOverlay .capsuleReveal.gold{filter:drop-shadow(0 0 42px rgba(250,204,21,.92))}
-  #realGachaOverlay .capsuleHalf{position:absolute;left:50%;width:320px;max-width:82vw;height:120px;transform:translateX(-50%);border:4px solid rgba(255,255,255,.82);background:linear-gradient(160deg,#67e8f9,#2563eb 58%,#0f172a);box-shadow:inset 0 0 28px rgba(255,255,255,.34);z-index:2}
-  #realGachaOverlay .capsuleReveal.gold .capsuleHalf{background:linear-gradient(160deg,#fffbd1,#facc15 50%,#92400e)}
-  #realGachaOverlay .capsuleTop{top:15px;border-radius:160px 160px 24px 24px;animation:capsuleTopOpen .78s .3s ease-out forwards;transform-origin:50% 100%}
-  #realGachaOverlay .capsuleBottom{bottom:15px;border-radius:24px 24px 160px 160px;animation:capsuleBottomOpen .78s .3s ease-out forwards;transform-origin:50% 0}
-  #realGachaOverlay .capsuleCore{position:absolute;inset:58px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:30px;background:radial-gradient(circle,#fff 0,#a5f3fc 38%,#3b82f6 72%);color:#06111f;padding:18px;box-sizing:border-box;z-index:5;opacity:0;transform:scale(.45);animation:coreReveal .55s .78s cubic-bezier(.2,1.5,.35,1) forwards;box-shadow:0 0 50px rgba(125,249,255,.98)}
-  #realGachaOverlay .capsuleReveal.gold .capsuleCore{background:radial-gradient(circle,#fff 0,#fde68a 42%,#f59e0b 76%);box-shadow:0 0 70px rgba(250,204,21,1)}
-  #realGachaOverlay .capsuleRarity{font-size:13px;font-weight:1000;letter-spacing:.18em;margin-bottom:7px}
-  #realGachaOverlay .capsuleRewardName{font-size:clamp(22px,6vw,33px);font-weight:1000;line-height:1.1}
-  #realGachaOverlay .capsuleRewardDesc{font-size:14px;font-weight:900;margin-top:9px}
-  #realGachaOverlay .capsuleClose{width:min(320px,80vw);margin-top:18px}
-  #realGachaOverlay .capsuleParticles{position:absolute;inset:0;pointer-events:none;overflow:visible}
-  #realGachaOverlay .capsuleParticles i{position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:white;box-shadow:0 0 14px currentColor;animation:particleBurst 1.25s ease-out both}
-  @keyframes gachaStageIn{from{opacity:0;transform:scale(.84)}to{opacity:1;transform:scale(1)}}
-  @keyframes capsuleLand{0%{opacity:0;transform:translateY(-220px) rotate(-18deg) scale(.58)}68%{opacity:1;transform:translateY(14px) rotate(4deg) scale(1.07)}100%{transform:translateY(0) rotate(0) scale(1)}}
-  @keyframes capsuleTopOpen{to{transform:translateX(-50%) translateY(-64px) rotate(-10deg)}}
-  @keyframes capsuleBottomOpen{to{transform:translateX(-50%) translateY(56px) rotate(8deg)}}
-  @keyframes coreReveal{to{opacity:1;transform:scale(1)}}
-  @keyframes particleBurst{from{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateX(0) scale(1)}to{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)) scale(.05)}}
-  `;
-  document.head.appendChild(style);
-}
+function showCapsuleResult(kind,name,desc,legend){const overlay=$('realGachaOverlay');if(!overlay)return;const wrap=$('realGachaMachineWrap'),old=$('realGachaResult');if(wrap)wrap.style.display='none';if(old)old.style.display='none';overlay.querySelector('.capsuleResultStage')?.remove();const stage=document.createElement('div');stage.className='capsuleResultStage';const count=legend?34:kind==='normal'?20:28,particles=Array.from({length:count},(_,i)=>`<i style="--a:${i*(360/count)}deg;--d:${100+Math.random()*135}px;animation-delay:${.56+Math.random()*.28}s"></i>`).join('');const theme=kind==='summer'?'summer':kind==='winter'?'winter':kind==='rare'?'gold':'';const label=legend?'LEGENDARY':kind==='summer'?'SUMMER LIMITED':kind==='winter'?'WINTER LIMITED':kind==='rare'?'GOLD RARE':'ITEM GET';stage.innerHTML=`<div class="capsuleReveal ${theme}"><div class="capsuleParticles">${particles}</div><div class="capsuleHalf capsuleTop"></div><div class="capsuleHalf capsuleBottom"></div><div class="capsuleCore"><div class="capsuleRarity">${label}</div><div class="capsuleRewardName"></div><div class="capsuleRewardDesc"></div></div></div><button type="button" class="capsuleClose">受け取る</button>`;stage.querySelector('.capsuleRewardName').textContent=name;stage.querySelector('.capsuleRewardDesc').textContent=desc;stage.querySelector('.capsuleClose').addEventListener('click',close);overlay.appendChild(stage);playRevealSound(kind,legend)}
 
-function reward(rare){
-  const r=Math.random();
-  if(rare){
-    if(r<.28){player.damage+=.35;return ['レア攻撃コア','攻撃力 大アップ +35%',false]}
-    if(r<.52){player.maxHp+=50;player.hp=player.maxHp;return ['黄金装甲','最大HP +50',false]}
-    if(r<.76){player.fire+=.35;return ['高速連射機構','連射力 大アップ +35%',false]}
-    if(r<.94){player.engine+=.4;return ['金色エンジン','エンジン 大強化 +40%',false]}
-    player.coins+=1000;return ['LEGEND JACKPOT','超大当たり！1000コイン獲得',true];
-  }
-  if(r<.35){player.damage+=.12;return ['攻撃チップ','攻撃力 +12%',false]}
-  if(r<.65){player.maxHp+=15;player.hp=player.maxHp;return ['装甲プレート','最大HP +15',false]}
-  if(r<.88){player.fire+=.12;return ['連射モジュール','連射力 +12%',false]}
-  player.engine+=.12;return ['小型エンジン','エンジン +12%',false];
-}
+function start(kind='normal'){installStyle();if((kind==='summer'||kind==='winter')&&!activeSeason(kind)){const season=kind==='summer'?'6〜8月':'12〜2月';if(typeof showToast==='function')showToast(`${kind==='summer'?'すずしー':'暖房'}ガチャは${season}限定です`);return}const cost=kind==='normal'?80:kind==='rare'?250:300;if(typeof player==='undefined'||player.coins<cost){if(typeof showToast==='function')showToast('コインが足りません');const out=$('gachaResult');if(out)out.textContent='コインが足りません。';return}player.coins-=cost;if(typeof saveData==='function')saveData();const overlay=$('realGachaOverlay'),machine=$('realMachineBody'),capsule=$('realFallingCapsule'),label=$('realGachaLabel'),wrap=$('realGachaMachineWrap'),old=$('realGachaResult');if(!overlay||!wrap)return;clearTimeout(revealTimer);overlay.querySelector('.capsuleResultStage')?.remove();overlay.style.display='flex';wrap.style.display='block';if(old)old.style.display='none';const gold=kind!=='normal';if(machine)machine.className=gold?'realMachineBody gold':'realMachineBody';if(capsule)capsule.className=gold?'realFallingCapsule gold':'realFallingCapsule';if(label)label.textContent=kind==='summer'?'COOL SUMMER CAPSULE':kind==='winter'?'HEATING WINTER CAPSULE':kind==='rare'?'GOLD CAPSULE // CHARGE MAX':'CAPSULE DROP // SYSTEM START';playMachineSound(kind);revealTimer=setTimeout(()=>{const [name,desc,legend]=reward(kind);if(typeof saveData==='function')saveData();if(typeof checkAchievements==='function')checkAchievements();const out=$('gachaResult');if(out)out.textContent=`${name}：${desc}`;showCapsuleResult(kind,name,desc,legend)},2250)}
+function close(){clearTimeout(revealTimer);const overlay=$('realGachaOverlay');overlay?.querySelector('.capsuleResultStage')?.remove();if(overlay)overlay.style.display='none';if(typeof updateStats==='function')updateStats()}
 
-function showCapsuleResult(rare,name,desc,legend){
-  const overlay=$('realGachaOverlay');
-  if(!overlay)return;
-  const wrap=$('realGachaMachineWrap');
-  const old=$('realGachaResult');
-  if(wrap)wrap.style.display='none';
-  if(old)old.style.display='none';
-  overlay.querySelector('.capsuleResultStage')?.remove();
-  const stage=document.createElement('div');
-  stage.className='capsuleResultStage';
-  const particles=Array.from({length:legend?34:rare?26:20},(_,i)=>`<i style="--a:${i*(360/(legend?34:rare?26:20))}deg;--d:${100+Math.random()*135}px;animation-delay:${.56+Math.random()*.28}s"></i>`).join('');
-  stage.innerHTML=`<div class="capsuleReveal ${rare?'gold':''}"><div class="capsuleParticles">${particles}</div><div class="capsuleHalf capsuleTop"></div><div class="capsuleHalf capsuleBottom"></div><div class="capsuleCore"><div class="capsuleRarity">${legend?'LEGENDARY':rare?'GOLD RARE':'ITEM GET'}</div><div class="capsuleRewardName"></div><div class="capsuleRewardDesc"></div></div></div><button type="button" class="capsuleClose">受け取る</button>`;
-  stage.querySelector('.capsuleRewardName').textContent=name;
-  stage.querySelector('.capsuleRewardDesc').textContent=desc;
-  stage.querySelector('.capsuleClose').addEventListener('click',close);
-  overlay.appendChild(stage);
-  playRevealSound(rare,legend);
-}
+function installSeasonPanel(){if($('seasonGachaPanel'))return;const normal=[...document.querySelectorAll('button')].find(b=>/通常ガチャ|normal/i.test(b.textContent||'')||/normalGacha/.test(b.getAttribute('onclick')||''));if(!normal||!normal.parentElement)return;const panel=document.createElement('div');panel.id='seasonGachaPanel';panel.className='seasonGachaPanel';const summer=activeSeason('summer'),winter=activeSeason('winter');panel.innerHTML=`<div class="seasonGachaTitle">🌦️ 季節限定ガチャ</div><div class="seasonGachaGrid"><button type="button" class="seasonGachaButton summer ${summer?'':'locked'}" data-season="summer">🧊 すずしーガチャ<br><small>300コイン・6〜8月</small></button><button type="button" class="seasonGachaButton winter ${winter?'':'locked'}" data-season="winter">🔥 暖房ガチャ<br><small>300コイン・12〜2月</small></button></div><div class="seasonGachaNote">夏：すずしーれんしゃトカゲ、巨大ノックバック風など／冬：暖房装甲、石油ストーブ砲、こたつタレットなど</div>`;panel.querySelector('[data-season="summer"]').addEventListener('click',()=>start('summer'));panel.querySelector('[data-season="winter"]').addEventListener('click',()=>start('winter'));normal.parentElement.insertBefore(panel,normal)}
 
-function start(rareFlag){
-  installStyle();
-  const rare=!!rareFlag;
-  const cost=rare?250:80;
-  if(typeof player==='undefined'||player.coins<cost){
-    if(typeof showToast==='function')showToast('コインが足りません');
-    const out=$('gachaResult');if(out)out.textContent='コインが足りません。';
-    return;
-  }
-  player.coins-=cost;
-  if(typeof saveData==='function')saveData();
-  const overlay=$('realGachaOverlay'),machine=$('realMachineBody'),capsule=$('realFallingCapsule'),label=$('realGachaLabel'),wrap=$('realGachaMachineWrap'),old=$('realGachaResult');
-  if(!overlay||!wrap)return;
-  clearTimeout(revealTimer);
-  overlay.querySelector('.capsuleResultStage')?.remove();
-  overlay.style.display='flex';wrap.style.display='block';if(old)old.style.display='none';
-  if(machine)machine.className=rare?'realMachineBody gold':'realMachineBody';
-  if(capsule)capsule.className=rare?'realFallingCapsule gold':'realFallingCapsule';
-  if(label)label.textContent=rare?'GOLD CAPSULE // CHARGE MAX':'CAPSULE DROP // SYSTEM START';
-  playMachineSound(rare);
-  revealTimer=setTimeout(()=>{
-    const [name,desc,legend]=reward(rare);
-    if(typeof saveData==='function')saveData();
-    if(typeof checkAchievements==='function')checkAchievements();
-    const out=$('gachaResult');if(out)out.textContent=`${name}：${desc}`;
-    showCapsuleResult(rare,name,desc,legend);
-  },2250);
-}
+function bindButtons(){window.startRealGacha=v=>start(v?'rare':'normal');window.normalGacha=()=>start('normal');window.rareGacha=()=>start('rare');window.summerGacha=()=>start('summer');window.winterGacha=()=>start('winter');window.closeRealGacha=close;document.querySelectorAll('button[onclick]').forEach(button=>{const code=button.getAttribute('onclick')||'';if(/\bnormalGacha\s*\(/.test(code)){button.removeAttribute('onclick');if(!button.dataset.gachaUpgradeBound){button.addEventListener('click',()=>start('normal'));button.dataset.gachaUpgradeBound='1'}}else if(/\brareGacha\s*\(/.test(code)){button.removeAttribute('onclick');if(!button.dataset.gachaUpgradeBound){button.addEventListener('click',()=>start('rare'));button.dataset.gachaUpgradeBound='1'}}});installSeasonPanel()}
 
-function close(){
-  clearTimeout(revealTimer);
-  const overlay=$('realGachaOverlay');
-  overlay?.querySelector('.capsuleResultStage')?.remove();
-  if(overlay)overlay.style.display='none';
-  if(typeof updateStats==='function')updateStats();
-}
-
-function bindButtons(){
-  window.startRealGacha=start;
-  window.normalGacha=()=>start(false);
-  window.rareGacha=()=>start(true);
-  window.closeRealGacha=close;
-  document.querySelectorAll('button[onclick]').forEach(button=>{
-    const code=button.getAttribute('onclick')||'';
-    if(/\bnormalGacha\s*\(/.test(code)){
-      button.removeAttribute('onclick');
-      if(!button.dataset.gachaUpgradeBound){button.addEventListener('click',()=>start(false));button.dataset.gachaUpgradeBound='1'}
-    }else if(/\brareGacha\s*\(/.test(code)){
-      button.removeAttribute('onclick');
-      if(!button.dataset.gachaUpgradeBound){button.addEventListener('click',()=>start(true));button.dataset.gachaUpgradeBound='1'}
-    }
-  });
-}
-
-window.ShooGachaUpgrade={start,close,bindButtons,version:'2'};
-installStyle();
-bindButtons();
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindButtons,{once:true});
-clearInterval(bindTimer);
-bindTimer=setInterval(bindButtons,1000);
-setTimeout(()=>clearInterval(bindTimer),15000);
+window.ShooGachaUpgrade={start,close,bindButtons,version:'3'};installStyle();bindButtons();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindButtons,{once:true});clearInterval(bindTimer);bindTimer=setInterval(bindButtons,1000);setTimeout(()=>clearInterval(bindTimer),15000);
 })();
