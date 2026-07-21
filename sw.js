@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v31";
+const CACHE_NAME = "shooking-ii-v32";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "./firebase-login-rescue.js",
   "./firebase-config.js",
   "./online-pve.js",
+  "./anti-cheat.js",
   "./hard-stages.js",
   "./hangar-fix.js",
   "./manifest.webmanifest",
@@ -38,12 +39,13 @@ async function patchHtml(response, isGame) {
   if (!html.includes("common-nav.js")) html = html.replace("</body>", '<script src="./common-nav.js?v=1"></script></body>');
   if (isGame) {
     if (!html.includes("ui-patch.js")) html = html.replace("</body>", '<script src="./ui-patch.js?v=6"></script></body>');
+    if (!html.includes("firebase-config.js")) html = html.replace("</body>", '<script src="./firebase-config.js?v=1"></script></body>');
     if (!html.includes("google-login.js")) html = html.replace("</body>", '<script src="./google-login.js?v=9"></script></body>');
     if (!html.includes("firebase-error-patch.js")) html = html.replace("</body>", '<script src="./firebase-error-patch.js?v=9"></script></body>');
     if (!html.includes("firebase-login-fallback.js")) html = html.replace("</body>", '<script src="./firebase-login-fallback.js?v=9"></script></body>');
     if (!html.includes("firebase-login-rescue.js")) html = html.replace("</body>", '<script src="./firebase-login-rescue.js?v=9"></script></body>');
-    if (!html.includes("firebase-config.js")) html = html.replace("</body>", '<script src="./firebase-config.js?v=1"></script></body>');
     if (!html.includes("online-pve.js")) html = html.replace("</body>", '<script src="./online-pve.js?v=2"></script></body>');
+    if (!html.includes("anti-cheat.js")) html = html.replace("</body>", '<script src="./anti-cheat.js?v=1"></script></body>');
     if (!html.includes("hard-stages.js")) html = html.replace("</body>", '<script src="./hard-stages.js?v=16"></script></body>');
     if (!html.includes("hangar-fix.js")) html = html.replace("</body>", '<script src="./hangar-fix.js?v=17"></script></body>');
   }
