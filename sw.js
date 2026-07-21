@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v38";
+const CACHE_NAME = "shooking-ii-v39";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -17,6 +17,7 @@ const APP_SHELL = [
   "./shared-enemy-sync.js",
   "./hard-stages.js",
   "./hangar-fix.js",
+  "./gacha-upgrade.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -50,6 +51,7 @@ async function patchHtml(response, isGame) {
     if (!html.includes("shared-enemy-sync.js")) html = html.replace("</body>", '<script src="./shared-enemy-sync.js?v=1"></script></body>');
     if (!html.includes("hard-stages.js")) html = html.replace("</body>", '<script src="./hard-stages.js?v=16"></script></body>');
     if (!html.includes("hangar-fix.js")) html = html.replace("</body>", '<script src="./hangar-fix.js?v=17"></script></body>');
+    if (!html.includes("gacha-upgrade.js")) html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=1"></script></body>');
   }
   const headers = new Headers(response.headers);
   headers.set("content-type", "text/html; charset=utf-8");
