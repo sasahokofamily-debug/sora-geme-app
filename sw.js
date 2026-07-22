@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v50";
+const CACHE_NAME = "shooking-ii-v51";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "./download-builder.html",
   "./permission-maker.html",
   "./gemedeta.js",
+  "./game-system.js",
   "./common-nav.js",
   "./ui-patch.js",
   "./firebase-config.js",
@@ -35,9 +36,7 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
-  );
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))));
   self.clients.claim();
 });
 
@@ -64,13 +63,12 @@ function addModernMobileMeta(html) {
 async function patchHtml(response, routeLooksLikeGame) {
   let html = await response.text();
   html = addModernMobileMeta(html);
-
   const contentIsGame = html.includes("realGachaOverlay") || html.includes("function startRealGacha") || html.includes('id="game"');
   const isGame = routeLooksLikeGame || contentIsGame;
-
   html = appendScript(html, "common-nav.js", 2);
 
   if (isGame) {
+    html = prependGameScript(html, "game-system.js", 1);
     html = prependGameScript(html, "gemedeta.js", 1);
     html = appendStyle(html, "css/seasonal-gacha.css", 1);
     html = appendStyle(html, "css/gmail-seat-invite.css", 1);
@@ -85,14 +83,10 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendScript(html, "shared-enemy-sync.js", 1);
     html = appendScript(html, "hard-stages.js", 16);
     html = appendScript(html, "hangar-fix.js", 17);
-
     html = html.replace(/<script[^>]+src=["'][^"']*gacha-upgrade\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*seasonal-gacha-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*gmail-seat-invite\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace(
-      "</body>",
-      '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n</body>'
-    );
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
@@ -126,6 +120,7 @@ self.addEventListener("fetch", event => {
 
   if (
     requestUrl.pathname.endsWith("/gemedeta.js") ||
+    requestUrl.pathname.endsWith("/game-system.js") ||
     requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
     requestUrl.pathname.endsWith("/seasonal-gacha-fix.js") ||
     requestUrl.pathname.endsWith("/gmail-seat-invite.js") ||
@@ -147,16 +142,10 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-      if (!response || !response.ok) return response;
-      const copy = response.clone();
-      event.waitUntil(
-        caches.open(CACHE_NAME)
-          .then(cache => cache.put(event.request, copy))
-          .catch(error => console.warn("Cache.put skipped", error))
-      );
-      return response;
-    }))
-  );
+  event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+    if (!response || !response.ok) return response;
+    const copy = response.clone();
+    event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(error => console.warn("Cache.put skipped", error)));
+    return response;
+  })));
 });
