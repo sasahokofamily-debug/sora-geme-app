@@ -1,10 +1,11 @@
-const CACHE_NAME = "shooking-ii-v49";
+const CACHE_NAME = "shooking-ii-v50";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
   "./details.html",
   "./download-builder.html",
   "./permission-maker.html",
+  "./gemedeta.js",
   "./common-nav.js",
   "./ui-patch.js",
   "./firebase-config.js",
@@ -45,6 +46,11 @@ function appendScript(html, filename, version) {
   return html.replace("</body>", `<script src="./${filename}?v=${version}"></script></body>`);
 }
 
+function prependGameScript(html, filename, version) {
+  html = html.replace(new RegExp(`<script[^>]+src=["'][^"']*${filename.replace('.', '\\.')}[^"']*["'][^>]*><\\/script>`, "gi"), "");
+  return html.replace("<body", `<script src="./${filename}?v=${version}"></script>\n<body`);
+}
+
 function appendStyle(html, filename, version) {
   if (html.includes(filename)) return html;
   return html.replace("</head>", `<link rel="stylesheet" href="./${filename}?v=${version}">\n</head>`);
@@ -65,6 +71,7 @@ async function patchHtml(response, routeLooksLikeGame) {
   html = appendScript(html, "common-nav.js", 2);
 
   if (isGame) {
+    html = prependGameScript(html, "gemedeta.js", 1);
     html = appendStyle(html, "css/seasonal-gacha.css", 1);
     html = appendStyle(html, "css/gmail-seat-invite.css", 1);
     html = appendScript(html, "ui-patch.js", 6);
@@ -118,6 +125,7 @@ self.addEventListener("fetch", event => {
   }
 
   if (
+    requestUrl.pathname.endsWith("/gemedeta.js") ||
     requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
     requestUrl.pathname.endsWith("/seasonal-gacha-fix.js") ||
     requestUrl.pathname.endsWith("/gmail-seat-invite.js") ||
