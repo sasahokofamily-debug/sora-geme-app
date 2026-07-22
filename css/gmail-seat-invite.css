@@ -1,0 +1,14 @@
+#gmailSeatInviteButton{position:fixed;right:14px;bottom:14px;z-index:99990;width:auto!important;padding:12px 16px!important;margin:0!important;border-radius:999px!important;background:linear-gradient(135deg,#ef4444,#b91c1c)!important;box-shadow:0 0 22px rgba(239,68,68,.55)!important}
+#gmailSeatInviteModal{position:fixed;inset:0;z-index:99999;background:rgba(2,6,23,.86);display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}
+#gmailSeatInviteModal.open{display:flex}
+#gmailSeatInviteModal .gsmCard{width:min(520px,96vw);max-height:92vh;overflow:auto;background:#07111f;border:2px solid #60a5fa;border-radius:20px;padding:20px;box-sizing:border-box;box-shadow:0 0 40px rgba(59,130,246,.5);color:#fff}
+#gmailSeatInviteModal h2{margin:0 0 12px;color:#93c5fd}
+#gmailSeatInviteModal label{display:block;text-align:left;font-weight:800;margin-top:10px}
+#gmailSeatInviteModal input,#gmailSeatInviteModal textarea{width:100%;box-sizing:border-box;margin-top:6px;padding:11px;border-radius:10px;border:1px solid #60a5fa;background:#020617;color:#fff}
+#gmailSeatInviteModal textarea{height:105px;resize:vertical}
+#gmailSeatInviteModal .gsmGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+#gmailSeatInviteModal button{margin:0!important}
+#gmailSeatInviteModal .gsmSend{background:#dc2626!important}
+#gmailSeatInviteModal .gsmClose{background:#475569!important}
+#gmailSeatInviteModal .gsmSmall{font-size:12px;opacity:.8;line-height:1.5;margin-top:8px}
+@media(max-width:520px){#gmailSeatInviteModal .gsmGrid{grid-template-columns:1fr}}
