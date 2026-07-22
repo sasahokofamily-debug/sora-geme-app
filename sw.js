@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v48";
+const CACHE_NAME = "shooking-ii-v49";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -20,6 +20,8 @@ const APP_SHELL = [
   "./gacha-upgrade.js",
   "./seasonal-gacha-fix.js",
   "./gmail-seat-invite.js",
+  "./css/seasonal-gacha.css",
+  "./css/gmail-seat-invite.css",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -43,6 +45,11 @@ function appendScript(html, filename, version) {
   return html.replace("</body>", `<script src="./${filename}?v=${version}"></script></body>`);
 }
 
+function appendStyle(html, filename, version) {
+  if (html.includes(filename)) return html;
+  return html.replace("</head>", `<link rel="stylesheet" href="./${filename}?v=${version}">\n</head>`);
+}
+
 function addModernMobileMeta(html) {
   if (html.includes('name="mobile-web-app-capable"') || html.includes("name='mobile-web-app-capable'")) return html;
   return html.replace("</head>", '<meta name="mobile-web-app-capable" content="yes">\n</head>');
@@ -58,6 +65,8 @@ async function patchHtml(response, routeLooksLikeGame) {
   html = appendScript(html, "common-nav.js", 2);
 
   if (isGame) {
+    html = appendStyle(html, "css/seasonal-gacha.css", 1);
+    html = appendStyle(html, "css/gmail-seat-invite.css", 1);
     html = appendScript(html, "ui-patch.js", 6);
     html = appendScript(html, "firebase-config.js", 2);
     html = appendScript(html, "google-login.js", 10);
@@ -75,7 +84,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = html.replace(/<script[^>]+src=["'][^"']*gmail-seat-invite\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(
       "</body>",
-      '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=2"></script>\n<script src="./gmail-seat-invite.js?v=1"></script>\n</body>'
+      '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n</body>'
     );
   }
 
@@ -107,10 +116,13 @@ self.addEventListener("fetch", event => {
     })());
     return;
   }
+
   if (
     requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
     requestUrl.pathname.endsWith("/seasonal-gacha-fix.js") ||
-    requestUrl.pathname.endsWith("/gmail-seat-invite.js")
+    requestUrl.pathname.endsWith("/gmail-seat-invite.js") ||
+    requestUrl.pathname.endsWith("/css/seasonal-gacha.css") ||
+    requestUrl.pathname.endsWith("/css/gmail-seat-invite.css")
   ) {
     event.respondWith((async () => {
       try {
