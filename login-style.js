@@ -42,10 +42,15 @@
     #runtimeErrorCode{font-size:clamp(38px,8vw,72px);font-weight:900;line-height:1;margin:0 0 12px}
     #runtimeErrorTitle{font-size:20px;font-weight:800;margin-bottom:10px}
     #runtimeErrorMessage{color:#52525b;line-height:1.6;overflow-wrap:anywhere}
-    #runtimeErrorMeta{margin:20px 0;padding:12px;border-radius:10px;background:#f4f4f5;color:#52525b;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+    #runtimeErrorMeta{margin:20px 0;padding:12px;border-radius:10px;background:#f4f4f5;color:#52525b;font-size:12px;line-height:1.7;overflow-wrap:anywhere;white-space:pre-wrap}
     #runtimeErrorActions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     #runtimeErrorActions button{margin:0;min-height:44px;border:1px solid #d4d4d8;border-radius:9px;background:#fff;color:#18181b;font:700 14px system-ui;cursor:pointer}
     #runtimeErrorActions button:first-child{background:#18181b;color:#fff;border-color:#18181b}
+    #pageLoadingOverlay{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.76);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);pointer-events:auto}
+    #pageLoadingOverlay.visible{display:flex}
+    #pageLoadingBox{display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 26px;border:1px solid rgba(125,249,255,.4);border-radius:18px;background:rgba(2,6,23,.92);box-shadow:0 0 34px rgba(56,189,248,.3);color:#e0f2fe;font:800 14px system-ui;letter-spacing:.05em}
+    #pageLoadingSpinner{width:48px;height:48px;border:4px solid rgba(125,249,255,.2);border-top-color:#7df9ff;border-right-color:#38bdf8;border-radius:50%;animation:pageLoadingSpin .8s linear infinite;box-shadow:0 0 18px rgba(125,249,255,.35)}
+    @keyframes pageLoadingSpin{to{transform:rotate(360deg)}}
     @media(max-width:700px){
       #loginScreen,#registerScreen{padding:12px 0}
       #loginScreen .panel,#registerScreen .panel{width:min(460px,calc(100vw - 20px));padding:18px;border-radius:16px}
@@ -70,6 +75,73 @@
       const p=document.createElement("p");p.className="small authIntro";
       p.textContent="アカウントを作成して、SHOO KING IIを始めましょう。";registerBox.prepend(p);
     }
+  }
+
+  function ensureLoadingOverlay(){
+    let overlay=document.getElementById("pageLoadingOverlay");
+    if(!overlay){
+      overlay=document.createElement("div");
+      overlay.id="pageLoadingOverlay";
+      overlay.setAttribute("aria-live","polite");
+      overlay.setAttribute("aria-busy","true");
+      overlay.innerHTML='<div id="pageLoadingBox"><div id="pageLoadingSpinner"></div><div id="pageLoadingText">読み込み中...</div></div>';
+      document.body.appendChild(overlay);
+    }
+    return overlay;
+  }
+
+  let loadingTimer=null;
+  function showPageLoading(text="読み込み中..."){
+    const overlay=ensureLoadingOverlay();
+    const label=overlay.querySelector("#pageLoadingText");
+    if(label)label.textContent=text;
+    clearTimeout(loadingTimer);
+    overlay.classList.add("visible");
+  }
+  function hidePageLoading(delay=180){
+    clearTimeout(loadingTimer);
+    loadingTimer=setTimeout(()=>{
+      const overlay=document.getElementById("pageLoadingOverlay");
+      if(overlay)overlay.classList.remove("visible");
+    },Math.max(0,delay));
+  }
+
+  function installScreenTransitionLoader(){
+    const wrapFunction=(name)=>{
+      const original=window[name];
+      if(typeof original!=="function"||original.__loadingWrapped)return;
+      const wrapped=function(...args){
+        showPageLoading("画面を読み込み中...");
+        try{
+          const result=original.apply(this,args);
+          if(result&&typeof result.then==="function"){
+            return result.finally(()=>hidePageLoading(220));
+          }
+          requestAnimationFrame(()=>requestAnimationFrame(()=>hidePageLoading(180)));
+          return result;
+        }catch(error){
+          hidePageLoading(0);
+          throw error;
+        }
+      };
+      wrapped.__loadingWrapped=true;
+      window[name]=wrapped;
+    };
+    ["openScreen","showScreen","openLogin","openRegister","openSettings","openStageSelect","openOnlinePlay","openModEditor","openRequestLog","openHangar","openAchievements","openSavedReports","openSaveManager","openFamilyMessageSettings","openQuestScreen","openMissionReport"].forEach(wrapFunction);
+
+    document.addEventListener("click",event=>{
+      const link=event.target.closest("a[href]");
+      if(!link)return;
+      const href=link.getAttribute("href")||"";
+      if(!href||href.startsWith("#")||href.startsWith("javascript:")||link.target==="_blank"||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+      try{
+        const target=new URL(link.href,location.href);
+        if(target.origin===location.origin&&target.href!==location.href)showPageLoading("ページを読み込み中...");
+      }catch(e){}
+    },true);
+
+    window.addEventListener("beforeunload",()=>showPageLoading("ページを読み込み中..."));
+    window.addEventListener("pageshow",()=>hidePageLoading(0));
   }
 
   function referenceId(){
@@ -98,6 +170,7 @@
   function showRealError(error,context={}){
     if(shown)return;
     if(error&&error.name==="AbortError")return;
+    hidePageLoading(0);
     shown=true;
     const info=classifyError(error,context);
     let screen=document.getElementById("runtimeErrorScreen");
@@ -150,6 +223,14 @@
   }
 
   window.SHOO_KING_ERROR_SCREEN={show:showRealError};
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",upgradeCopy);
-  else upgradeCopy();
+  window.SHOO_KING_LOADING={show:showPageLoading,hide:hidePageLoading};
+
+  function init(){
+    upgradeCopy();
+    ensureLoadingOverlay();
+    setTimeout(installScreenTransitionLoader,0);
+    hidePageLoading(0);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);
+  else init();
 })();
