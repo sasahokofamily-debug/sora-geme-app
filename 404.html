@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>404 Not Found | SHOO KING II</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#02030a;color:#e5f2ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:24px}
+main{width:min(680px,100%);border:1px solid #334155;border-radius:18px;background:rgba(2,6,23,.92);box-shadow:0 24px 80px rgba(0,0,0,.45);padding:28px}
+.code{font:800 clamp(56px,14vw,112px)/.9 ui-monospace,SFMono-Regular,Menlo,monospace;color:#7df9ff;letter-spacing:-.06em}
+h1{margin:18px 0 8px;font-size:clamp(24px,5vw,36px)}
+p{color:#a9bfd3;line-height:1.7}
+.meta{margin:20px 0;padding:14px;border:1px solid #243447;border-radius:12px;background:#07111f;font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:#9fb6ca;overflow-wrap:anywhere}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+a,button{appearance:none;border:0;border-radius:11px;padding:13px 16px;font:700 15px system-ui;cursor:pointer;text-align:center;text-decoration:none}
+a{background:#1f8cff;color:#fff}
+button{background:#172033;color:#e8f4ff;border:1px solid #334155}
+@media(max-width:520px){main{padding:22px}.actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<div class="code">404</div>
+<h1>Not Found</h1>
+<p>指定されたページ、ゲームデータ、または読み込み先が見つかりませんでした。URLが変更されたか、通信中に一時的な失敗が起きた可能性があります。</p>
+<div class="meta" id="meta"></div>
+<div class="actions">
+<a href="/">ホームへ戻る</a>
+<button type="button" onclick="location.reload()">再読み込み</button>
+</div>
+</main>
+<script>
+const ref=(crypto&&crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/-/g,'').slice(0,16).toUpperCase();
+document.getElementById('meta').textContent=`Error Code: 404\nPath: ${location.pathname}${location.search}\nReference: ${ref}\nTime: ${new Date().toISOString()}`;
+</script>
+</body>
+</html>
