@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v52";
+const CACHE_NAME = "shooking-ii-v53";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -22,6 +22,7 @@ const APP_SHELL = [
   "./gacha-upgrade.js",
   "./seasonal-gacha-fix.js",
   "./gmail-seat-invite.js",
+  "./tutorial-guide.js",
   "./css/seasonal-gacha.css",
   "./css/gmail-seat-invite.css",
   "./manifest.webmanifest",
@@ -86,7 +87,8 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = html.replace(/<script[^>]+src=["'][^"']*gacha-upgrade\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*seasonal-gacha-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*gmail-seat-invite\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n</body>');
+    html = html.replace(/<script[^>]+src=["'][^"']*tutorial-guide\.js[^"']*["'][^>]*><\/script>/gi, "");
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=1"></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
@@ -124,6 +126,7 @@ self.addEventListener("fetch", event => {
     requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
     requestUrl.pathname.endsWith("/seasonal-gacha-fix.js") ||
     requestUrl.pathname.endsWith("/gmail-seat-invite.js") ||
+    requestUrl.pathname.endsWith("/tutorial-guide.js") ||
     requestUrl.pathname.endsWith("/css/seasonal-gacha.css") ||
     requestUrl.pathname.endsWith("/css/gmail-seat-invite.css")
   ) {
