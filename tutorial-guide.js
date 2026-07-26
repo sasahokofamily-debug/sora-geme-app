@@ -5,8 +5,8 @@
     {title:"ようこそ",text:"こんにちは！ぼくは案内役のNyanD。SHOO KING IIの遊び方を最初から順番に説明するよ。",target:null},
     {title:"ホーム",text:"ここがホーム画面。ゲーム開始、オンライン、格納庫、ガチャなどへ進めるよ。",target:"#homeScreen,#home,.homeScreen",screen:"home"},
     {title:"ゲーム開始",text:"ゲーム開始ボタンからステージ選択へ進めるよ。チュートリアル中は説明だけなので、押さなくても次へ進めるよ。",target:"#startButton,[data-action='start'],button[onclick*='startGame']",screen:"home"},
-    {title:"スマホで移動",text:"スマホでは画面左下の丸いスティックを指で動かして移動するよ。今ここに操作見本を表示しているよ。",target:"#mobileJoystick,#joystick,.joystick,[data-mobile-joystick]",screen:"game",mobileDemo:"move"},
-    {title:"スマホで攻撃",text:"画面右下の攻撃ボタンを押すと弾を撃てるよ。押し続けられる場合は連射もできるよ。",target:"#fireButton,#shootButton,.fireButton,[data-action='fire'],button[onclick*='shoot']",screen:"game",mobileDemo:"fire"},
+    {title:"スマホで移動",text:"スマホでは画面左下の丸いスティックを指で動かして移動するよ。実際のスティックが出るまで見本を消さずに待つよ。",target:"#mobileJoystick,#joystick,.joystick,[data-mobile-joystick]",screen:"game",mobileDemo:"move"},
+    {title:"スマホで攻撃",text:"画面右下の攻撃ボタンを押すと弾を撃てるよ。実際のボタンが出るまで見本を消さずに待つよ。",target:"#fireButton,#shootButton,.fireButton,[data-action='fire'],button[onclick*='shoot']",screen:"game",mobileDemo:"fire"},
     {title:"パソコン操作",text:"パソコンではキーボードやマウスで移動・照準・攻撃ができるよ。",target:"#game,.gameCanvas,canvas",screen:"game"},
     {title:"コインと強化",text:"敵を倒すとコインや報酬が手に入るよ。格納庫やショップで装備を強化できる。",target:"#hangarButton,[data-action='hangar'],button[onclick*='Hangar']",screen:"home"},
     {title:"ガチャ",text:"ガチャでは新しい装備や限定アイテムを入手できるよ。季節限定ガチャも確認してね。",target:"#gachaButton,[data-action='gacha'],button[onclick*='Gacha']",screen:"home"},
@@ -30,14 +30,13 @@
     .nyand-stick{position:absolute;left:24px;bottom:190px;width:112px;height:112px;border-radius:50%;border:3px solid rgba(125,249,255,.8);background:rgba(15,23,42,.68);box-shadow:0 0 24px rgba(56,189,248,.45)}.nyand-stick::after{content:"";position:absolute;width:48px;height:48px;left:32px;top:32px;border-radius:50%;background:#38bdf8;box-shadow:0 0 18px #38bdf8}
     .nyand-fire{position:absolute;right:28px;bottom:205px;width:82px;height:82px;border-radius:50%;display:grid;place-items:center;border:3px solid #f97316;background:rgba(124,45,18,.82);color:white;font-size:30px;font-weight:900;box-shadow:0 0 24px rgba(249,115,22,.6)}
     body.nyand-real-mobile #mobileControls{display:block!important;z-index:2147482570!important}
-    body.nyand-real-mobile #joystick{display:block!important}
+    body.nyand-real-mobile.nyand-move-step #joystick{display:block!important}
     body.nyand-real-mobile.nyand-fire-step #fireButton{display:block!important}
-    body.nyand-real-mobile.nyand-fire-step #aimPad{display:block!important}
     @media(max-width:700px),(pointer:coarse){#nyandCard{top:max(68px,calc(env(safe-area-inset-top) + 68px));bottom:auto;width:calc(100vw - 20px);max-height:44dvh;overflow:auto;padding:12px;border-radius:14px}#nyandHead{gap:8px;margin-bottom:8px}#nyandFace{width:40px;height:40px;border-radius:12px;font-size:22px}#nyandTitle{font-size:15px}#nyandText{min-height:44px;font-size:13px;line-height:1.55}#nyandHint{font-size:11px}#nyandActions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}#nyandActions button{min-height:38px;padding:0 8px;font-size:12px}}
   `;
   document.head.appendChild(css);
 
-  let step=0,timer=null,currentTarget=null,mobileControlsWasVisible=null;
+  let step=0,timer=null,currentTarget=null,mobileSnapshot=null,mobileAttemptToken=0;
   const speak=text=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="ja-JP";u.rate=.95;speechSynthesis.speak(u)}catch(e){}};
   const clearTarget=()=>{if(currentTarget){currentTarget.classList.remove("nyand-target");currentTarget=null;}};
   const findTarget=selector=>{if(!selector)return null;for(const s of selector.split(",")){const el=document.querySelector(s.trim());if(el&&el.offsetParent!==null)return el;}return null;};
@@ -49,23 +48,7 @@
   }
 
   function callMobileSetup(){
-    ["setupMobileControls","initMobileControls","createMobileControls","showMobileControls","setupTouchControls","initTouchControls","createJoystick"].forEach(name=>{try{if(typeof window[name]==="function")window[name]();}catch(error){console.warn(name,error);}});
-  }
-
-  function setRealMobileControls(mode){
-    const controls=document.getElementById("mobileControls");
-    document.body.classList.remove("nyand-real-mobile","nyand-move-step","nyand-fire-step");
-    if(!mode){
-      if(controls&&mobileControlsWasVisible===false)controls.classList.remove("is-visible");
-      mobileControlsWasVisible=null;
-      return false;
-    }
-    if(!controls)return false;
-    if(mobileControlsWasVisible===null)mobileControlsWasVisible=controls.classList.contains("is-visible");
-    controls.classList.add("is-visible");
-    document.body.classList.add("nyand-real-mobile",mode==="move"?"nyand-move-step":"nyand-fire-step");
-    const actual=mode==="move"?document.getElementById("joystick"):document.getElementById("fireButton");
-    return !!actual;
+    ["setupMobileControls","initMobileControls","createMobileControls","showMobileControls","setupTouchControls","initTouchControls","createJoystick","applyMobileControlsVisibility"].forEach(name=>{try{if(typeof window[name]==="function")window[name]();}catch(error){console.warn(name,error);}});
   }
 
   function showMobileDemo(mode){
@@ -75,30 +58,112 @@
     demo.querySelector(".nyand-fire").style.display=mode==="fire"?"grid":"none";
   }
 
+  function captureMobileState(){
+    if(mobileSnapshot)return;
+    const controls=document.getElementById("mobileControls");
+    mobileSnapshot={
+      controlsVisible:!!controls&&controls.classList.contains("is-visible"),
+      simpleControls:document.body.classList.contains("simple-touch-controls")
+    };
+  }
+
+  function clearMobileTutorialClasses(){
+    document.body.classList.remove("nyand-real-mobile","nyand-move-step","nyand-fire-step");
+  }
+
+  function prepareRealMobileControls(mode){
+    const controls=document.getElementById("mobileControls");
+    if(!controls)return null;
+    captureMobileState();
+    clearMobileTutorialClasses();
+    document.body.classList.remove("simple-touch-controls");
+    controls.classList.add("is-visible");
+    document.body.classList.add("nyand-real-mobile",mode==="move"?"nyand-move-step":"nyand-fire-step");
+    return mode==="move"?document.getElementById("joystick"):document.getElementById("fireButton");
+  }
+
+  function restoreMobileState(){
+    mobileAttemptToken++;
+    clearMobileTutorialClasses();
+    const controls=document.getElementById("mobileControls");
+    if(mobileSnapshot){
+      if(controls)controls.classList.toggle("is-visible",mobileSnapshot.controlsVisible);
+      document.body.classList.toggle("simple-touch-controls",mobileSnapshot.simpleControls);
+    }
+    mobileSnapshot=null;
+  }
+
+  function isReallyVisible(el){
+    if(!el)return false;
+    const style=getComputedStyle(el),rect=el.getBoundingClientRect();
+    return style.display!=="none"&&style.visibility!=="hidden"&&Number(style.opacity||1)>0&&rect.width>20&&rect.height>20&&rect.bottom>0&&rect.right>0&&rect.top<innerHeight&&rect.left<innerWidth;
+  }
+
+  function highlightTarget(target,message){
+    clearTarget();
+    const hint=document.getElementById("nyandHint");
+    if(target){
+      currentTarget=target;
+      target.classList.add("nyand-target");
+      try{target.scrollIntoView({behavior:"smooth",block:"center"});}catch(e){}
+      if(hint)hint.textContent=message||"青く光っている場所を確認してね。";
+    }
+  }
+
+  function showMobileStep(mode){
+    const token=++mobileAttemptToken;
+    const hint=document.getElementById("nyandHint");
+    showMobileDemo(mode);
+    if(hint)hint.textContent="実際のスマホ操作を呼び出しています…";
+
+    const attempt=count=>{
+      if(token!==mobileAttemptToken)return;
+      callMobileSetup();
+      const actual=prepareRealMobileControls(mode);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        if(token!==mobileAttemptToken)return;
+        if(isReallyVisible(actual)){
+          showMobileDemo(null);
+          highlightTarget(actual,mode==="move"?"実際の移動スティックです。位置は通常プレイと同じです。":"実際の攻撃ボタンです。位置は通常プレイと同じです。");
+          return;
+        }
+        if(count<8){
+          setTimeout(()=>attempt(count+1),140);
+          return;
+        }
+        showMobileDemo(mode);
+        if(hint)hint.textContent="実物の表示を待っています。見本は消さずに表示しています。";
+      }));
+    };
+    attempt(0);
+  }
+
   const render=()=>{
     const data=STEPS[step],root=document.getElementById("nyandTutorial");if(!root)return;
-    clearTarget();showMobileDemo(null);setRealMobileControls(null);openScreenSafe(data.screen);
-    if(data.mobileDemo){
-      callMobileSetup();
-      setTimeout(()=>{
-        callMobileSetup();
-        const realShown=setRealMobileControls(data.mobileDemo);
-        if(!realShown)showMobileDemo(data.mobileDemo);
-      },80);
-    }
+    clearTarget();
+    showMobileDemo(null);
+    openScreenSafe(data.screen);
+
     document.getElementById("nyandTitle").textContent=data.title;
     document.getElementById("nyandProgress").textContent=`${step+1} / ${STEPS.length}`;
     typeText(data.text);speak(data.text);
-    setTimeout(()=>{
-      const target=findTarget(data.target),hint=document.getElementById("nyandHint");
-      if(target){currentTarget=target;target.classList.add("nyand-target");target.scrollIntoView({behavior:"smooth",block:"center"});hint.textContent="青く光っている場所を確認してね。";}
-      else hint.textContent=data.mobileDemo?"スマホ操作の見本を表示しています。":"「次へ」で進めます。";
-    },180);
+
+    if(data.mobileDemo){
+      showMobileStep(data.mobileDemo);
+    }else{
+      restoreMobileState();
+      setTimeout(()=>{
+        const target=findTarget(data.target),hint=document.getElementById("nyandHint");
+        if(target)highlightTarget(target,"青く光っている場所を確認してね。");
+        else if(hint)hint.textContent="「次へ」で進めます。";
+      },180);
+    }
+
     document.getElementById("nyandPrev").disabled=step===0;
     document.getElementById("nyandNext").textContent=step===STEPS.length-1?"完了":"次へ";
   };
 
-  const close=()=>{clearInterval(timer);clearTarget();showMobileDemo(null);setRealMobileControls(null);speechSynthesis?.cancel?.();document.getElementById("nyandTutorial")?.classList.remove("show");};
+  const close=()=>{clearInterval(timer);clearTarget();showMobileDemo(null);restoreMobileState();speechSynthesis?.cancel?.();document.getElementById("nyandTutorial")?.classList.remove("show");};
   const open=()=>{step=0;localStorage.removeItem("shookingTutorialStep");document.getElementById("nyandTutorial")?.classList.add("show");render();};
 
   function build(){
