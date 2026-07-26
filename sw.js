@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v54";
+const CACHE_NAME = "shooking-ii-v55";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -11,6 +11,7 @@ const APP_SHELL = [
   "./ui-patch.js",
   "./firebase-config.js",
   "./google-login.js",
+  "./google-login-fix.js",
   "./online-pve.js",
   "./anti-cheat.js",
   "./admin-mode.js",
@@ -75,7 +76,8 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendStyle(html, "css/gmail-seat-invite.css", 1);
     html = appendScript(html, "ui-patch.js", 6);
     html = appendScript(html, "firebase-config.js", 2);
-    html = appendScript(html, "google-login.js", 10);
+    html = appendScript(html, "google-login.js", 11);
+    html = appendScript(html, "google-login-fix.js", 1);
     html = appendScript(html, "online-pve.js", 5);
     html = appendScript(html, "anti-cheat.js", 1);
     html = appendScript(html, "admin-mode.js", 1);
@@ -123,6 +125,7 @@ self.addEventListener("fetch", event => {
   if (
     requestUrl.pathname.endsWith("/gemedeta.js") ||
     requestUrl.pathname.endsWith("/game-system.js") ||
+    requestUrl.pathname.endsWith("/google-login-fix.js") ||
     requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
     requestUrl.pathname.endsWith("/seasonal-gacha-fix.js") ||
     requestUrl.pathname.endsWith("/gmail-seat-invite.js") ||
