@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v55";
+const CACHE_NAME = "shooking-ii-v56";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -77,7 +77,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendScript(html, "ui-patch.js", 6);
     html = appendScript(html, "firebase-config.js", 2);
     html = appendScript(html, "google-login.js", 11);
-    html = appendScript(html, "google-login-fix.js", 1);
+    html = appendScript(html, "google-login-fix.js", 2);
     html = appendScript(html, "online-pve.js", 5);
     html = appendScript(html, "anti-cheat.js", 1);
     html = appendScript(html, "admin-mode.js", 1);
