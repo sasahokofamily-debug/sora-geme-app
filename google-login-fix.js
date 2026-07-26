@@ -5,6 +5,7 @@
   const FIREBASE_VERSION="10.12.5";
   let authPromise=null;
   let running=false;
+  let redirectChecked=false;
 
   function message(text,isError=false){
     const el=document.getElementById("googleLoginMessage")||document.getElementById("loginMessage");
@@ -18,7 +19,7 @@
     try{return JSON.parse(localStorage.getItem(CONFIG_KEY)||"null");}catch{return null;}
   }
 
-  function waitFor(check,timeout=12000){
+  function waitFor(check,timeout=15000){
     return new Promise((resolve,reject)=>{
       const started=Date.now();
       const timer=setInterval(()=>{
@@ -34,9 +35,7 @@
       const existing=document.getElementById(id);
       if(existing){waitFor(ready).then(resolve,reject);return;}
       const script=document.createElement("script");
-      script.id=id;
-      script.src=src;
-      script.async=false;
+      script.id=id;script.src=src;script.async=true;
       script.onload=()=>waitFor(ready).then(resolve,reject);
       script.onerror=()=>reject(new Error("Firebaseライブラリを読み込めませんでした"));
       document.head.appendChild(script);
@@ -47,9 +46,7 @@
     if(authPromise)return authPromise;
     authPromise=(async()=>{
       const config=getConfig();
-      if(!config?.apiKey||!config?.authDomain||!config?.projectId||!config?.appId){
-        throw Object.assign(new Error("Firebase設定が見つかりません"),{code:"auth/missing-config"});
-      }
+      if(!config?.apiKey||!config?.authDomain||!config?.projectId||!config?.appId)throw Object.assign(new Error("Firebase設定が見つかりません"),{code:"auth/missing-config"});
       await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app-compat.js`,"firebaseAppSdk",()=>!!window.firebase?.initializeApp);
       await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth-compat.js`,"firebaseAuthSdk",()=>!!window.firebase?.auth);
       const app=firebase.apps?.length?firebase.app():firebase.initializeApp(config);
@@ -62,21 +59,19 @@
 
   function readableError(error){
     const code=String(error?.code||"");
-    if(code==="auth/popup-blocked")return "ポップアップがブロックされました。画面移動方式で開き直します。";
+    if(code==="auth/popup-blocked")return "ポップアップがブロックされました。ブラウザでポップアップを許可してください。";
     if(code==="auth/popup-closed-by-user")return "Googleログイン画面が閉じられました。もう一度押してください。";
-    if(code==="auth/cancelled-popup-request")return "ログイン処理が重なりました。数秒待ってからもう一度押してください。";
+    if(code==="auth/cancelled-popup-request")return "ログイン処理が重なりました。少し待ってからやり直してください。";
     if(code==="auth/unauthorized-domain")return `Firebaseの承認済みドメインに「${location.hostname}」を追加してください。`;
     if(code==="auth/network-request-failed")return "通信に失敗しました。インターネット接続を確認してください。";
     if(code==="auth/operation-not-allowed")return "Firebase AuthenticationでGoogleログインが有効になっていません。";
-    if(code==="auth/web-storage-unsupported")return "ブラウザのCookieまたはサイトデータが無効です。設定を許可してください。";
+    if(code==="auth/web-storage-unsupported")return "Cookieまたはサイトデータが無効です。ブラウザ設定で許可してください。";
+    if(code==="auth/redirect-cancelled-by-user")return "Googleログインがキャンセルされました。";
     return error?.message||"Googleログインに失敗しました。";
   }
 
-  function shouldUseRedirect(){
-    const ua=navigator.userAgent||"";
-    const ios=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
-    const standalone=window.matchMedia?.("(display-mode: standalone)")?.matches||navigator.standalone===true;
-    return ios||standalone;
+  function standaloneMode(){
+    return window.matchMedia?.("(display-mode: standalone)")?.matches||navigator.standalone===true;
   }
 
   async function fixedGoogleLogin(){
@@ -85,12 +80,13 @@
     const buttons=[...document.querySelectorAll("button")].filter(button=>(button.textContent||"").includes("Googleでログイン"));
     buttons.forEach(button=>button.disabled=true);
     try{
+      sessionStorage.removeItem("shooking2_guest_session");
       message("Googleログインを準備しています...");
       const auth=await getAuth();
       const provider=new firebase.auth.GoogleAuthProvider();
       provider.setCustomParameters({prompt:"select_account"});
 
-      if(shouldUseRedirect()){
+      if(standaloneMode()){
         sessionStorage.setItem("shooking2_google_redirect_pending","1");
         message("Googleログイン画面へ移動します...");
         await auth.signInWithRedirect(provider);
@@ -99,18 +95,18 @@
 
       try{
         const result=await auth.signInWithPopup(provider);
-        if(result?.user)message("Googleでログインしました。ゲームデータを読み込んでいます...");
+        if(result?.user)message("Googleでログインしました。ゲームを開いています...");
       }catch(error){
-        if(error?.code==="auth/popup-blocked"){
+        if(["auth/popup-blocked","auth/cancelled-popup-request"].includes(error?.code)){
           sessionStorage.setItem("shooking2_google_redirect_pending","1");
-          message("ポップアップが使えないため、Googleログイン画面へ移動します...");
+          message("画面移動方式でGoogleログインを開きます...");
           await auth.signInWithRedirect(provider);
           return;
         }
         throw error;
       }
     }catch(error){
-      console.error("Google login fix:",error);
+      console.error("Google login:",error);
       message("Googleログインに失敗しました："+readableError(error),true);
     }finally{
       running=false;
@@ -119,18 +115,16 @@
   }
 
   async function finishRedirect(){
+    if(redirectChecked)return;
+    redirectChecked=true;
     const pending=sessionStorage.getItem("shooking2_google_redirect_pending")==="1";
+    if(!pending)return;
     try{
       const auth=await getAuth();
       const result=await auth.getRedirectResult();
       sessionStorage.removeItem("shooking2_google_redirect_pending");
-      if(result?.user){
-        message("Googleでログインしました。ゲームデータを読み込んでいます...");
-      }else if(pending&&auth.currentUser){
-        message("Googleログインを確認しました。ゲームデータを読み込んでいます...");
-      }else if(pending){
-        message("Googleログインを完了できませんでした。もう一度お試しください。",true);
-      }
+      if(result?.user||auth.currentUser)message("Googleでログインしました。ゲームを開いています...");
+      else message("Googleログインを完了できませんでした。もう一度お試しください。",true);
     }catch(error){
       sessionStorage.removeItem("shooking2_google_redirect_pending");
       console.error("Google redirect result:",error);
@@ -144,7 +138,10 @@
       const text=(button.textContent||"").trim();
       const onclick=button.getAttribute("onclick")||"";
       if(text.includes("Googleでログイン")||onclick.includes("startGoogleLogin")){
-        button.onclick=event=>{event.preventDefault();event.stopPropagation();fixedGoogleLogin();};
+        if(button.dataset.googleStableBound==="1")return;
+        button.dataset.googleStableBound="1";
+        button.removeAttribute("onclick");
+        button.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();fixedGoogleLogin();});
         button.disabled=false;
       }
     });
