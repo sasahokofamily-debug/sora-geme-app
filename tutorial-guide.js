@@ -29,11 +29,15 @@
     #nyandMobileDemo{position:fixed;inset:0;pointer-events:none;z-index:2147482550;display:none}#nyandMobileDemo.show{display:block}
     .nyand-stick{position:absolute;left:24px;bottom:190px;width:112px;height:112px;border-radius:50%;border:3px solid rgba(125,249,255,.8);background:rgba(15,23,42,.68);box-shadow:0 0 24px rgba(56,189,248,.45)}.nyand-stick::after{content:"";position:absolute;width:48px;height:48px;left:32px;top:32px;border-radius:50%;background:#38bdf8;box-shadow:0 0 18px #38bdf8}
     .nyand-fire{position:absolute;right:28px;bottom:205px;width:82px;height:82px;border-radius:50%;display:grid;place-items:center;border:3px solid #f97316;background:rgba(124,45,18,.82);color:white;font-size:30px;font-weight:900;box-shadow:0 0 24px rgba(249,115,22,.6)}
+    body.nyand-real-mobile #mobileControls{display:block!important;z-index:2147482570!important}
+    body.nyand-real-mobile #joystick{display:block!important}
+    body.nyand-real-mobile.nyand-fire-step #fireButton{display:block!important}
+    body.nyand-real-mobile.nyand-fire-step #aimPad{display:block!important}
     @media(max-width:700px),(pointer:coarse){#nyandCard{top:max(68px,calc(env(safe-area-inset-top) + 68px));bottom:auto;width:calc(100vw - 20px);max-height:44dvh;overflow:auto;padding:12px;border-radius:14px}#nyandHead{gap:8px;margin-bottom:8px}#nyandFace{width:40px;height:40px;border-radius:12px;font-size:22px}#nyandTitle{font-size:15px}#nyandText{min-height:44px;font-size:13px;line-height:1.55}#nyandHint{font-size:11px}#nyandActions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}#nyandActions button{min-height:38px;padding:0 8px;font-size:12px}}
   `;
   document.head.appendChild(css);
 
-  let step=0,timer=null,currentTarget=null;
+  let step=0,timer=null,currentTarget=null,mobileControlsWasVisible=null;
   const speak=text=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="ja-JP";u.rate=.95;speechSynthesis.speak(u)}catch(e){}};
   const clearTarget=()=>{if(currentTarget){currentTarget.classList.remove("nyand-target");currentTarget=null;}};
   const findTarget=selector=>{if(!selector)return null;for(const s of selector.split(",")){const el=document.querySelector(s.trim());if(el&&el.offsetParent!==null)return el;}return null;};
@@ -48,6 +52,22 @@
     ["setupMobileControls","initMobileControls","createMobileControls","showMobileControls","setupTouchControls","initTouchControls","createJoystick"].forEach(name=>{try{if(typeof window[name]==="function")window[name]();}catch(error){console.warn(name,error);}});
   }
 
+  function setRealMobileControls(mode){
+    const controls=document.getElementById("mobileControls");
+    document.body.classList.remove("nyand-real-mobile","nyand-move-step","nyand-fire-step");
+    if(!mode){
+      if(controls&&mobileControlsWasVisible===false)controls.classList.remove("is-visible");
+      mobileControlsWasVisible=null;
+      return false;
+    }
+    if(!controls)return false;
+    if(mobileControlsWasVisible===null)mobileControlsWasVisible=controls.classList.contains("is-visible");
+    controls.classList.add("is-visible");
+    document.body.classList.add("nyand-real-mobile",mode==="move"?"nyand-move-step":"nyand-fire-step");
+    const actual=mode==="move"?document.getElementById("joystick"):document.getElementById("fireButton");
+    return !!actual;
+  }
+
   function showMobileDemo(mode){
     const demo=document.getElementById("nyandMobileDemo");if(!demo)return;
     demo.classList.toggle("show",!!mode);
@@ -57,8 +77,15 @@
 
   const render=()=>{
     const data=STEPS[step],root=document.getElementById("nyandTutorial");if(!root)return;
-    clearTarget();showMobileDemo(null);openScreenSafe(data.screen);
-    if(data.mobileDemo){callMobileSetup();setTimeout(callMobileSetup,250);showMobileDemo(data.mobileDemo);}
+    clearTarget();showMobileDemo(null);setRealMobileControls(null);openScreenSafe(data.screen);
+    if(data.mobileDemo){
+      callMobileSetup();
+      setTimeout(()=>{
+        callMobileSetup();
+        const realShown=setRealMobileControls(data.mobileDemo);
+        if(!realShown)showMobileDemo(data.mobileDemo);
+      },80);
+    }
     document.getElementById("nyandTitle").textContent=data.title;
     document.getElementById("nyandProgress").textContent=`${step+1} / ${STEPS.length}`;
     typeText(data.text);speak(data.text);
@@ -71,7 +98,7 @@
     document.getElementById("nyandNext").textContent=step===STEPS.length-1?"完了":"次へ";
   };
 
-  const close=()=>{clearInterval(timer);clearTarget();showMobileDemo(null);speechSynthesis?.cancel?.();document.getElementById("nyandTutorial")?.classList.remove("show");};
+  const close=()=>{clearInterval(timer);clearTarget();showMobileDemo(null);setRealMobileControls(null);speechSynthesis?.cancel?.();document.getElementById("nyandTutorial")?.classList.remove("show");};
   const open=()=>{step=0;localStorage.removeItem("shookingTutorialStep");document.getElementById("nyandTutorial")?.classList.add("show");render();};
 
   function build(){
