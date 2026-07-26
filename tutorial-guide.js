@@ -31,6 +31,16 @@
     .nyand-target{position:relative!important;z-index:2147482600!important;outline:4px solid #58a6ff!important;box-shadow:0 0 0 8px rgba(88,166,255,.22),0 0 30px rgba(88,166,255,.55)!important;animation:nyandPulse 1s ease-in-out infinite alternate}
     @keyframes nyandPulse{to{box-shadow:0 0 0 12px rgba(88,166,255,.08),0 0 40px rgba(88,166,255,.7)}}
     #tutorialSettingsButton{width:100%;margin-top:10px}
+    @media(max-width:700px),(pointer:coarse){
+      #nyandCard{top:max(90px,calc(env(safe-area-inset-top) + 90px));bottom:auto;width:calc(100vw - 20px);max-height:42dvh;overflow:auto;padding:12px;border-radius:14px}
+      #nyandHead{gap:8px;margin-bottom:8px}
+      #nyandFace{width:40px;height:40px;border-radius:12px;font-size:22px}
+      #nyandTitle{font-size:15px}
+      #nyandText{min-height:44px;font-size:13px;line-height:1.55}
+      #nyandHint{font-size:11px}
+      #nyandActions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+      #nyandActions button{min-height:38px;padding:0 8px;font-size:12px}
+    }
   `;
   document.head.appendChild(css);
 

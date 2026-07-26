@@ -20,6 +20,10 @@ style.textContent=`
 #shookingBreadcrumb a{color:#58a6ff;text-decoration:none}
 #shookingGameExit{position:fixed;left:12px;bottom:12px;z-index:99998;display:inline-flex;padding:11px 14px;border:1px solid #58a6ff;border-radius:12px;background:#0d1117;color:#fff;text-decoration:none;font:900 13px system-ui;box-shadow:0 8px 28px rgba(0,0,0,.4)}
 @media(max-width:720px){#shookingCommonNav .sn-inner{overflow-x:auto}.sn-brand{display:none!important}#shookingCommonNav a{white-space:nowrap;flex:0 0 auto}}
+@media(max-width:700px),(pointer:coarse){
+  #shookingGameExit{left:max(8px,env(safe-area-inset-left));bottom:max(82px,calc(env(safe-area-inset-bottom) + 82px));padding:8px 10px;border-radius:10px;font-size:11px}
+  body.game-playing #shookingGameExit{display:none!important}
+}
 `;
 document.head.appendChild(style);
 

@@ -54,16 +54,81 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
   button{min-height:46px;padding:12px 12px;border-radius:10px}
   .panel{width:100vw;max-height:calc(100dvh - 18px);padding:14px;border-right:0;border-left:0;border-radius:0}
   h1{font-size:clamp(28px,9vw,36px)}
-  #ui{left:max(8px,env(safe-area-inset-left));top:max(8px,env(safe-area-inset-top));max-width:min(46vw,170px);padding:8px 10px;font-size:11px;line-height:1.35;border-radius:10px;background:rgba(2,6,23,.62)}
-  #itemStatus{right:max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));padding:7px 9px;font-size:11px;line-height:1.35;border-radius:10px;background:rgba(2,6,23,.62)}
-  #missionToast{top:max(154px,env(safe-area-inset-top));max-width:82vw;font-size:13px}
+  #ui{left:max(8px,env(safe-area-inset-left));top:max(52px,calc(env(safe-area-inset-top) + 52px));max-width:min(48vw,174px);padding:7px 9px;font-size:11px;line-height:1.3;border-radius:10px;background:rgba(2,6,23,.62)}
+  #itemStatus{right:max(8px,env(safe-area-inset-right));top:max(52px,calc(env(safe-area-inset-top) + 52px));max-width:min(42vw,150px);padding:7px 9px;font-size:11px;line-height:1.3;border-radius:10px;background:rgba(2,6,23,.62)}
+  #missionToast{top:max(188px,calc(env(safe-area-inset-top) + 188px));max-width:76vw;font-size:12px;padding:8px 12px;line-height:1.35}
   #joystick{left:max(16px,env(safe-area-inset-left));bottom:max(20px,env(safe-area-inset-bottom));width:118px;height:118px;background:rgba(15,23,42,.52)}
   #fireButton{right:max(16px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));width:108px;height:108px;margin:0}
   #aimPad{right:max(18px,env(safe-area-inset-right));bottom:142px;width:118px;height:118px}
+  body.game-playing #shookingGameExit,
+  body.game-playing #gmailSeatInviteButton,
+  body.game-playing #shooAdminBadge,
+  body.game-playing #shooAdminEntry{display:none!important}
+  body.game-playing .challengeHud{
+    left:max(8px,env(safe-area-inset-left));
+    bottom:max(150px,calc(env(safe-area-inset-bottom) + 150px));
+    max-width:min(220px,calc(100vw - 16px));
+    padding:7px 9px;
+    font-size:11px;
+    line-height:1.25;
+  }
+  body.game-playing #pveTeamHud{
+    top:max(106px,calc(env(safe-area-inset-top) + 106px))!important;
+    right:max(8px,env(safe-area-inset-right))!important;
+    max-width:min(148px,42vw)!important;
+    padding:7px 8px!important;
+    font-size:10px!important;
+    line-height:1.3!important;
+  }
+}
+@media(max-width:900px),(pointer:coarse){
+  body.game-playing #ui{
+    left:max(8px,env(safe-area-inset-left));
+    top:max(52px,calc(env(safe-area-inset-top) + 52px));
+    max-width:min(48vw,174px);
+    padding:7px 9px;
+    font-size:11px;
+    line-height:1.3;
+  }
+  body.game-playing #itemStatus{
+    right:max(8px,env(safe-area-inset-right));
+    top:max(52px,calc(env(safe-area-inset-top) + 52px));
+    max-width:min(42vw,150px);
+    padding:7px 9px;
+    font-size:11px;
+    line-height:1.3;
+  }
+  body.game-playing #missionToast{
+    top:max(188px,calc(env(safe-area-inset-top) + 188px));
+    max-width:76vw;
+    font-size:12px;
+    padding:8px 12px;
+    line-height:1.35;
+  }
+  body.game-playing #shookingGameExit,
+  body.game-playing #gmailSeatInviteButton,
+  body.game-playing #shooAdminBadge,
+  body.game-playing #shooAdminEntry{display:none!important}
+  body.game-playing .challengeHud{
+    left:max(8px,env(safe-area-inset-left));
+    bottom:max(150px,calc(env(safe-area-inset-bottom) + 150px));
+    max-width:min(220px,calc(100vw - 16px));
+    padding:7px 9px;
+    font-size:11px;
+    line-height:1.25;
+  }
+  body.game-playing #pveTeamHud{
+    top:max(106px,calc(env(safe-area-inset-top) + 106px))!important;
+    right:max(8px,env(safe-area-inset-right))!important;
+    max-width:min(148px,42vw)!important;
+    padding:7px 8px!important;
+    font-size:10px!important;
+    line-height:1.3!important;
+  }
 }
 @media(max-width:360px){
-  #ui{max-width:44vw;font-size:10px;padding:7px 8px}
-  #itemStatus{font-size:10px;padding:6px 8px}
+  #ui{max-width:46vw;font-size:10px;padding:6px 7px}
+  #itemStatus{max-width:40vw;font-size:10px;padding:6px 7px}
   #joystick{width:112px;height:112px}
   #fireButton{width:108px;height:108px;font-size:16px}
   #aimPad{width:118px;height:118px;bottom:144px}
@@ -1748,6 +1813,7 @@ const WORLD_UNITS={pxPerMeter:4,kmhToPxPerFrame(kmh){return(kmh*1000/3600)*this.
 
 const MODS={weapons:{main:{bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(960),bulletSize:5,damageBase:14}},enemies:{eliteRate:.13},stages:{spawnBoost:1}};
 let state="home",runStats={kills:0,eliteKills:0,startTime:0,cleared:false};
+function syncGameChromeState(){document.body.classList.toggle("game-playing",state==="play")}
 let save=JSON.parse(localStorage.getItem("shooking2")||"{}");
 let player={worldX:0,worldY:0,vx:0,vy:0,hp:save.maxHp||120,maxHp:save.maxHp||120,maxStage:save.maxStage||1,maxClearedStage:save.maxClearedStage||0,level:save.level||1,exp:save.exp||0,needExp:save.needExp||80,coins:save.coins||0,damage:save.damage||1,fire:save.fire||1,engine:save.engine||1,weapon:save.weapon||"m16",unlockedWeapons:Array.isArray(save.unlockedWeapons)?save.unlockedWeapons:["m16"],stage:1,lastShot:0,shield:0,magnetTimer:0,rapidTimer:0,critChance:.05,bulletCount:1};
 
@@ -2325,7 +2391,7 @@ function updateStats(){
   if(typeof renderWeaponShop==="function")renderWeaponShop();
 }
 updateStats();setTimeout(()=>{if(typeof renderHomeShipPreview==="function")renderHomeShipPreview()},0);
-function openScreen(name){showScreen(name);if(name==="home")setTimeout(renderHomeShipPreview,0);if(name==="shop"&&typeof renderWeaponShop==="function")renderWeaponShop();state=["home","loginScreen","registerScreen","stageSelect","shop","gacha","onlinePlay","settings","familyMessageSettings","modEditor","requestLog","questScreen","progressScreen","hangar","skinChangeScreen","savedReportsScreen","achievementScreen","saveManagerScreen"].includes(name)?"home":name;saveData()}
+function openScreen(name){showScreen(name);if(name==="home")setTimeout(renderHomeShipPreview,0);if(name==="shop"&&typeof renderWeaponShop==="function")renderWeaponShop();state=["home","loginScreen","registerScreen","stageSelect","shop","gacha","onlinePlay","settings","familyMessageSettings","modEditor","requestLog","questScreen","progressScreen","hangar","skinChangeScreen","savedReportsScreen","achievementScreen","saveManagerScreen"].includes(name)?"home":name;syncGameChromeState();saveData()}
 function showToast(text){const t=document.getElementById("missionToast");t.innerHTML=text;t.style.display="block";setTimeout(()=>t.style.display="none",2200)}
 
 
@@ -2352,12 +2418,13 @@ function applyTutorialCombatAssist(){
 function startGame(startStage=1){
   ensureAutoQuests(Number(startStage||1));
   startQuestRunSnapshot();
-  const stageIdForQuest=Number(startStage||1);ensureAutoQuests(stageIdForQuest);state="play";hideAllScreens();player.hp=Math.floor(player.maxHp*getSkinMods().hp);player.worldX=0;player.worldY=0;player.vx=0;player.vy=0;player.stage=startStage;mouse.down=false;bullets=[];enemyBullets=[];enemies=[];particles=[];combatTexts=[];items=[];score=0;stageTimer=0;lastSpawn=isTutorialStage(startStage)?performance.now()+1400:0;boss=null;player.shield=isTutorialStage(startStage)?90:0;player.magnetTimer=0;player.rapidTimer=0;if(typeof challengeState!=="undefined")challengeState=null;runStats={kills:0,eliteKills:0,startTime:performance.now(),cleared:false,bossDefeated:false};const s=getStageData(startStage);if(isBossStage(startStage))spawnStageBoss(s);if(s&&s.challenge&&typeof startChallengeStage==="function")startChallengeStage(s);showToast(`${isBossStage(startStage)?"BOSS ALERT<br>":""}STAGE ${s.id}：${s.name}<br>${s.mission}${isTutorialStage(startStage)?"<br>チュートリアル補助：自動射撃・シールドON":""}`);sound(700,.15,"sawtooth",.06)}
+  const stageIdForQuest=Number(startStage||1);ensureAutoQuests(stageIdForQuest);state="play";syncGameChromeState();hideAllScreens();player.hp=Math.floor(player.maxHp*getSkinMods().hp);player.worldX=0;player.worldY=0;player.vx=0;player.vy=0;player.stage=startStage;mouse.down=false;bullets=[];enemyBullets=[];enemies=[];particles=[];combatTexts=[];items=[];score=0;stageTimer=0;lastSpawn=isTutorialStage(startStage)?performance.now()+1400:0;boss=null;player.shield=isTutorialStage(startStage)?90:0;player.magnetTimer=0;player.rapidTimer=0;if(typeof challengeState!=="undefined")challengeState=null;runStats={kills:0,eliteKills:0,startTime:performance.now(),cleared:false,bossDefeated:false};const s=getStageData(startStage);if(isBossStage(startStage))spawnStageBoss(s);if(s&&s.challenge&&typeof startChallengeStage==="function")startChallengeStage(s);showToast(`${isBossStage(startStage)?"BOSS ALERT<br>":""}STAGE ${s.id}：${s.name}<br>${s.mission}${isTutorialStage(startStage)?"<br>チュートリアル補助：自動射撃・シールドON":""}`);sound(700,.15,"sawtooth",.06)}
 function endGame(){
   mouse.down=false;
   touchMove.x=0;
   touchMove.y=0;
   state="report";
+  syncGameChromeState();
   try{if(typeof sound==="function")sound(120,.6,"sawtooth",.08);}catch(e){}
   finishBattleToReport("ゲームオーバー");
 }
@@ -2380,7 +2447,7 @@ function addExp(v){
     sound(1050,.2,"triangle",.08);
   }
 }
-function openLevelChoices(){const choices=[["攻撃力強化","基本ダメージ +15%",()=>player.damage+=.15],["最大HP強化","最大HP +25、HP全回復",()=>{player.maxHp+=25;player.hp=player.maxHp}],["連射強化","連射力 +12%",()=>player.fire+=.12],["エンジン強化","エンジン +10%",()=>player.engine+=.10],["シールド","シールド +60",()=>player.shield+=60],["ツインショット","弾数 +1",()=>player.bulletCount=Math.min(4,player.bulletCount+1)],["クリティカル","確率 +5%",()=>player.critChance+=.05],["磁石","30秒アイテム吸引",()=>player.magnetTimer=60*30],["ラピッド","20秒連射",()=>player.rapidTimer=60*20]];const picked=[];while(picked.length<3){const c=choices[Math.floor(Math.random()*choices.length)];if(!picked.includes(c))picked.push(c)}state="levelup";showScreen("levelUpScreen");const box=document.getElementById("levelChoices");box.innerHTML="";picked.forEach(c=>{const div=document.createElement("div");div.className="choiceCard";div.innerHTML=`<div class="choiceTitle">${c[0]}</div><div class="small">${c[1]}</div>`;div.onclick=()=>{c[2]();document.getElementById("levelUpScreen").classList.add("hidden");state="play";saveData();showToast(`${c[0]} を取得！`)};box.appendChild(div)})}
+function openLevelChoices(){const choices=[["攻撃力強化","基本ダメージ +15%",()=>player.damage+=.15],["最大HP強化","最大HP +25、HP全回復",()=>{player.maxHp+=25;player.hp=player.maxHp}],["連射強化","連射力 +12%",()=>player.fire+=.12],["エンジン強化","エンジン +10%",()=>player.engine+=.10],["シールド","シールド +60",()=>player.shield+=60],["ツインショット","弾数 +1",()=>player.bulletCount=Math.min(4,player.bulletCount+1)],["クリティカル","確率 +5%",()=>player.critChance+=.05],["磁石","30秒アイテム吸引",()=>player.magnetTimer=60*30],["ラピッド","20秒連射",()=>player.rapidTimer=60*20]];const picked=[];while(picked.length<3){const c=choices[Math.floor(Math.random()*choices.length)];if(!picked.includes(c))picked.push(c)}state="levelup";syncGameChromeState();showScreen("levelUpScreen");const box=document.getElementById("levelChoices");box.innerHTML="";picked.forEach(c=>{const div=document.createElement("div");div.className="choiceCard";div.innerHTML=`<div class="choiceTitle">${c[0]}</div><div class="small">${c[1]}</div>`;div.onclick=()=>{c[2]();document.getElementById("levelUpScreen").classList.add("hidden");state="play";syncGameChromeState();saveData();showToast(`${c[0]} を取得！`)};box.appendChild(div)})}
 function shoot(t){
   const w=getCurrentWeapon();
   const rapid=player.rapidTimer>0?1.7:1;
@@ -2877,6 +2944,7 @@ function openSkinChange(){
   }
   if(typeof showScreen==="function")showScreen("skinChangeScreen");
   state="skinchange";
+  syncGameChromeState();
   const box=document.getElementById("levelSkinGrid");
   const unlocked=getUnlockedSkins();
   const current=getEquippedSkinId();
@@ -2901,6 +2969,7 @@ function closeSkinChange(){
   reportConsumeSkinRight();
   if(typeof showScreen==="function")showScreen("home");
   state="home";
+  syncGameChromeState();
   if(typeof renderHomeShipPreview==="function")renderHomeShipPreview();
   saveData();
 }
@@ -3052,6 +3121,7 @@ function acceptReportAndReturnHome(){
   if(typeof showScreen==="function")showScreen("home");
   else if(typeof openScreen==="function")openScreen("home");
   state="home";
+  syncGameChromeState();
   saveData();
   if(typeof renderHomeShipPreview==="function")renderHomeShipPreview();
 }
@@ -3063,6 +3133,7 @@ function returnHomeAndOpenSkinChange(){
   }
   if(typeof showScreen==="function")showScreen("home");
   state="home";
+  syncGameChromeState();
   saveData();
   if(typeof renderHomeShipPreview==="function")renderHomeShipPreview();
   setTimeout(()=>{
@@ -3607,6 +3678,7 @@ function openStageSelect(){installChallengeMap();
   const el=document.getElementById("stageSelect");
   if(el)el.classList.remove("hidden");
   state="home";
+  syncGameChromeState();
   if(!player.maxStage)player.maxStage=1;
   const current=getCurrentMap();
   const valid=current.stages.some(s=>s.id===selectedStageId&&s.id<=getStageUnlockLimit());
@@ -3776,6 +3848,7 @@ function openMissionReport(){
   }
   screen.classList.remove("hidden");
   state="report";
+  syncGameChromeState();
 
   const paper=document.getElementById("missionReportPaper");
   if(paper){
@@ -3820,6 +3893,7 @@ function missionReportGoHome(){
     }
   }catch(e){}
   state="home";
+  syncGameChromeState();
   try{if(typeof renderHomeShipPreview==="function")renderHomeShipPreview();}catch(e){}
   try{if(typeof updateAccountStatus==="function")updateAccountStatus();}catch(e){}
   try{if(typeof saveData==="function")saveData();}catch(e){}

@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v53";
+const CACHE_NAME = "shooking-ii-v54";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
