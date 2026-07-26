@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v58";
+const CACHE_NAME = "shooking-ii-v59";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -49,7 +49,7 @@ function appendScript(html, filename, version) {
 }
 
 function prependGameScript(html, filename, version) {
-  html = html.replace(new RegExp(`<script[^>]+src=["'][^"']*${filename.replace('.', '\\.')}[^"']*["'][^>]*><\\/script>`, "gi"), "");
+  html = html.replace(new RegExp(`<script[^>]+src=["'][^"']*${filename.replace('.', '\\.') }[^"']*["'][^>]*><\\/script>`, "gi"), "");
   return html.replace("<body", `<script src="./${filename}?v=${version}"></script>\n<body`);
 }
 
@@ -92,7 +92,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = html.replace(/<script[^>]+src=["'][^"']*seasonal-gacha-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*gmail-seat-invite\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*tutorial-guide\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=2"></script>\n</body>');
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=3"></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
