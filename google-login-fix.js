@@ -2,9 +2,8 @@
   "use strict";
 
   const CONFIG_KEY="shooking2_firebase_config";
-  const CURRENT_KEY="shooking2_current_account";
-  const PROFILE_KEY="shooking2_google_profile";
   const FIREBASE_VERSION="10.12.5";
+  let authPromise=null;
   let running=false;
 
   function message(text,isError=false){
@@ -15,81 +14,67 @@
   }
 
   function getConfig(){
-    try{return JSON.parse(localStorage.getItem(CONFIG_KEY)||"null")||window.SHOO_KING_FIREBASE_CONFIG||null;}
-    catch{return window.SHOO_KING_FIREBASE_CONFIG||null;}
+    if(window.SHOO_KING_FIREBASE_CONFIG)return window.SHOO_KING_FIREBASE_CONFIG;
+    try{return JSON.parse(localStorage.getItem(CONFIG_KEY)||"null");}catch{return null;}
   }
 
-  function loadScript(src,id){
+  function waitFor(check,timeout=12000){
     return new Promise((resolve,reject)=>{
-      if(window.firebase&&id==="firebaseAppSdkFix"){resolve();return;}
-      if(document.getElementById(id)){
-        const started=Date.now();
-        const timer=setInterval(()=>{
-          if(window.firebase){clearInterval(timer);resolve();}
-          else if(Date.now()-started>10000){clearInterval(timer);reject(new Error("Firebaseの読み込みがタイムアウトしました"));}
-        },100);
-        return;
-      }
+      const started=Date.now();
+      const timer=setInterval(()=>{
+        if(check()){clearInterval(timer);resolve();}
+        else if(Date.now()-started>=timeout){clearInterval(timer);reject(new Error("Firebaseの読み込みがタイムアウトしました"));}
+      },80);
+    });
+  }
+
+  function loadScript(src,id,ready){
+    return new Promise((resolve,reject)=>{
+      if(ready())return resolve();
+      const existing=document.getElementById(id);
+      if(existing){waitFor(ready).then(resolve,reject);return;}
       const script=document.createElement("script");
       script.id=id;
       script.src=src;
-      script.async=true;
-      script.onload=resolve;
+      script.async=false;
+      script.onload=()=>waitFor(ready).then(resolve,reject);
       script.onerror=()=>reject(new Error("Firebaseライブラリを読み込めませんでした"));
       document.head.appendChild(script);
     });
   }
 
   async function getAuth(){
-    const config=getConfig();
-    if(!config?.apiKey||!config?.authDomain||!config?.projectId||!config?.appId){
-      throw Object.assign(new Error("Firebase設定が見つかりません"),{code:"auth/missing-config"});
-    }
-    if(!window.firebase){
-      await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app-compat.js`,"firebaseAppSdkFix");
-    }
-    if(!firebase.auth){
-      await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth-compat.js`,"firebaseAuthSdkFix");
-    }
-    if(!firebase.apps?.length)firebase.initializeApp(config);
-    const auth=firebase.auth();
-    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    return auth;
-  }
-
-  function saveAccount(user){
-    if(!user)return;
-    let old=null;
-    try{old=JSON.parse(localStorage.getItem(PROFILE_KEY)||"null");}catch{}
-    const account={
-      provider:user.providerData?.[0]?.providerId||"google.com",
-      uid:user.uid,
-      accountName:user.displayName||user.email?.split("@")[0]||"Player",
-      email:user.email||"",
-      picture:user.photoURL||"",
-      age:Number(old?.uid===user.uid?old.age:0)||0,
-      birthYear:Number(old?.uid===user.uid?old.birthYear:0)||0,
-      lastLoginAt:new Date().toISOString()
-    };
-    localStorage.setItem(PROFILE_KEY,JSON.stringify(account));
-    localStorage.setItem(CURRENT_KEY,JSON.stringify(account));
+    if(authPromise)return authPromise;
+    authPromise=(async()=>{
+      const config=getConfig();
+      if(!config?.apiKey||!config?.authDomain||!config?.projectId||!config?.appId){
+        throw Object.assign(new Error("Firebase設定が見つかりません"),{code:"auth/missing-config"});
+      }
+      await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app-compat.js`,"firebaseAppSdk",()=>!!window.firebase?.initializeApp);
+      await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth-compat.js`,"firebaseAuthSdk",()=>!!window.firebase?.auth);
+      const app=firebase.apps?.length?firebase.app():firebase.initializeApp(config);
+      const auth=app.auth();
+      await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      return auth;
+    })();
+    try{return await authPromise;}catch(error){authPromise=null;throw error;}
   }
 
   function readableError(error){
-    const code=error?.code||"";
-    if(code==="auth/popup-blocked")return "ポップアップがブロックされました。画面移動方式で再試行します。";
-    if(code==="auth/popup-closed-by-user")return "Googleログイン画面が閉じられました。";
-    if(code==="auth/cancelled-popup-request")return "別のログイン処理が進行中です。少し待って再試行してください。";
-    if(code==="auth/unauthorized-domain")return `この公開URLがFirebaseで許可されていません。許可ドメインに「${location.hostname}」を追加してください。`;
+    const code=String(error?.code||"");
+    if(code==="auth/popup-blocked")return "ポップアップがブロックされました。画面移動方式で開き直します。";
+    if(code==="auth/popup-closed-by-user")return "Googleログイン画面が閉じられました。もう一度押してください。";
+    if(code==="auth/cancelled-popup-request")return "ログイン処理が重なりました。数秒待ってからもう一度押してください。";
+    if(code==="auth/unauthorized-domain")return `Firebaseの承認済みドメインに「${location.hostname}」を追加してください。`;
     if(code==="auth/network-request-failed")return "通信に失敗しました。インターネット接続を確認してください。";
     if(code==="auth/operation-not-allowed")return "Firebase AuthenticationでGoogleログインが有効になっていません。";
-    if(code==="auth/internal-error")return "Google認証の内部エラーが発生しました。ページを再読み込みしてください。";
+    if(code==="auth/web-storage-unsupported")return "ブラウザのCookieまたはサイトデータが無効です。設定を許可してください。";
     return error?.message||"Googleログインに失敗しました。";
   }
 
   function shouldUseRedirect(){
     const ua=navigator.userAgent||"";
-    const ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+    const ios=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
     const standalone=window.matchMedia?.("(display-mode: standalone)")?.matches||navigator.standalone===true;
     return ios||standalone;
   }
@@ -97,8 +82,8 @@
   async function fixedGoogleLogin(){
     if(running)return;
     running=true;
-    const button=document.querySelector("#firebaseLoginExtras button[onclick*='startGoogleLogin']");
-    if(button)button.disabled=true;
+    const buttons=[...document.querySelectorAll("button")].filter(button=>(button.textContent||"").includes("Googleでログイン"));
+    buttons.forEach(button=>button.disabled=true);
     try{
       message("Googleログインを準備しています...");
       const auth=await getAuth();
@@ -114,13 +99,11 @@
 
       try{
         const result=await auth.signInWithPopup(provider);
-        saveAccount(result.user||auth.currentUser);
-        message("Googleでログインしました。");
-        setTimeout(()=>location.reload(),250);
+        if(result?.user)message("Googleでログインしました。ゲームデータを読み込んでいます...");
       }catch(error){
-        if(["auth/popup-blocked","auth/cancelled-popup-request"].includes(error?.code)){
+        if(error?.code==="auth/popup-blocked"){
           sessionStorage.setItem("shooking2_google_redirect_pending","1");
-          message("画面移動方式でGoogleログインを開きます...");
+          message("ポップアップが使えないため、Googleログイン画面へ移動します...");
           await auth.signInWithRedirect(provider);
           return;
         }
@@ -131,24 +114,22 @@
       message("Googleログインに失敗しました："+readableError(error),true);
     }finally{
       running=false;
-      if(button)button.disabled=false;
+      buttons.forEach(button=>button.disabled=false);
     }
   }
 
   async function finishRedirect(){
+    const pending=sessionStorage.getItem("shooking2_google_redirect_pending")==="1";
     try{
-      const pending=sessionStorage.getItem("shooking2_google_redirect_pending")==="1";
       const auth=await getAuth();
       const result=await auth.getRedirectResult();
-      const user=result?.user||auth.currentUser;
-      if(user){
-        sessionStorage.removeItem("shooking2_google_redirect_pending");
-        saveAccount(user);
-        message("Googleでログインしました。");
-        setTimeout(()=>location.reload(),250);
+      sessionStorage.removeItem("shooking2_google_redirect_pending");
+      if(result?.user){
+        message("Googleでログインしました。ゲームデータを読み込んでいます...");
+      }else if(pending&&auth.currentUser){
+        message("Googleログインを確認しました。ゲームデータを読み込んでいます...");
       }else if(pending){
         message("Googleログインを完了できませんでした。もう一度お試しください。",true);
-        sessionStorage.removeItem("shooking2_google_redirect_pending");
       }
     }catch(error){
       sessionStorage.removeItem("shooking2_google_redirect_pending");
@@ -157,15 +138,21 @@
     }
   }
 
-  function install(){
+  function bindButtons(){
     window.startGoogleLogin=fixedGoogleLogin;
-    document.addEventListener("click",event=>{
-      const button=event.target.closest("#firebaseLoginExtras button[onclick*='startGoogleLogin']");
-      if(!button)return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      fixedGoogleLogin();
-    },true);
+    document.querySelectorAll("button").forEach(button=>{
+      const text=(button.textContent||"").trim();
+      const onclick=button.getAttribute("onclick")||"";
+      if(text.includes("Googleでログイン")||onclick.includes("startGoogleLogin")){
+        button.onclick=event=>{event.preventDefault();event.stopPropagation();fixedGoogleLogin();};
+        button.disabled=false;
+      }
+    });
+  }
+
+  function install(){
+    bindButtons();
+    new MutationObserver(bindButtons).observe(document.documentElement,{childList:true,subtree:true});
     finishRedirect();
   }
 
