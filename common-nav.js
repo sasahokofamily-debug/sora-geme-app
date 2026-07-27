@@ -3,11 +3,12 @@
 if(document.getElementById('shookingCommonNav')||document.getElementById('shookingGameExit')) return;
 
 const path=location.pathname;
-const isGame=path==='/game'||path.endsWith('/index.html');
+const isRacing=path.endsWith('/racing.html');
+const isGame=!isRacing&&(path==='/game'||path.endsWith('/index.html'));
 const isDetails=path.endsWith('/details.html');
 const isDownload=path.endsWith('/download-builder.html');
 const isPermission=path.endsWith('/permission-maker.html');
-const pageName=isGame?'ゲーム':isDetails?'詳細':isDownload?'ダウンロード':isPermission?'権限発行':'ホーム';
+const pageName=isRacing?'Racing':isGame?'ゲーム':isDetails?'詳細':isDownload?'ダウンロード':isPermission?'権限発行':'ホーム';
 
 const style=document.createElement('style');
 style.textContent=`
@@ -36,12 +37,15 @@ if(isGame){
  return;
 }
 
+if(isRacing) return;
+
 const nav=document.createElement('nav');
 nav.id='shookingCommonNav';
 nav.setAttribute('aria-label','共通メニュー');
-nav.innerHTML=`<div class="sn-inner"><div class="sn-brand">◉ SHOO KING II</div>
+nav.innerHTML=`<div class="sn-inner"><div class="sn-brand">◉ SORA GAMES</div>
 <a href="/" ${pageName==='ホーム'?'aria-current="page"':''}>🏠 ホーム</a>
-<a href="/details.html" ${pageName==='詳細'?'aria-current="page"':''}>📄 詳細</a>
+<a href="/details.html" ${pageName==='詳細'?'aria-current="page"':''}>🚀 Shooking</a>
+<a href="/racing.html" ${pageName==='Racing'?'aria-current="page"':''}>🏎️ Racing VR</a>
 <a href="/download-builder.html" ${pageName==='ダウンロード'?'aria-current="page"':''}>📥 ダウンロード</a>
 <a href="/permission-maker.html" ${pageName==='権限発行'?'aria-current="page"':''}>🔑 権限発行</a></div>`;
 document.body.prepend(nav);
