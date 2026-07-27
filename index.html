@@ -1879,6 +1879,11 @@ const WEAPON_CATALOG={
     desc:"速い弾を2本撃つ。命中しやすい上級武器。",
     damageBase:21,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1360),bulletSize:3.7,life:96,shots:2,spread:.055,fireRate:1.18,color:"#a78bfa",sound:1040
   },
+  seeker:{
+    id:"seeker",name:"シーカーボルト",price:4200,
+    desc:"3本の高速弾を浅く広げる。小型の敵を追い払いやすい。",
+    damageBase:16,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1280),bulletSize:4.4,life:92,shots:3,spread:.06,fireRate:1.25,color:"#2dd4bf",sound:790
+  },
   minigun:{
     id:"minigun",name:"ミニガン",price:4800,
     desc:"ものすごい連射。弾幕で押し切る高額武器。",
@@ -1924,6 +1929,11 @@ const WEAPON_CATALOG={
     desc:"広い角度にばらまく防衛武器。囲まれた時に強い。",
     damageBase:11,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(860),bulletSize:5.8,life:62,shots:8,spread:.18,fireRate:.48,color:"#fca5a5",sound:420
   },
+  frost:{
+    id:"frost",name:"フロストスピア",price:5900,
+    desc:"細く鋭い氷結弾を2本放つ。精度と火力のバランスが良い。",
+    damageBase:30,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1480),bulletSize:3.8,life:124,shots:2,spread:.035,fireRate:.82,color:"#bae6fd",sound:1080
+  },
   nebula:{
     id:"nebula",name:"ネビュラスプレー",price:6800,
     desc:"細かい弾を大量に撃つ星雲弾幕。近中距離で敵を溶かす。",
@@ -1934,25 +1944,55 @@ const WEAPON_CATALOG={
     desc:"小さく速い弾を高頻度で撃つ精密武器。強敵削りが得意。",
     damageBase:24,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1660),bulletSize:2.9,life:118,shots:2,spread:.025,fireRate:1.08,color:"#5eead4",sound:1320
   },
+  quake:{
+    id:"quake",name:"クエイクハンマー",price:8800,
+    desc:"重く大きい衝撃弾。近い敵の群れへ押し返すように強い。",
+    damageBase:72,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(720),bulletSize:10.5,life:92,shots:1,spread:.02,fireRate:.38,color:"#fbbf24",sound:300
+  },
   nova:{
     id:"nova",name:"ノヴァバースト",price:10500,
     desc:"重い3連射を放つ爆発型。高い火力と扱いやすさを両立。",
     damageBase:36,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1040),bulletSize:7.2,life:92,shots:3,spread:.08,fireRate:.62,color:"#fb923c",sound:980
+  },
+  prism:{
+    id:"prism",name:"プリズムレイ",price:11600,
+    desc:"5本の細い光線を扇状に放つ。広範囲と命中率を両立する。",
+    damageBase:20,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1540),bulletSize:3.1,life:116,shots:5,spread:.055,fireRate:1.05,color:"#f9a8d4",sound:1500
   },
   gravity:{
     id:"gravity",name:"グラビティコア",price:14200,
     desc:"巨大な重力弾を放つ超重量武器。遅いが一撃がとても重い。",
     damageBase:155,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(520),bulletSize:14,life:130,shots:1,spread:0,fireRate:.14,color:"#818cf8",sound:180
   },
+  meteor:{
+    id:"meteor",name:"メテオドライブ",price:15400,
+    desc:"大型弾を2連射する隕石兵装。硬い敵にも群れにも対応できる。",
+    damageBase:58,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(940),bulletSize:8.8,life:118,shots:2,spread:.045,fireRate:.58,color:"#fdba74",sound:520
+  },
   aurora:{
     id:"aurora",name:"オーロラレイ",price:16800,
     desc:"美しい高速レーザーを4本放つ最上位の命中重視武器。",
     damageBase:26,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1500),bulletSize:3.2,life:122,shots:4,spread:.045,fireRate:1.12,color:"#86efac",sound:1460
   },
+  phantom:{
+    id:"phantom",name:"ファントムエッジ",price:18800,
+    desc:"鋭い高速弾を6本重ねる終盤武器。正面火力がとても高い。",
+    damageBase:29,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1760),bulletSize:3.4,life:136,shots:6,spread:.035,fireRate:1.02,color:"#ddd6fe",sound:1720
+  },
+  solar:{
+    id:"solar",name:"ソーラーフレア",price:20500,
+    desc:"熱量の高い太陽弾を4連射する。終盤の安定火力に向く。",
+    damageBase:44,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1180),bulletSize:7.4,life:120,shots:4,spread:.06,fireRate:.72,color:"#fde68a",sound:1340
+  },
   supernova:{
     id:"supernova",name:"スーパーノヴァ",price:22000,
     desc:"究極クラスの全方位火力。高価だが終盤の主力になる。",
     damageBase:34,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1320),bulletSize:6.4,life:112,shots:9,spread:.1,fireRate:.88,color:"#fff7ad",sound:1600
+  },
+  eclipse:{
+    id:"eclipse",name:"エクリプスゼロ",price:26000,
+    desc:"最高額の決戦兵装。高威力の光弾を広く撃ち分ける。",
+    damageBase:42,bulletSpeed:WORLD_UNITS.kmhToPxPerFrame(1420),bulletSize:6.8,life:130,shots:10,spread:.085,fireRate:.9,color:"#fef3c7",sound:1880
   }
 };
 
@@ -2015,9 +2055,9 @@ function renderWeaponShop(){
 ensureWeaponSave();
 
 function getWeaponVisualType(id){
-  if(["laser","aurora","ion","railgun","comet"].includes(id))return"beam";
-  if(["shotgun","flak","nebula","starstorm","supernova"].includes(id))return"diamond";
-  if(["rocket","plasma","nova","gravity"].includes(id))return"core";
+  if(["laser","aurora","ion","railgun","comet","frost","prism","phantom"].includes(id))return"beam";
+  if(["shotgun","flak","nebula","starstorm","supernova","seeker","eclipse"].includes(id))return"diamond";
+  if(["rocket","plasma","nova","gravity","quake","meteor","solar"].includes(id))return"core";
   if(["smg","minigun","twin","pulse","burst"].includes(id))return"bolt";
   return"round";
 }
