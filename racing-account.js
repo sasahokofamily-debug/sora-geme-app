@@ -31,9 +31,11 @@ function openGarage(){render();$('racingGarage')?.classList.remove('hidden')}
 function closeGarage(){$('racingGarage')?.classList.add('hidden')}
 function addCoins(amount,reason=''){amount=Math.max(0,Math.floor(amount));if(!amount)return;profile.coins+=amount;queueSave();const toast=$('coinToast');if(toast){toast.textContent=`🪙 +${amount}${reason?'  '+reason:''}`;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1200)}}
 function raceFinished(place,time){profile.races++;if(place===1)profile.wins++;const reward=Math.max(20,120-place*15)+Math.max(0,Math.floor(80-time));addCoins(reward,'レース報酬')}
+function addOnlineButton(){const start=$('start');if(!start||$('openOnlineRacing'))return;const b=document.createElement('a');b.id='openOnlineRacing';b.href='./racing-online.html';b.className='button';b.textContent='🌐 オンライン対戦（部屋番号）';start.insertAdjacentElement('afterend',b)}
 window.RacingAccount={getProfile:()=>({...profile}),addCoins,raceFinished,openGarage,closeGarage,logout,getMode:()=>mode};
 addEventListener('DOMContentLoaded',()=>{
 $('googleRacingLogin')?.addEventListener('click',googleLogin);$('guestRacingLogin')?.addEventListener('click',guestLogin);$('openGarage')?.addEventListener('click',openGarage);$('closeGarage')?.addEventListener('click',closeGarage);$('racingLogout')?.addEventListener('click',logout);document.querySelectorAll('[data-upgrade-button]').forEach(b=>b.addEventListener('click',()=>upgrade(b.dataset.upgradeButton)));
+addOnlineButton();
 const session=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(session?.mode==='guest'){mode='guest';profile=localLoad();showGame()}else{$('racingLogin')?.classList.remove('hidden');$('menu')?.classList.add('hidden')}render();
 });
 })();
