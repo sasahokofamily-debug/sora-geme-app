@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='login-success-warp-v1';
+const VERSION='login-success-warp-v2';
 const CURRENT_KEY='shooking2_current_account';
 let audioContext=null;
 let armedUntil=0;
@@ -58,7 +58,7 @@ function playWarpFire(){tone('sawtooth',260,1400,.62,.14);tone('sine',520,1880,.
 function playWarpOpen(){tone('sine',220,920,.85,.13);tone('triangle',440,120,.95,.1,.06);tone('sine',760,1260,.55,.07,.2)}
 
 function readAccount(){try{return JSON.parse(localStorage.getItem(CURRENT_KEY)||'null')}catch{return null}}
-function loginScreenVisible(){const el=document.getElementById('loginScreen');return !!(el&&!el.classList.contains('hidden')&&el.offsetParent!==null)}
+function loginScreenVisible(){const el=document.getElementById('loginScreen');if(!el||el.classList.contains('hidden'))return false;const style=getComputedStyle(el);return style.display!=='none'&&style.visibility!=='hidden'&&el.getClientRects().length>0}
 function isEligibleHome(target){
  if(String(target)!=='home'||running||Date.now()>armedUntil||!loginScreenVisible())return false;
  const account=readAccount();
