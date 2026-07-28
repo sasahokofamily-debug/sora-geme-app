@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v64";
+const CACHE_NAME = "shooking-ii-v65";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -94,7 +94,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = html.replace(/<script[^>]+src=["'][^"']*gmail-seat-invite\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*tutorial-guide\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*tutorial-controls-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=1"></script>\n</body>');
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=2"></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
