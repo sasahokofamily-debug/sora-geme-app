@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='login-failure-effect-v1';
+const VERSION='login-failure-effect-v2';
 let audioContext=null;
 let lastFailureText='';
 let lastFailureAt=0;
@@ -18,7 +18,7 @@ style.textContent=`
 .shooShipSmoke{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px;border-radius:50%;background:radial-gradient(circle,rgba(148,163,184,.72),rgba(71,85,105,.34) 52%,transparent 72%);filter:blur(2px);animation:shooShipSmokeRise 1.25s ease-out forwards}
 .shooShipFlash{position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-14px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff,0 0 34px #facc15,0 0 62px #ef4444;animation:shooShipFlash .34s ease-out forwards}
 .shooFailureStamp{position:absolute;left:50%;top:50%;z-index:12;transform:translate(-50%,-50%) rotate(-7deg) scale(.7);padding:8px 12px;border:2px solid #fb7185;border-radius:8px;background:rgba(69,10,10,.92);color:#fecaca;font:1000 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;box-shadow:0 0 24px rgba(239,68,68,.65);opacity:0;animation:shooFailureStampIn 1.55s ease forwards}
-@keyframes shooShipFragmentFly{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}65%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.92)}100%{opacity:0;transform:translate(calc(var(--dx)*1.18),calc(var(--dy)*1.26 + 28px)) rotate(calc(var(--rot)*1.35)) scale(.55)}}
+@keyframes shooShipFragmentFly{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}65%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.92)}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 28px)) rotate(var(--rot)) scale(.55)}}
 @keyframes shooShipSparkFly{0%{opacity:1;transform:rotate(var(--rot)) translateY(-8px) scaleY(1)}100%{opacity:0;transform:rotate(var(--rot)) translateY(-86px) scaleY(.2)}}
 @keyframes shooShipSmokeRise{0%{opacity:.9;transform:scale(.55)}100%{opacity:0;transform:translateY(-72px) scale(2.4)}}
 @keyframes shooShipFlash{0%{opacity:1;transform:scale(.35)}100%{opacity:0;transform:scale(3.2)}}
@@ -152,8 +152,8 @@ function triggerFailureEffect(message='ログインに失敗しました'){
 
 function isLoginFailure(text){
   const t=String(text||'').trim();
-  if(!t)return false;
-  const loginRelated=/ログイン|認証|password|credential|user|account|auth/i.test(t);
+  if(!t||/再設定|リセット|reset/i.test(t))return false;
+  const loginRelated=/ログイン|認証|credential|user|account|auth/i.test(t);
   const failure=/失敗|エラー|正しくありません|違います|見つかりません|無効|拒否|できません|wrong-password|invalid-credential|user-not-found|too-many-requests/i.test(t);
   return loginRelated&&failure;
 }
