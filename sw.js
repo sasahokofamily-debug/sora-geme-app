@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v71";
+const CACHE_NAME = "shooking-ii-v72";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -15,6 +15,7 @@ const APP_SHELL = [
   "./google-login-fix.js",
   "./password-reset-fix.js?v=4",
   "./login-cool.js?v=2",
+  "./login-failure-effect.js?v=1",
   "./guest-login.js",
   "./online-pve.js",
   "./anti-cheat.js",
@@ -87,6 +88,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendScript(html, "google-login-fix.js", 3);
     html = appendScript(html, "password-reset-fix.js", 4);
     html = appendScript(html, "login-cool.js", 2);
+    html = appendScript(html, "login-failure-effect.js", 1);
     html = appendScript(html, "guest-login.js", 2);
     html = appendScript(html, "online-pve.js", 5);
     html = appendScript(html, "anti-cheat.js", 1);
@@ -140,6 +142,7 @@ self.addEventListener("fetch", event => {
     requestUrl.pathname.endsWith("/google-login-fix.js") ||
     requestUrl.pathname.endsWith("/password-reset-fix.js") ||
     requestUrl.pathname.endsWith("/login-cool.js") ||
+    requestUrl.pathname.endsWith("/login-failure-effect.js") ||
     requestUrl.pathname.endsWith("/app-notice.js") ||
     requestUrl.pathname.endsWith("/guest-login.js") ||
     requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
