@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v74";
+const CACHE_NAME = "shooking-ii-v75";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -9,12 +9,13 @@ const APP_SHELL = [
   "./game-system.js",
   "./common-nav.js",
   "./ui-patch.js",
-  "./app-notice.js?v=2",
+  "./app-notice.js?v=3",
   "./firebase-config.js",
   "./google-login.js",
   "./google-login-fix.js",
   "./password-reset-fix.js?v=4",
   "./login-cool.js?v=2",
+  "./login-success-warp.js?v=1",
   "./login-failure-effect.js?v=3",
   "./guest-login.js",
   "./online-pve.js",
@@ -82,12 +83,13 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendStyle(html, "css/seasonal-gacha.css", 1);
     html = appendStyle(html, "css/gmail-seat-invite.css", 1);
     html = appendScript(html, "ui-patch.js", 6);
-    html = appendScript(html, "app-notice.js", 2);
+    html = appendScript(html, "app-notice.js", 3);
     html = appendScript(html, "firebase-config.js", 2);
     html = appendScript(html, "google-login.js", 11);
     html = appendScript(html, "google-login-fix.js", 3);
     html = appendScript(html, "password-reset-fix.js", 4);
     html = appendScript(html, "login-cool.js", 2);
+    html = appendScript(html, "login-success-warp.js", 1);
     html = appendScript(html, "login-failure-effect.js", 3);
     html = appendScript(html, "guest-login.js", 2);
     html = appendScript(html, "online-pve.js", 5);
@@ -142,6 +144,7 @@ self.addEventListener("fetch", event => {
     requestUrl.pathname.endsWith("/google-login-fix.js") ||
     requestUrl.pathname.endsWith("/password-reset-fix.js") ||
     requestUrl.pathname.endsWith("/login-cool.js") ||
+    requestUrl.pathname.endsWith("/login-success-warp.js") ||
     requestUrl.pathname.endsWith("/login-failure-effect.js") ||
     requestUrl.pathname.endsWith("/app-notice.js") ||
     requestUrl.pathname.endsWith("/guest-login.js") ||
