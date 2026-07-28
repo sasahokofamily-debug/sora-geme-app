@@ -1,92 +1,42 @@
 (()=>{
-  'use strict';
-
-  const VERSION='login-cool-v1';
-  const style=document.createElement('style');
-  style.textContent=`
-    #loginScreen{align-items:center!important;justify-content:center!important;padding:24px!important;background:
-      radial-gradient(circle at 18% 20%,rgba(56,189,248,.22),transparent 24%),
-      radial-gradient(circle at 82% 78%,rgba(139,92,246,.2),transparent 28%),
-      linear-gradient(145deg,#020617 0%,#07142b 48%,#02030a 100%)!important;overflow:hidden!important}
-    #loginScreen::before{content:"";position:absolute;inset:-20%;pointer-events:none;background-image:
-      radial-gradient(circle,#fff 0 1px,transparent 1.5px),
-      radial-gradient(circle,#67e8f9 0 1px,transparent 1.5px);background-size:64px 64px,103px 103px;background-position:0 0,30px 24px;opacity:.2;animation:shooLoginStars 18s linear infinite}
-    #loginScreen::after{content:"";position:absolute;left:50%;top:50%;width:min(840px,100vw);height:min(840px,100vw);transform:translate(-50%,-50%);border:1px solid rgba(103,232,249,.08);border-radius:50%;box-shadow:0 0 0 80px rgba(56,189,248,.025),0 0 0 160px rgba(139,92,246,.018);pointer-events:none;animation:shooLoginRadar 13s linear infinite}
-    #loginScreen .panel{position:relative;z-index:2;width:min(470px,94vw)!important;max-height:calc(100dvh - 36px)!important;padding:24px!important;border:1px solid rgba(103,232,249,.72)!important;border-radius:28px!important;background:
-      linear-gradient(160deg,rgba(15,23,42,.93),rgba(2,6,23,.86))!important;box-shadow:
-      0 32px 90px rgba(0,0,0,.68),
-      0 0 45px rgba(56,189,248,.22),
-      inset 0 1px 0 rgba(255,255,255,.08)!important;backdrop-filter:blur(18px);overflow:auto!important}
-    #loginScreen .panel::before{content:"SECURE ACCESS TERMINAL";display:block;margin:0 0 13px;color:#67e8f9;font:800 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.22em;text-align:left;opacity:.82}
-    #loginScreen h1{margin:0!important;font-size:clamp(31px,7vw,44px)!important;line-height:.95!important;letter-spacing:.06em!important;color:#f8fafc!important;text-shadow:0 0 22px rgba(56,189,248,.65)!important}
-    #loginScreen h1::after{content:" II";color:#67e8f9}
-    #shooLoginHero{position:relative;margin:8px 0 18px;padding:12px 14px 12px 58px;border:1px solid rgba(56,189,248,.22);border-radius:16px;background:linear-gradient(90deg,rgba(56,189,248,.09),rgba(139,92,246,.06));text-align:left;overflow:hidden}
-    #shooLoginHero::before{content:"◆";position:absolute;left:17px;top:50%;transform:translateY(-50%) rotate(45deg);color:#67e8f9;font-size:24px;text-shadow:0 0 16px #38bdf8}
-    #shooLoginHero::after{content:"";position:absolute;right:-18px;top:-26px;width:90px;height:90px;border:1px solid rgba(103,232,249,.16);border-radius:50%;box-shadow:0 0 0 14px rgba(103,232,249,.025)}
-    #shooLoginHero strong{display:block;color:#e0faff;font-size:14px;letter-spacing:.08em}
-    #shooLoginHero span{display:block;margin-top:3px;color:#94a3b8;font-size:11px;line-height:1.45}
-    #loginScreen .authBox{margin:0!important;padding:0!important;border:0!important;background:transparent!important;text-align:left!important;box-shadow:none!important}
-    #loginScreen .authBox label{display:block;margin-top:12px;color:#cbd5e1;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
-    #loginScreen input{height:50px!important;margin:6px 0 4px!important;padding:0 15px!important;border:1px solid rgba(103,232,249,.32)!important;border-radius:14px!important;background:rgba(2,6,23,.78)!important;color:#f8fafc!important;font-size:16px!important;outline:none!important;box-shadow:inset 0 0 20px rgba(56,189,248,.04)!important;transition:.2s ease}
-    #loginScreen input:focus{border-color:#67e8f9!important;box-shadow:0 0 0 3px rgba(56,189,248,.12),0 0 22px rgba(56,189,248,.16)!important;transform:translateY(-1px)}
-    #loginScreen input::placeholder{color:#526178}
-    #loginScreen button{min-height:48px!important;border-radius:14px!important;font-size:14px!important;letter-spacing:.04em!important;transition:transform .16s ease,filter .16s ease,box-shadow .16s ease!important}
-    #loginScreen button:hover{transform:translateY(-2px);filter:brightness(1.08)}
-    #loginScreen button:active{transform:scale(.985)}
-    #loginScreen button[onclick*="loginFirebaseEmailAccount"],#loginScreen button[onclick="loginAccount()"]{margin-top:16px!important;background:linear-gradient(100deg,#0891b2,#2563eb 52%,#7c3aed)!important;box-shadow:0 12px 28px rgba(37,99,235,.28),0 0 22px rgba(56,189,248,.16)!important}
-    #loginScreen #firebaseLoginExtras{margin-top:8px}
-    #loginScreen #firebaseLoginExtras>button:first-child{min-height:38px!important;margin:4px 0!important;padding:7px!important;background:transparent!important;border:1px solid rgba(148,163,184,.2)!important;color:#94a3b8!important;font-size:12px!important;box-shadow:none!important}
-    #loginScreen #firebaseLoginExtras>div{margin:15px 0!important;border-color:rgba(103,232,249,.14)!important}
-    #loginScreen button[onclick*="startGoogleLogin"]{position:relative;background:#f8fafc!important;color:#0f172a!important;border:1px solid #fff!important;box-shadow:0 10px 24px rgba(0,0,0,.24)!important}
-    #loginScreen button[onclick*="startGoogleLogin"]::before{content:"G";display:inline-grid;place-items:center;width:24px;height:24px;margin-right:8px;border-radius:50%;background:conic-gradient(from -40deg,#4285f4 0 25%,#34a853 0 50%,#fbbc05 0 75%,#ea4335 0);color:#fff;font-weight:1000;vertical-align:middle;text-shadow:0 1px 2px #0006}
-    #loginScreen #googleLoginMessage,#loginScreen #loginMessage{margin:12px 0 0!important;padding:10px 12px!important;border:1px solid rgba(103,232,249,.16);border-radius:12px;background:rgba(2,6,23,.52);color:#9fb7cf!important;font-size:11px!important;line-height:1.5!important;text-align:left!important;white-space:pre-wrap}
-    #shooLoginStatus{display:flex;align-items:center;gap:7px;margin-top:12px;color:#64748b;font:700 10px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}
-    #shooLoginStatus::before{content:"";width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e;animation:shooLoginBlink 1.5s ease-in-out infinite}
-    @keyframes shooLoginStars{to{transform:translate3d(64px,64px,0)}}
-    @keyframes shooLoginRadar{to{transform:translate(-50%,-50%) rotate(360deg)}}
-    @keyframes shooLoginBlink{50%{opacity:.35}}
-    @media(max-width:700px),(pointer:coarse){#loginScreen{padding:max(12px,env(safe-area-inset-top)) 10px max(12px,env(safe-area-inset-bottom))!important}#loginScreen .panel{width:100%!important;max-height:calc(100dvh - 24px)!important;padding:18px 15px!important;border-radius:22px!important}#shooLoginHero{margin-bottom:12px;padding:10px 10px 10px 50px}#loginScreen input{height:46px!important}#loginScreen button{min-height:44px!important}}
-    @media(prefers-reduced-motion:reduce){#loginScreen::before,#loginScreen::after,#shooLoginStatus::before{animation:none!important}}
-  `;
-  document.head.appendChild(style);
-
-  function decorate(){
-    const screen=document.getElementById('loginScreen');
-    const panel=screen?.querySelector('.panel');
-    const box=screen?.querySelector('.authBox');
-    if(!screen||!panel||!box)return;
-
-    if(!document.getElementById('shooLoginHero')){
-      const hero=document.createElement('div');
-      hero.id='shooLoginHero';
-      hero.innerHTML='<strong>PILOT AUTHENTICATION</strong><span>アカウントを認証して、宇宙ミッションとクラウドセーブへ接続します。</span>';
-      box.parentNode.insertBefore(hero,box);
-    }
-
-    const email=document.getElementById('loginName');
-    const password=document.getElementById('loginPassword');
-    if(email){email.autocomplete='email';email.placeholder='pilot@example.com';email.setAttribute('aria-label','メールアドレス')}
-    if(password){password.autocomplete='current-password';password.placeholder='••••••••';password.setAttribute('aria-label','パスワード')}
-
-    if(!document.getElementById('shooLoginStatus')){
-      const status=document.createElement('div');
-      status.id='shooLoginStatus';
-      status.textContent='FIREBASE LINK READY / ENCRYPTED SESSION';
-      panel.appendChild(status);
-    }
-
-    const title=panel.querySelector('h1');
-    if(title&&title.textContent.trim().toUpperCase()!=='SHOO KING')title.textContent='SHOO KING';
-    window.__shookingLoginCool=VERSION;
-  }
-
-  function install(){
-    decorate();
-    const observer=new MutationObserver(decorate);
-    observer.observe(document.documentElement,{subtree:true,childList:true});
-    setInterval(decorate,1200);
-  }
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
-  else install();
+'use strict';
+const VERSION='login-cool-v2-command-gate';
+const style=document.createElement('style');
+style.textContent=`
+#loginScreen{align-items:center!important;justify-content:center!important;padding:18px!important;background:radial-gradient(circle at 50% 12%,rgba(14,165,233,.16),transparent 30%),linear-gradient(135deg,#01030a 0%,#061126 48%,#02030a 100%)!important;overflow:hidden!important}
+#loginScreen::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle at 12% 18%,#fff 0 1px,transparent 1.4px),radial-gradient(circle at 76% 24%,#67e8f9 0 1px,transparent 1.4px),radial-gradient(circle at 32% 78%,#a78bfa 0 1px,transparent 1.4px),linear-gradient(rgba(56,189,248,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.035) 1px,transparent 1px);background-size:180px 180px,240px 240px,210px 210px,56px 56px,56px 56px;opacity:.72}
+#loginScreen .panel{position:relative;z-index:2;width:min(980px,96vw)!important;max-height:calc(100dvh - 30px)!important;padding:0!important;border:0!important;border-radius:30px!important;background:transparent!important;box-shadow:0 35px 110px rgba(0,0,0,.78),0 0 54px rgba(14,165,233,.16)!important;overflow:auto!important;text-align:left!important}
+#shooLoginFrame{position:relative;display:grid;grid-template-columns:minmax(300px,.9fr) minmax(390px,1.1fr);min-height:610px;border:1px solid rgba(125,249,255,.48);border-radius:30px;overflow:hidden;background:#020617;isolation:isolate}
+#shooLoginFrame::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),inset 0 0 55px rgba(56,189,248,.06);z-index:5}
+#shooLoginBrand{position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:34px 30px;background:radial-gradient(circle at 50% 35%,rgba(56,189,248,.2),transparent 28%),linear-gradient(160deg,#0a2747 0%,#041326 54%,#020617 100%);overflow:hidden;border-right:1px solid rgba(103,232,249,.18)}
+#shooLoginBrand::before{content:"";position:absolute;width:310px;height:310px;left:50%;top:45%;transform:translate(-50%,-50%);border:1px solid rgba(103,232,249,.26);border-radius:50%;box-shadow:0 0 0 42px rgba(56,189,248,.035),0 0 0 84px rgba(139,92,246,.025)}
+#shooLoginBrand::after{content:"";position:absolute;left:-20%;right:-20%;height:2px;top:-10%;background:linear-gradient(90deg,transparent,#67e8f9,transparent);box-shadow:0 0 18px #38bdf8;opacity:.55;animation:shooCommandScan 5.4s linear infinite}
+.shooBrandTop,.shooBrandBottom{position:relative;z-index:2}.shooBrandKicker{color:#67e8f9;font:900 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.24em}.shooBrandVersion{display:inline-flex;margin-top:12px;padding:6px 10px;border:1px solid rgba(103,232,249,.3);border-radius:999px;background:rgba(2,6,23,.48);color:#c8f7ff;font:800 10px/1 ui-monospace,monospace;letter-spacing:.12em}
+#shooCoreMark{position:relative;z-index:2;width:178px;height:178px;margin:auto;display:grid;place-items:center}.shooCoreOuter,.shooCoreInner{position:absolute;border-radius:50%}.shooCoreOuter{inset:0;border:1px solid rgba(103,232,249,.42);box-shadow:0 0 34px rgba(56,189,248,.18)}.shooCoreOuter::before,.shooCoreOuter::after{content:"";position:absolute;left:50%;top:50%;background:rgba(103,232,249,.36);transform:translate(-50%,-50%)}.shooCoreOuter::before{width:1px;height:124%}.shooCoreOuter::after{height:1px;width:124%}.shooCoreInner{inset:34px;border:1px solid rgba(250,204,21,.52);box-shadow:inset 0 0 30px rgba(250,204,21,.08)}.shooCoreShip{position:relative;width:62px;height:86px;clip-path:polygon(50% 0,74% 43%,100% 78%,63% 67%,50% 100%,37% 67%,0 78%,26% 43%);background:linear-gradient(180deg,#f8fafc,#67e8f9 44%,#1d4ed8 100%);filter:drop-shadow(0 0 14px rgba(56,189,248,.85))}.shooCoreShip::after{content:"";position:absolute;left:50%;bottom:4px;width:16px;height:28px;transform:translateX(-50%);background:linear-gradient(#fff7ad,#fb923c,transparent);clip-path:polygon(25% 0,75% 0,100% 100%,50% 72%,0 100%)}
+.shooBrandTitle{font-size:clamp(30px,4vw,48px);font-weight:1000;line-height:.92;letter-spacing:.04em;color:#f8fafc;text-shadow:0 0 24px rgba(56,189,248,.45)}.shooBrandTitle span{display:block;color:#67e8f9;font-size:.38em;letter-spacing:.3em;margin:12px 0 0 3px}.shooBrandMeta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.shooMetaItem{padding:9px 10px;border:1px solid rgba(148,163,184,.14);border-radius:10px;background:rgba(2,6,23,.42);color:#93a7bd;font:700 9px/1.45 ui-monospace,monospace}.shooMetaItem b{display:block;color:#dffbff;font-size:11px}
+#shooLoginConsole{position:relative;padding:34px 38px 28px;background:linear-gradient(150deg,rgba(15,23,42,.98),rgba(2,6,23,.98));overflow:auto}#shooLoginConsole::before{content:"AUTHORIZATION GATE / CHANNEL 02";display:block;padding-bottom:12px;border-bottom:1px solid rgba(103,232,249,.16);color:#67e8f9;font:900 10px/1.2 ui-monospace,monospace;letter-spacing:.2em}
+#loginScreen h1{margin:24px 0 5px!important;color:#f8fafc!important;font-size:clamp(31px,6vw,52px)!important;line-height:.9!important;letter-spacing:.04em!important;text-shadow:0 0 24px rgba(56,189,248,.42)!important}#loginScreen h1::after{content:" // 5.2";display:block;margin-top:10px;color:#64748b;font:800 10px/1 ui-monospace,monospace;letter-spacing:.2em;text-shadow:none}
+#shooLoginHero{margin:12px 0 20px;padding:12px 14px;border-left:3px solid #38bdf8;background:linear-gradient(90deg,rgba(56,189,248,.09),transparent);color:#94a3b8}#shooLoginHero strong{display:block;color:#e0faff;font-size:13px;letter-spacing:.12em}#shooLoginHero span{display:block;margin-top:4px;font-size:11px;line-height:1.55}
+#loginScreen .authBox{margin:0!important;padding:0!important;border:0!important;background:transparent!important;text-align:left!important;box-shadow:none!important}#loginScreen .authBox label{display:block;margin-top:13px;color:#9fb4c9;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+#loginScreen input{height:52px!important;margin:6px 0 4px!important;padding:0 15px!important;border:1px solid rgba(103,232,249,.26)!important;border-radius:11px!important;background:linear-gradient(180deg,rgba(2,6,23,.96),rgba(5,15,31,.96))!important;color:#f8fafc!important;font:700 15px/1 system-ui,sans-serif!important;outline:none!important;box-shadow:inset 0 0 18px rgba(56,189,248,.035)!important;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}#loginScreen input:focus{border-color:#67e8f9!important;box-shadow:0 0 0 3px rgba(56,189,248,.1),0 0 20px rgba(56,189,248,.12)!important;transform:translateY(-1px)}#loginScreen input::placeholder{color:#46566b}
+#loginScreen button{min-height:48px!important;border-radius:11px!important;font-size:13px!important;letter-spacing:.06em!important;transition:transform .14s ease,filter .14s ease,box-shadow .14s ease!important}#loginScreen button:hover{transform:translateY(-2px);filter:brightness(1.08)}#loginScreen button:active{transform:scale(.985)}#loginScreen button[onclick*="loginFirebaseEmailAccount"],#loginScreen button[onclick="loginAccount()"]{margin-top:17px!important;background:linear-gradient(100deg,#06b6d4 0%,#2563eb 48%,#7c3aed 100%)!important;box-shadow:0 12px 28px rgba(37,99,235,.27),inset 0 1px 0 rgba(255,255,255,.18)!important}
+#loginScreen #firebaseLoginExtras{margin-top:8px}#loginScreen #firebaseLoginExtras>button:first-child{min-height:36px!important;margin:4px 0!important;padding:6px!important;background:transparent!important;border:1px solid rgba(148,163,184,.18)!important;color:#8294a9!important;font-size:11px!important;box-shadow:none!important}#loginScreen #firebaseLoginExtras>div{margin:14px 0!important;border-color:rgba(103,232,249,.13)!important}#loginScreen button[onclick*="startGoogleLogin"]{background:linear-gradient(180deg,#fff,#e2e8f0)!important;color:#0f172a!important;border:1px solid #fff!important;box-shadow:0 9px 22px rgba(0,0,0,.25)!important}#loginScreen button[onclick*="startGoogleLogin"]::before{content:"G";display:inline-grid;place-items:center;width:23px;height:23px;margin-right:8px;border-radius:50%;background:conic-gradient(from -40deg,#4285f4 0 25%,#34a853 0 50%,#fbbc05 0 75%,#ea4335 0);color:#fff;font-weight:1000;vertical-align:middle;text-shadow:0 1px 2px #0005}
+#loginScreen #googleLoginMessage,#loginScreen #loginMessage{margin:12px 0 0!important;padding:10px 12px!important;border:1px solid rgba(103,232,249,.13);border-radius:10px;background:rgba(2,6,23,.56);color:#93a7bd!important;font-size:11px!important;line-height:1.5!important;text-align:left!important;white-space:pre-wrap}
+#shooLoginStatus{display:flex;align-items:center;gap:7px;margin-top:14px;color:#64748b;font:800 9px/1.3 ui-monospace,monospace;letter-spacing:.08em}#shooLoginStatus::before{content:"";width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 9px #22c55e;animation:shooStatusBlink 1.8s ease-in-out infinite}
+@keyframes shooCommandScan{from{top:-8%}to{top:108%}}@keyframes shooStatusBlink{50%{opacity:.35}}
+@media(max-width:780px),(pointer:coarse){#loginScreen{padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom))!important;overflow:auto!important}#loginScreen .panel{width:100%!important;max-height:none!important}#shooLoginFrame{display:block;min-height:0;border-radius:22px}#shooLoginBrand{min-height:176px;padding:18px 18px 16px;border-right:0;border-bottom:1px solid rgba(103,232,249,.16)}#shooLoginBrand::before{width:150px;height:150px;left:auto;right:18px;top:50%}.shooBrandTop{display:flex;align-items:center;justify-content:space-between}.shooBrandVersion{margin-top:0}#shooCoreMark{position:absolute;right:25px;top:25px;width:118px;height:118px}.shooCoreInner{inset:24px}.shooCoreShip{width:42px;height:60px}.shooBrandTitle{margin-top:38px;font-size:30px}.shooBrandMeta{display:none}#shooLoginConsole{padding:20px 16px 18px}#loginScreen h1{margin-top:18px!important;font-size:34px!important}#loginScreen input{height:47px!important}#loginScreen button{min-height:44px!important}}
+@media(prefers-reduced-motion:reduce){#shooLoginBrand::after,#shooLoginStatus::before{animation:none!important}}
+`;
+document.head.appendChild(style);
+function createBrand(){const brand=document.createElement('aside');brand.id='shooLoginBrand';brand.innerHTML=`<div class="shooBrandTop"><div><div class="shooBrandKicker">ORBITAL DEFENSE NETWORK</div><div class="shooBrandVersion">VERSION 5.2</div></div></div><div id="shooCoreMark"><div class="shooCoreOuter"></div><div class="shooCoreInner"></div><div class="shooCoreShip"></div></div><div class="shooBrandBottom"><div class="shooBrandTitle">SHOO KING<span>COMMAND LINK</span></div><div class="shooBrandMeta"><div class="shooMetaItem"><b>AUTH CORE</b>FIREBASE SECURE</div><div class="shooMetaItem"><b>SAVE LINK</b>CLOUD READY</div></div></div>`;return brand}
+function decorate(){
+ const screen=document.getElementById('loginScreen'),panel=screen?.querySelector('.panel'),box=screen?.querySelector('.authBox');if(!screen||!panel||!box)return;
+ let hero=document.getElementById('shooLoginHero');if(!hero){hero=document.createElement('div');hero.id='shooLoginHero';hero.innerHTML='<strong>PILOT AUTHENTICATION</strong><span>パイロットIDを認証して、ミッションデータとクラウドセーブへ接続します。</span>'}
+ let status=document.getElementById('shooLoginStatus');if(!status){status=document.createElement('div');status.id='shooLoginStatus';status.textContent='AUTH SERVER ONLINE / ENCRYPTED CHANNEL'}
+ if(!document.getElementById('shooLoginFrame')){const title=panel.querySelector('h1');const frame=document.createElement('div');frame.id='shooLoginFrame';const consoleBox=document.createElement('main');consoleBox.id='shooLoginConsole';frame.appendChild(createBrand());if(title){title.textContent='PILOT LOGIN';consoleBox.appendChild(title)}consoleBox.appendChild(hero);consoleBox.appendChild(box);consoleBox.appendChild(status);frame.appendChild(consoleBox);panel.replaceChildren(frame)}
+ const email=document.getElementById('loginName'),password=document.getElementById('loginPassword');if(email){email.autocomplete='email';email.placeholder='pilot@example.com';email.setAttribute('aria-label','メールアドレス')}if(password){password.autocomplete='current-password';password.placeholder='ACCESS CODE';password.setAttribute('aria-label','パスワード')}
+ window.__shookingLoginCool=VERSION;
+}
+function install(){decorate();const screen=document.getElementById('loginScreen');if(screen)new MutationObserver(decorate).observe(screen,{subtree:true,childList:true})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
