@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v69";
+const CACHE_NAME = "shooking-ii-v70";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "./google-login.js",
   "./google-login-fix.js",
   "./password-reset-fix.js?v=4",
+  "./login-cool.js",
   "./guest-login.js",
   "./online-pve.js",
   "./anti-cheat.js",
@@ -27,6 +28,7 @@ const APP_SHELL = [
   "./gmail-seat-invite.js",
   "./tutorial-guide.js",
   "./tutorial-controls-fix.js",
+  "./tutorial-polish-fix.js",
   "./css/seasonal-gacha.css",
   "./css/gmail-seat-invite.css",
   "./manifest.webmanifest",
@@ -82,6 +84,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendScript(html, "google-login.js", 11);
     html = appendScript(html, "google-login-fix.js", 3);
     html = appendScript(html, "password-reset-fix.js", 4);
+    html = appendScript(html, "login-cool.js", 1);
     html = appendScript(html, "guest-login.js", 2);
     html = appendScript(html, "online-pve.js", 5);
     html = appendScript(html, "anti-cheat.js", 1);
@@ -96,7 +99,8 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = html.replace(/<script[^>]+src=["'][^"']*gmail-seat-invite\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*tutorial-guide\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*tutorial-controls-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=2"></script>\n</body>');
+    html = html.replace(/<script[^>]+src=["'][^"']*tutorial-polish-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=2"></script>\n<script src="./tutorial-polish-fix.js?v=1"></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
@@ -133,12 +137,14 @@ self.addEventListener("fetch", event => {
     requestUrl.pathname.endsWith("/game-system.js") ||
     requestUrl.pathname.endsWith("/google-login-fix.js") ||
     requestUrl.pathname.endsWith("/password-reset-fix.js") ||
+    requestUrl.pathname.endsWith("/login-cool.js") ||
     requestUrl.pathname.endsWith("/guest-login.js") ||
     requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
     requestUrl.pathname.endsWith("/seasonal-gacha-fix.js") ||
     requestUrl.pathname.endsWith("/gmail-seat-invite.js") ||
     requestUrl.pathname.endsWith("/tutorial-guide.js") ||
     requestUrl.pathname.endsWith("/tutorial-controls-fix.js") ||
+    requestUrl.pathname.endsWith("/tutorial-polish-fix.js") ||
     requestUrl.pathname.endsWith("/css/seasonal-gacha.css") ||
     requestUrl.pathname.endsWith("/css/gmail-seat-invite.css")
   ) {
