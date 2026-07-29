@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='login-cool-v2-command-gate';
+const VERSION='login-cool-v3-mobile-side-layout';
 const style=document.createElement('style');
 style.textContent=`
 #loginScreen{align-items:center!important;justify-content:center!important;padding:18px!important;background:radial-gradient(circle at 50% 12%,rgba(14,165,233,.16),transparent 30%),linear-gradient(135deg,#01030a 0%,#061126 48%,#02030a 100%)!important;overflow:hidden!important}
@@ -14,7 +14,7 @@ style.textContent=`
 .shooBrandTop,.shooBrandBottom{position:relative;z-index:2}.shooBrandKicker{color:#67e8f9;font:900 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.24em}.shooBrandVersion{display:inline-flex;margin-top:12px;padding:6px 10px;border:1px solid rgba(103,232,249,.3);border-radius:999px;background:rgba(2,6,23,.48);color:#c8f7ff;font:800 10px/1 ui-monospace,monospace;letter-spacing:.12em}
 #shooCoreMark{position:relative;z-index:2;width:178px;height:178px;margin:auto;display:grid;place-items:center}.shooCoreOuter,.shooCoreInner{position:absolute;border-radius:50%}.shooCoreOuter{inset:0;border:1px solid rgba(103,232,249,.42);box-shadow:0 0 34px rgba(56,189,248,.18)}.shooCoreOuter::before,.shooCoreOuter::after{content:"";position:absolute;left:50%;top:50%;background:rgba(103,232,249,.36);transform:translate(-50%,-50%)}.shooCoreOuter::before{width:1px;height:124%}.shooCoreOuter::after{height:1px;width:124%}.shooCoreInner{inset:34px;border:1px solid rgba(250,204,21,.52);box-shadow:inset 0 0 30px rgba(250,204,21,.08)}.shooCoreShip{position:relative;width:62px;height:86px;clip-path:polygon(50% 0,74% 43%,100% 78%,63% 67%,50% 100%,37% 67%,0 78%,26% 43%);background:linear-gradient(180deg,#f8fafc,#67e8f9 44%,#1d4ed8 100%);filter:drop-shadow(0 0 14px rgba(56,189,248,.85))}.shooCoreShip::after{content:"";position:absolute;left:50%;bottom:4px;width:16px;height:28px;transform:translateX(-50%);background:linear-gradient(#fff7ad,#fb923c,transparent);clip-path:polygon(25% 0,75% 0,100% 100%,50% 72%,0 100%)}
 .shooBrandTitle{font-size:clamp(30px,4vw,48px);font-weight:1000;line-height:.92;letter-spacing:.04em;color:#f8fafc;text-shadow:0 0 24px rgba(56,189,248,.45)}.shooBrandTitle span{display:block;color:#67e8f9;font-size:.38em;letter-spacing:.3em;margin:12px 0 0 3px}.shooBrandMeta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.shooMetaItem{padding:9px 10px;border:1px solid rgba(148,163,184,.14);border-radius:10px;background:rgba(2,6,23,.42);color:#93a7bd;font:700 9px/1.45 ui-monospace,monospace}.shooMetaItem b{display:block;color:#dffbff;font-size:11px}
-#shooLoginConsole{position:relative;padding:34px 38px 28px;background:linear-gradient(150deg,rgba(15,23,42,.98),rgba(2,6,23,.98));overflow:auto}#shooLoginConsole::before{content:"AUTHORIZATION GATE / CHANNEL 02";display:block;padding-bottom:12px;border-bottom:1px solid rgba(103,232,249,.16);color:#67e8f9;font:900 10px/1.2 ui-monospace,monospace;letter-spacing:.2em}
+#shooLoginConsole{position:relative;padding:34px 38px 28px;background:linear-gradient(150deg,rgba(15,23,42,.98),rgba(2,6,23,.98));overflow:auto;min-width:0}#shooLoginConsole::before{content:"AUTHORIZATION GATE / CHANNEL 02";display:block;padding-bottom:12px;border-bottom:1px solid rgba(103,232,249,.16);color:#67e8f9;font:900 10px/1.2 ui-monospace,monospace;letter-spacing:.2em}
 #loginScreen h1{margin:24px 0 5px!important;color:#f8fafc!important;font-size:clamp(31px,6vw,52px)!important;line-height:.9!important;letter-spacing:.04em!important;text-shadow:0 0 24px rgba(56,189,248,.42)!important}#loginScreen h1::after{content:" // 5.2";display:block;margin-top:10px;color:#64748b;font:800 10px/1 ui-monospace,monospace;letter-spacing:.2em;text-shadow:none}
 #shooLoginHero{margin:12px 0 20px;padding:12px 14px;border-left:3px solid #38bdf8;background:linear-gradient(90deg,rgba(56,189,248,.09),transparent);color:#94a3b8}#shooLoginHero strong{display:block;color:#e0faff;font-size:13px;letter-spacing:.12em}#shooLoginHero span{display:block;margin-top:4px;font-size:11px;line-height:1.55}
 #loginScreen .authBox{margin:0!important;padding:0!important;border:0!important;background:transparent!important;text-align:left!important;box-shadow:none!important}#loginScreen .authBox label{display:block;margin-top:13px;color:#9fb4c9;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
@@ -24,7 +24,37 @@ style.textContent=`
 #loginScreen #googleLoginMessage,#loginScreen #loginMessage{margin:12px 0 0!important;padding:10px 12px!important;border:1px solid rgba(103,232,249,.13);border-radius:10px;background:rgba(2,6,23,.56);color:#93a7bd!important;font-size:11px!important;line-height:1.5!important;text-align:left!important;white-space:pre-wrap}
 #shooLoginStatus{display:flex;align-items:center;gap:7px;margin-top:14px;color:#64748b;font:800 9px/1.3 ui-monospace,monospace;letter-spacing:.08em}#shooLoginStatus::before{content:"";width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 9px #22c55e;animation:shooStatusBlink 1.8s ease-in-out infinite}
 @keyframes shooCommandScan{from{top:-8%}to{top:108%}}@keyframes shooStatusBlink{50%{opacity:.35}}
-@media(max-width:780px),(pointer:coarse){#loginScreen{padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom))!important;overflow:auto!important}#loginScreen .panel{width:100%!important;max-height:none!important}#shooLoginFrame{display:block;min-height:0;border-radius:22px}#shooLoginBrand{min-height:176px;padding:18px 18px 16px;border-right:0;border-bottom:1px solid rgba(103,232,249,.16)}#shooLoginBrand::before{width:150px;height:150px;left:auto;right:18px;top:50%}.shooBrandTop{display:flex;align-items:center;justify-content:space-between}.shooBrandVersion{margin-top:0}#shooCoreMark{position:absolute;right:25px;top:25px;width:118px;height:118px}.shooCoreInner{inset:24px}.shooCoreShip{width:42px;height:60px}.shooBrandTitle{margin-top:38px;font-size:30px}.shooBrandMeta{display:none}#shooLoginConsole{padding:20px 16px 18px}#loginScreen h1{margin-top:18px!important;font-size:34px!important}#loginScreen input{height:47px!important}#loginScreen button{min-height:44px!important}}
+@media(max-width:780px),(pointer:coarse){
+ #loginScreen{align-items:flex-start!important;padding:max(8px,env(safe-area-inset-top)) 6px max(8px,env(safe-area-inset-bottom))!important;overflow:auto!important}
+ #loginScreen .panel{width:100%!important;max-height:none!important;border-radius:20px!important;overflow:visible!important}
+ #shooLoginFrame{display:grid;grid-template-columns:clamp(104px,31vw,142px) minmax(0,1fr);min-height:620px;border-radius:20px;align-items:stretch}
+ #shooLoginBrand{min-height:0;padding:14px 8px 12px;border-right:1px solid rgba(103,232,249,.18);border-bottom:0;justify-content:flex-start;align-items:stretch;background:radial-gradient(circle at 50% 30%,rgba(56,189,248,.22),transparent 24%),linear-gradient(170deg,#0a2747,#020617 70%)}
+ #shooLoginBrand::before{width:132px;height:132px;left:50%;right:auto;top:176px;transform:translate(-50%,-50%)}
+ .shooBrandTop{display:block;text-align:center}.shooBrandKicker{font-size:7px;letter-spacing:.11em;line-height:1.35}.shooBrandVersion{margin-top:8px;padding:5px 6px;font-size:8px;letter-spacing:.06em}
+ #shooCoreMark{position:relative;right:auto;top:auto;width:100px;height:100px;margin:92px auto 0;flex:0 0 auto}
+ .shooCoreInner{inset:21px}.shooCoreShip{width:38px;height:55px}
+ .shooBrandBottom{margin-top:auto;text-align:center}.shooBrandTitle{font-size:17px;line-height:1}.shooBrandTitle span{font-size:.38em;letter-spacing:.12em;margin-top:7px}.shooBrandMeta{display:none}
+ #shooLoginConsole{padding:17px 10px 16px;overflow:visible;min-width:0}
+ #shooLoginConsole::before{font-size:8px;letter-spacing:.1em;padding-bottom:8px}
+ #loginScreen h1{margin-top:15px!important;font-size:clamp(25px,8vw,32px)!important;line-height:.95!important}
+ #loginScreen h1::after{font-size:8px;margin-top:7px}
+ #shooLoginHero{margin:9px 0 12px;padding:9px 8px}#shooLoginHero strong{font-size:10px;letter-spacing:.08em}#shooLoginHero span{font-size:9px;line-height:1.35}
+ #loginScreen .authBox label{margin-top:9px;font-size:8px;letter-spacing:.08em}
+ #loginScreen input{height:45px!important;margin:4px 0 3px!important;padding:0 10px!important;font-size:16px!important}
+ #loginScreen button{min-height:43px!important;margin:7px 0!important;padding:8px 6px!important;font-size:11px!important;letter-spacing:.02em!important}
+ #loginScreen #firebaseLoginExtras>button:first-child{font-size:9px!important}
+ #loginScreen #googleLoginMessage,#loginScreen #loginMessage{padding:8px;font-size:9px!important}
+ #shooLoginStatus{font-size:7px;letter-spacing:.03em;line-height:1.35}
+}
+@media(max-width:390px){
+ #shooLoginFrame{grid-template-columns:100px minmax(0,1fr)}
+ #shooLoginBrand{padding-left:6px;padding-right:6px}
+ #shooCoreMark{width:88px;height:88px;margin-top:102px}
+ .shooCoreInner{inset:19px}.shooCoreShip{width:34px;height:50px}
+ .shooBrandTitle{font-size:15px}
+ #shooLoginConsole{padding-left:8px;padding-right:8px}
+ #loginScreen h1{font-size:24px!important}
+}
 @media(prefers-reduced-motion:reduce){#shooLoginBrand::after,#shooLoginStatus::before{animation:none!important}}
 `;
 document.head.appendChild(style);
