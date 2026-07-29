@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v80";
+const CACHE_NAME = "shooking-ii-v81";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -10,10 +10,12 @@ const APP_SHELL = [
   "./common-nav.js",
   "./ui-patch.js",
   "./app-notice.js?v=8",
+  "./release-current.js?v=1",
   "./firebase-config.js",
   "./google-login.js",
   "./google-login-fix.js",
   "./password-reset-fix.js?v=4",
+  "./password-change.js?v=1",
   "./login-cool.js?v=3",
   "./login-success-warp.js?v=6",
   "./login-failure-effect.js?v=3",
@@ -27,6 +29,7 @@ const APP_SHELL = [
   "./hard-stages.js",
   "./hangar-fix.js",
   "./gacha-upgrade.js",
+  "./gacha-11.js?v=1",
   "./seasonal-gacha-fix.js",
   "./gmail-seat-invite.js",
   "./tutorial-guide.js",
@@ -84,10 +87,12 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendStyle(html, "css/gmail-seat-invite.css", 1);
     html = appendScript(html, "ui-patch.js", 6);
     html = appendScript(html, "app-notice.js", 8);
+    html = appendScript(html, "release-current.js", 1);
     html = appendScript(html, "firebase-config.js", 2);
     html = appendScript(html, "google-login.js", 11);
     html = appendScript(html, "google-login-fix.js", 3);
     html = appendScript(html, "password-reset-fix.js", 4);
+    html = appendScript(html, "password-change.js", 1);
     html = appendScript(html, "login-cool.js", 3);
     html = appendScript(html, "login-success-warp.js", 6);
     html = appendScript(html, "login-failure-effect.js", 3);
@@ -100,6 +105,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendScript(html, "shared-enemy-sync.js", 1);
     html = appendScript(html, "hard-stages.js", 16);
     html = appendScript(html, "hangar-fix.js", 17);
+    html = appendScript(html, "gacha-11.js", 1);
     html = html.replace(/<script[^>]+src=["'][^"']*gacha-upgrade\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*seasonal-gacha-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*gmail-seat-invite\.js[^"']*["'][^>]*><\/script>/gi, "");
@@ -143,12 +149,15 @@ self.addEventListener("fetch", event => {
     requestUrl.pathname.endsWith("/game-system.js") ||
     requestUrl.pathname.endsWith("/google-login-fix.js") ||
     requestUrl.pathname.endsWith("/password-reset-fix.js") ||
+    requestUrl.pathname.endsWith("/password-change.js") ||
     requestUrl.pathname.endsWith("/login-cool.js") ||
     requestUrl.pathname.endsWith("/login-success-warp.js") ||
     requestUrl.pathname.endsWith("/login-failure-effect.js") ||
     requestUrl.pathname.endsWith("/app-notice.js") ||
+    requestUrl.pathname.endsWith("/release-current.js") ||
     requestUrl.pathname.endsWith("/guest-login.js") ||
     requestUrl.pathname.endsWith("/gacha-upgrade.js") ||
+    requestUrl.pathname.endsWith("/gacha-11.js") ||
     requestUrl.pathname.endsWith("/seasonal-gacha-fix.js") ||
     requestUrl.pathname.endsWith("/gmail-seat-invite.js") ||
     requestUrl.pathname.endsWith("/tutorial-guide.js") ||
