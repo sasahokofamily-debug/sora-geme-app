@@ -2464,6 +2464,8 @@ function updateStats(){
 updateStats();setTimeout(()=>{if(typeof renderHomeShipPreview==="function")renderHomeShipPreview()},0);
 function openScreen(name){showScreen(name);if(name==="home")setTimeout(renderHomeShipPreview,0);if(name==="shop"&&typeof renderWeaponShop==="function")renderWeaponShop();state=["home","loginScreen","registerScreen","stageSelect","shop","gacha","onlinePlay","settings","familyMessageSettings","modEditor","requestLog","questScreen","progressScreen","hangar","skinChangeScreen","savedReportsScreen","achievementScreen","saveManagerScreen"].includes(name)?"home":name;syncGameChromeState();saveData()}
 function showToast(text){const t=document.getElementById("missionToast");t.innerHTML=text;t.style.display="block";setTimeout(()=>t.style.display="none",2200)}
+function notifyButtonBlocked(text){if(typeof showToast==="function")showToast(text);try{sound(150,.08,"sawtooth",.035)}catch(e){}}
+function spendCoinsForButton(cost){if((player.coins||0)<cost){notifyButtonBlocked(`${cost}コイン必要です`);return false;}player.coins-=cost;return true;}
 
 
 
@@ -2499,7 +2501,7 @@ function endGame(){
   try{if(typeof sound==="function")sound(120,.6,"sawtooth",.08);}catch(e){}
   finishBattleToReport("ゲームオーバー");
 }
-function upgradeDamage(){if(player.coins<100)return;player.coins-=100;player.damage+=.2;sound(850,.1,"triangle");saveData()}function upgradeHp(){if(player.coins<100)return;player.coins-=100;player.maxHp+=20;player.hp=player.maxHp;sound(720,.1,"triangle");saveData()}function upgradeFire(){if(player.coins<150)return;player.coins-=150;player.fire+=.15;sound(950,.1,"triangle");saveData()}function upgradeEngine(){if(player.coins<150)return;player.coins-=150;player.engine+=.15;sound(650,.12,"sawtooth");saveData()}
+function upgradeDamage(){if(!spendCoinsForButton(100))return;player.damage+=.2;sound(850,.1,"triangle");saveData()}function upgradeHp(){if(!spendCoinsForButton(100))return;player.maxHp+=20;player.hp=player.maxHp;sound(720,.1,"triangle");saveData()}function upgradeFire(){if(!spendCoinsForButton(150))return;player.fire+=.15;sound(950,.1,"triangle");saveData()}function upgradeEngine(){if(!spendCoinsForButton(150))return;player.engine+=.15;sound(650,.12,"sawtooth");saveData()}
 
 function addExp(v){
   player.exp+=v;
@@ -2891,7 +2893,19 @@ function changeMobileSetting(){mobileControlsEnabled=document.getElementById("mo
 function openSettings(){openScreen("settings");const v=Math.round(gameVolume*100);document.getElementById("volumeSlider").value=v;document.getElementById("volumeLabel").textContent=v+"%";document.getElementById("mobileControlsEnable").checked=mobileControlsEnabled;document.getElementById("simpleControlsEnable").checked=mobileSimpleControlsEnabled;document.getElementById("largeButtonsEnable").checked=largeButtonsEnabled}
 function saveNormalSettings(){changeMobileSetting();document.getElementById("settingsMessage").textContent="設定を保存しました"}
 function dangerResetAll(){if(confirm("全データをリセットしますか？")){localStorage.clear();location.reload()}}
-function openGmailDraft(){document.getElementById("settingsMessage").textContent="安全のため自動送信はしません。"}
+function openGmailDraft(){
+  const message=document.getElementById("settingsMessage");
+  const to=(document.getElementById("gmailTo")?.value||"").trim();
+  const subject=(document.getElementById("gmailSubject")?.value||"").trim();
+  const body=(document.getElementById("gmailBody")?.value||"").trim();
+  if(!to&&!subject&&!body){
+    if(message)message.textContent="宛先・件名・本文のいずれかを入力してください。";
+    return;
+  }
+  const url=`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const opened=window.open(url,"_blank","noopener");
+  if(message)message.textContent=opened?"Gmail作成画面を開きました。最後の送信は自分で押してください。":"ポップアップがブロックされました。ブラウザで許可してください。";
+}
 function getLogs(){return JSON.parse(localStorage.getItem("shooking2_request_logs")||"[]")}function setLogs(l){localStorage.setItem("shooking2_request_logs",JSON.stringify(l))}function addLog(req,res,type="APP"){const l=getLogs();l.unshift({time:new Date().toLocaleString(),type,request:req,response:res});setLogs(l.slice(0,80));renderLogs()}
 function openRequestLog(){openScreen("requestLog");renderLogs()}function renderLogs(){const b=document.getElementById("logBox");if(!b)return;const l=getLogs();b.innerHTML=l.length?l.map(x=>`<div class="logitem"><span class="badge">${x.type}</span>${x.time}<br><b>リクエスト：</b>${x.request}<br><b>応答：</b>${x.response}</div>`).join(""):"まだログはありません。"}function sendAppRequest(){const t=document.getElementById("requestText").value.trim();if(!t)return;addLog(t,"アプリからの応答がありました：記録しました。","REQUEST");document.getElementById("requestText").value=""}
 function openModEditor(){openScreen("modEditor");document.getElementById("modJson").value=JSON.stringify({damageBase:22,eliteRate:.2},null,2)}
