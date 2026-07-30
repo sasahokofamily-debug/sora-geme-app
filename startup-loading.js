@@ -1,8 +1,9 @@
 (()=>{
 'use strict';
-const VERSION='startup-loading-v1';
-const MIN_VISIBLE_MS=1150;
-const MAX_WAIT_MS=9000;
+const VERSION='startup-loading-v2-auth-ready';
+const CURRENT_KEY='shooking2_current_account';
+const MIN_VISIBLE_MS=650;
+const MAX_WAIT_MS=4200;
 let finished=false;
 let timer=0;
 
@@ -10,12 +11,16 @@ function overlay(){return document.getElementById('shookingStartupLoader')}
 function message(text){const el=document.getElementById('shookingStartupLoadingText');if(el)el.textContent=text}
 function detail(text){const el=document.getElementById('shookingStartupLoadingDetail');if(el)el.textContent=text}
 function startedAt(){return Number(window.__shookingStartupLoadingStarted)||performance.now()}
+function hasAccount(){try{return !!JSON.parse(localStorage.getItem(CURRENT_KEY)||'null')}catch{return false}}
+function loginReady(){
+ const login=document.getElementById('loginScreen');
+ return !!(login&&document.getElementById('loginName')&&document.getElementById('loginPassword')&&!login.classList.contains('hidden'));
+}
 function appReady(){
- return document.readyState==='complete'&&
-  !!document.getElementById('loginScreen')&&
-  !!document.getElementById('home')&&
-  (typeof window.openScreen==='function'||typeof window.showScreen==='function')&&
-  !!window.__shookingButtonActions;
+ const base=!!document.body&&!!document.getElementById('home')&&!!document.getElementById('loginScreen')&&!!window.__shookingButtonActions;
+ if(!base)return false;
+ if(!hasAccount())return loginReady();
+ return typeof window.openScreen==='function'||typeof window.showScreen==='function';
 }
 function hide(){
  if(finished)return;
@@ -25,18 +30,18 @@ function hide(){
  document.documentElement.classList.remove('shooking-loading');
  if(!el)return;
  message('準備完了');
- detail('SHOO KING IIを起動します');
+ detail(hasAccount()?'SHOO KING IIを起動します':'ログインできます');
  el.classList.add('is-ready');
- setTimeout(()=>el.remove(),480);
+ setTimeout(()=>el.remove(),360);
 }
 function check(){
  if(finished)return;
  const elapsed=performance.now()-startedAt();
- if(elapsed>420&&elapsed<980){message('ゲームデータを読み込み中...');detail('画面と操作機能を準備しています')}
- else if(elapsed>=980&&elapsed<1900){message('ログイン画面を準備中...');detail('セーブデータと認証機能を確認しています')}
- else if(elapsed>=1900){message('読み込み中...');detail('もうすぐ開始します')}
+ if(elapsed>300&&elapsed<850){message('ゲームデータを読み込み中...');detail('画面と操作機能を準備しています')}
+ else if(elapsed>=850&&elapsed<1600){message('ログイン画面を準備中...');detail('認証機能を確認しています')}
+ else if(elapsed>=1600){message('読み込み中...');detail('もうすぐ開始します')}
  if((appReady()&&elapsed>=MIN_VISIBLE_MS)||elapsed>=MAX_WAIT_MS){hide();return}
- timer=setTimeout(check,90);
+ timer=setTimeout(check,70);
 }
 function ensureFallback(){
  if(overlay())return;
