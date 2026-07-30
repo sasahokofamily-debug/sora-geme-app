@@ -1,14 +1,18 @@
 (()=>{
 'use strict';
-const VERSION='button-actions-v2-light-delegation';
+const VERSION='button-actions-v3-direct-light';
 const CURRENT_KEY='shooking2_current_account';
-const ATTRS={onclick:'click',onchange:'change',oninput:'input'};
-const DATA={click:'shooClickCode',change:'shooChangeCode',input:'shooInputCode'};
-const propertyHandlers=new WeakMap();
+const EVENT_ATTRS=[['click','onclick'],['change','onchange'],['input','oninput']];
+const boundCodes=new WeakMap();
+const boundHandlers=new WeakMap();
+
+const style=document.createElement('style');
+style.textContent='button,[role="button"],.stageNode,.choiceCard{touch-action:manipulation}';
+document.head.appendChild(style);
 
 function notify(message){
  try{
-  if(typeof window.showAppNotice==='function')window.showAppNotice({title:'BUTTON ACTION ERROR',message,type:'error',duration:6200});
+  if(typeof window.showAppNotice==='function')window.showAppNotice({title:'BUTTON ACTION ERROR',message,type:'error',duration:6500});
   else console.error(message);
  }catch{}
 }
@@ -26,7 +30,8 @@ function splitArguments(source){
   else if(ch===')'||ch===']'||ch==='}')depth--;
   else if(ch===','&&depth===0){result.push(text.slice(start,i).trim());start=i+1}
  }
- result.push(text.slice(start).trim());return result;
+ result.push(text.slice(start).trim());
+ return result;
 }
 
 function parseArgument(token,event,element){
@@ -77,28 +82,70 @@ function runCode(source,event,element){
   else if(ch===')'||ch===']'||ch==='}')depth--;
   else if(ch===';'&&depth===0){statements.push(text.slice(start,i));start=i+1}
  }
- statements.push(text.slice(start));let result;
+ statements.push(text.slice(start));
+ let result;
  for(const statement of statements)result=executeStatement(statement,event,element);
  return result;
 }
 
-function storePropertyHandler(element,eventName,handler){
- let map=propertyHandlers.get(element);
- if(!map){map={};propertyHandlers.set(element,map)}
- map[eventName]=handler;
+function codeSet(element,eventName){
+ let map=boundCodes.get(element);
+ if(!map){map={};boundCodes.set(element,map)}
+ if(!map[eventName])map[eventName]=new Set();
+ return map[eventName];
+}
+
+function handlerSet(element,eventName){
+ let map=boundHandlers.get(element);
+ if(!map){map={};boundHandlers.set(element,map)}
+ if(!map[eventName])map[eventName]=new Set();
+ return map[eventName];
+}
+
+function bindCode(element,eventName,code){
+ const set=codeSet(element,eventName);
+ if(set.has(code))return;
+ set.add(code);
+ element.addEventListener(eventName,event=>{
+  try{
+   const result=runCode(code,event,element);
+   if(result===false){event.preventDefault();event.stopPropagation()}
+  }catch(error){
+   console.error('Button action failed:',code,error);
+   notify(`「${(element.textContent||element.id||'操作').trim().slice(0,30)}」を実行できません。\n${error.message}`);
+  }
+ },{passive:false});
+}
+
+function bindHandler(element,eventName,handler){
+ const set=handlerSet(element,eventName);
+ if(set.has(handler))return;
+ set.add(handler);
+ element.addEventListener(eventName,event=>{
+  try{
+   const result=handler.call(element,event);
+   if(result===false){event.preventDefault();event.stopPropagation()}
+  }catch(error){
+   console.error('Element event handler failed:',error);
+   notify(`「${(element.textContent||element.id||'操作').trim().slice(0,30)}」を実行できません。\n${error.message}`);
+  }
+ },{passive:false});
 }
 
 function migrateElement(element){
  if(!(element instanceof Element))return;
- for(const [attribute,eventName] of Object.entries(ATTRS)){
+ for(const [eventName,attribute] of EVENT_ATTRS){
   const code=element.getAttribute(attribute);
-  if(code){element.dataset[DATA[eventName]]=code;element.removeAttribute(attribute)}
- }
- for(const [eventName,propertyName] of [['click','onclick'],['change','onchange'],['input','oninput']]){
-  const handler=element[propertyName];
+  if(code){
+   element.removeAttribute(attribute);
+   element.dataset[`shoo${eventName[0].toUpperCase()}${eventName.slice(1)}Ready`]='1';
+   bindCode(element,eventName,code);
+   continue;
+  }
+  const handler=element[attribute];
   if(typeof handler==='function'){
-   try{element[propertyName]=null}catch{}
-   storePropertyHandler(element,eventName,handler);
+   try{element[attribute]=null}catch{}
+   bindHandler(element,eventName,handler);
   }
  }
 }
@@ -106,34 +153,6 @@ function migrateElement(element){
 function migrateTree(root){
  if(root instanceof Element)migrateElement(root);
  root.querySelectorAll?.('[onclick],[onchange],[oninput],button,input,select,textarea,.stageNode,.choiceCard').forEach(migrateElement);
-}
-
-function findActionElement(target,eventName){
- if(!(target instanceof Element))return null;
- const dataName=DATA[eventName];
- let node=eventName==='click'?target.closest('[data-shoo-click-code],button,[role="button"],.stageNode,.choiceCard'):target;
- while(node&&node!==document.documentElement){
-  if(node.dataset?.[dataName]||propertyHandlers.get(node)?.[eventName])return node;
-  if(eventName!=='click')break;
-  node=node.parentElement;
- }
- return null;
-}
-
-function dispatch(eventName,event){
- const element=findActionElement(event.target,eventName);
- if(!element)return;
- const code=element.dataset?.[DATA[eventName]];
- const handler=propertyHandlers.get(element)?.[eventName];
- try{
-  let result;
-  if(code)result=runCode(code,event,element);
-  if(typeof handler==='function')result=handler.call(element,event);
-  if(result===false){event.preventDefault();event.stopPropagation()}
- }catch(error){
-  console.error('Action failed',error);
-  notify(`「${(element.textContent||element.id||'操作').trim().slice(0,28)}」を実行できません。\n${error.message}`);
- }
 }
 
 function showLoginImmediately(){
@@ -151,9 +170,6 @@ function showLoginImmediately(){
 
 function install(){
  migrateTree(document);
- document.addEventListener('click',event=>dispatch('click',event),false);
- document.addEventListener('change',event=>dispatch('change',event),false);
- document.addEventListener('input',event=>dispatch('input',event),false);
  const observer=new MutationObserver(records=>{
   for(const record of records){
    if(record.type==='attributes')migrateElement(record.target);
