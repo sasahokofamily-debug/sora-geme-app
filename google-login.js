@@ -390,7 +390,11 @@
     const box=document.getElementById("accountStatusHome");
     const acc=JSON.parse(localStorage.getItem(CURRENT_KEY)||"null");
     if(!box)return;
-    if(!acc){box.textContent="未ログイン";return;}
+    if(!acc){
+      if(typeof window.renderLoggedOutAuthStatus==="function")box.innerHTML=window.renderLoggedOutAuthStatus();
+      else box.textContent="未ログイン";
+      return;
+    }
     const avatar=acc.picture?`<img src="${escapeHtml(acc.picture)}" alt="" referrerpolicy="no-referrer" style="width:34px;height:34px;border-radius:50%;vertical-align:middle;margin-right:8px">`:"";
     box.innerHTML=`${avatar}Firebaseログイン中：<b>${escapeHtml(acc.accountName)}</b><br><span class="small">${escapeHtml(acc.email)}<br>クラウド自動保存 ON</span><button onclick="logoutFirebaseAccount()">ログアウト</button>`;
   }

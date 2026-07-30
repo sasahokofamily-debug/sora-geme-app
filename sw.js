@@ -90,7 +90,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendScript(html, "app-notice.js", 8);
     html = appendScript(html, "release-current.js", 4);
     html = appendScript(html, "firebase-config.js", 2);
-    html = appendScript(html, "google-login.js", 11);
+    html = appendScript(html, "google-login.js", 12);
     html = appendScript(html, "google-login-fix.js", 3);
     html = appendScript(html, "password-reset-fix.js", 4);
     html = appendScript(html, "password-change.js", 2);

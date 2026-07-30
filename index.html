@@ -932,6 +932,8 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
 /* LOGIN / REGISTER */
 .authBox{background:rgba(15,23,42,.92);border:1px solid #334155;border-radius:16px;padding:16px;margin:12px 0;text-align:left}
 .authStatus{border:1px solid #38bdf8;background:rgba(56,189,248,.08);border-radius:12px;padding:10px;margin:10px 0;font-size:13px}
+.authMiniActions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
+.authMiniActions button{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:34px;margin:0;padding:7px 8px;border-radius:9px;font-size:12px}
 .authDanger{border:1px solid #f97316;background:rgba(249,115,22,.10);color:#fed7aa;border-radius:12px;padding:10px;margin:10px 0;font-size:13px}
 
 /* MORE MAPS */
@@ -3591,6 +3593,9 @@ function setCurrentAccount(account){
   localStorage.setItem("shooking2_current_account",JSON.stringify(account));
   updateAccountStatus();
 }
+function renderLoggedOutAuthStatus(){
+  return `未ログイン<div class="authMiniActions"><button type="button" onclick="openLogin()">ログイン / ゲスト</button></div>`;
+}
 function updateAccountStatus(){
   const box=document.getElementById("accountStatusHome");
   if(!box)return;
@@ -3598,7 +3603,7 @@ function updateAccountStatus(){
   if(acc){
     box.innerHTML=`ログイン中：<b>${acc.accountName}</b> / 年齢 ${acc.age} / 誕生年 ${acc.birthYear}<button onclick="logoutAccount()">ログアウト</button>`;
   }else{
-    box.innerHTML="未ログイン";
+    box.innerHTML=renderLoggedOutAuthStatus();
   }
 }
 function openLogin(){
