@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v85";
+const CACHE_NAME = "shooking-ii-v86";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -10,7 +10,7 @@ const APP_SHELL = [
   "./common-nav.js",
   "./ui-patch.js",
   "./app-notice.js?v=8",
-  "./release-current.js?v=4",
+  "./release-current.js?v=5",
   "./firebase-config.js",
   "./google-login.js",
   "./google-login-fix.js",
@@ -35,7 +35,7 @@ const APP_SHELL = [
   "./tutorial-guide.js",
   "./tutorial-controls-fix.js?v=3",
   "./tutorial-polish-fix.js?v=2",
-  "./button-actions.js?v=2",
+  "./button-actions.js?v=3",
   "./css/seasonal-gacha.css",
   "./css/gmail-seat-invite.css",
   "./manifest.webmanifest",
@@ -88,9 +88,9 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendStyle(html, "css/gmail-seat-invite.css", 1);
     html = appendScript(html, "ui-patch.js", 6);
     html = appendScript(html, "app-notice.js", 8);
-    html = appendScript(html, "release-current.js", 4);
+    html = appendScript(html, "release-current.js", 5);
     html = appendScript(html, "firebase-config.js", 2);
-    html = appendScript(html, "google-login.js", 12);
+    html = appendScript(html, "google-login.js", 11);
     html = appendScript(html, "google-login-fix.js", 3);
     html = appendScript(html, "password-reset-fix.js", 4);
     html = appendScript(html, "password-change.js", 2);
@@ -114,7 +114,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = html.replace(/<script[^>]+src=["'][^"']*tutorial-controls-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*tutorial-polish-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
     html = html.replace(/<script[^>]+src=["'][^"']*button-actions\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gacha-11.js?v=2"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=3"></script>\n<script src="./tutorial-polish-fix.js?v=2"></script>\n<script src="./button-actions.js?v=2"></script>\n</body>');
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gacha-11.js?v=2"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=3"></script>\n<script src="./tutorial-polish-fix.js?v=2"></script>\n<script src="./button-actions.js?v=3"></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
