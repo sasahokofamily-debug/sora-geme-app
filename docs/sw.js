@@ -1,5 +1,5 @@
-const CACHE_NAME = "shooking-pages-v93";
-const BUILD = "93";
+const CACHE_NAME = "shooking-pages-v94";
+const BUILD = "94";
 const RAW_BASE = "https://raw.githubusercontent.com/sasahokofamily-debug/sora-geme-app/main/";
 const SCOPE_URL = new URL(self.registration.scope);
 const SCOPE_PATH = SCOPE_URL.pathname.replace(/\/+$/, "") + "/";
@@ -14,17 +14,21 @@ self.addEventListener("activate", event => {
     await Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)));
     await self.clients.claim();
 
+    // Move only an already-open game page once to the stable v94 URL.
+    // Never navigate every client on every activation.
     const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     for (const client of windows) {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) continue;
-        if (url.searchParams.get("_pages") === BUILD) continue;
-        const game = new URL("./game", self.registration.scope);
-        game.searchParams.set("play", "1");
-        game.searchParams.set("v", BUILD);
-        game.searchParams.set("_pages", BUILD);
-        await client.navigate(game.href);
+        const path = url.pathname.replace(/\/+$/, "");
+        const isGame = path.endsWith("/game") || url.searchParams.get("play") === "1";
+        if (!isGame || url.searchParams.get("_stable") === BUILD) continue;
+        url.searchParams.set("play", "1");
+        url.searchParams.set("v", BUILD);
+        url.searchParams.set("_pages", BUILD);
+        url.searchParams.set("_stable", BUILD);
+        await client.navigate(url.href);
       } catch {}
     }
   })());
@@ -85,9 +89,9 @@ async function networkFirst(path, cacheKey) {
   }
 }
 
-const PUBLIC_AUTH_GUARD = `<script id="shookingPublicAuthGuard">(()=>{const KEY='shooking2_current_account';const hasAccount=()=>{try{return !!JSON.parse(localStorage.getItem(KEY)||'null')}catch{return false}};if(hasAccount())return;const style=document.createElement('style');style.id='shookingPublicAuthGuardStyle';style.textContent='html.shooking-auth-pending .screen{visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(style);document.documentElement.classList.add('shooking-auth-pending');const cleanup=()=>{document.documentElement.classList.remove('shooking-auth-pending');style.remove()};const forceLogin=()=>{if(hasAccount()){cleanup();return true}const login=document.getElementById('loginScreen');if(!login)return false;document.querySelectorAll('.screen').forEach(screen=>screen.classList.add('hidden'));login.classList.remove('hidden');login.style.removeProperty('display');login.style.removeProperty('visibility');login.removeAttribute('aria-hidden');document.getElementById('home')?.classList.add('hidden');document.body.classList.remove('game-playing');document.body.classList.add('game-menu');cleanup();return true};const settle=()=>{forceLogin();[0,40,120,300,700].forEach(delay=>setTimeout(()=>{if(!hasAccount())forceLogin()},delay))};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',settle,{once:true});else settle();window.addEventListener('pageshow',()=>{if(!hasAccount())forceLogin()})})();<\/script>`;
+const PUBLIC_BOOT = `<script id="shookingPublicAuthFix" src="./auth-session-fix.js?v=2"><\/script><script id="shookingPublicAuthGuard">(()=>{const KEY='shooking2_current_account';const hasAccount=()=>{try{return !!JSON.parse(localStorage.getItem(KEY)||'null')}catch{return false}};if(hasAccount())return;const style=document.createElement('style');style.id='shookingPublicAuthGuardStyle';style.textContent='html.shooking-auth-pending .screen{visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(style);document.documentElement.classList.add('shooking-auth-pending');const cleanup=()=>{document.documentElement.classList.remove('shooking-auth-pending');style.remove()};const forceLogin=()=>{if(hasAccount()){cleanup();return true}const login=document.getElementById('loginScreen');if(!login)return false;document.querySelectorAll('.screen').forEach(screen=>screen.classList.add('hidden'));login.classList.remove('hidden');login.style.removeProperty('display');login.style.removeProperty('visibility');login.removeAttribute('aria-hidden');document.getElementById('home')?.classList.add('hidden');document.body.classList.remove('game-playing');document.body.classList.add('game-menu');cleanup();return true};const settle=()=>{forceLogin();[0,60,180,420].forEach(delay=>setTimeout(()=>{if(!hasAccount())forceLogin()},delay))};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',settle,{once:true});else settle();window.addEventListener('pageshow',()=>{if(!hasAccount())forceLogin()})})();<\/script>`;
 
-function injectPublicAuthGuard(response) {
+function injectPublicBoot(response) {
   if (!response.body) return response;
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -106,7 +110,7 @@ function injectPublicAuthGuard(response) {
               const match = /<body[^>]*>/i.exec(buffer);
               if (match) {
                 const end = match.index + match[0].length;
-                buffer = buffer.slice(0, end) + PUBLIC_AUTH_GUARD + buffer.slice(end);
+                buffer = buffer.slice(0, end) + PUBLIC_BOOT + buffer.slice(end);
                 injected = true;
               }
             }
@@ -120,7 +124,7 @@ function injectPublicAuthGuard(response) {
             const match = /<body[^>]*>/i.exec(buffer);
             if (!match) continue;
             const end = match.index + match[0].length;
-            controller.enqueue(encoder.encode(buffer.slice(0, end) + PUBLIC_AUTH_GUARD + buffer.slice(end)));
+            controller.enqueue(encoder.encode(buffer.slice(0, end) + PUBLIC_BOOT + buffer.slice(end)));
             buffer = "";
             injected = true;
             return;
@@ -150,6 +154,27 @@ function injectPublicAuthGuard(response) {
   });
 }
 
+function assetFailure(path, error) {
+  const type = contentType(path);
+  const message = `SHOO KING II asset load failed: ${path}`;
+  if (type.startsWith("text/javascript")) {
+    return new Response(`console.error(${JSON.stringify(message)});`, {
+      status: 503,
+      headers: { "content-type": type, "cache-control": "no-store" }
+    });
+  }
+  if (type.startsWith("text/css")) {
+    return new Response(`/* ${message} */`, {
+      status: 503,
+      headers: { "content-type": type, "cache-control": "no-store" }
+    });
+  }
+  return new Response(message, {
+    status: 503,
+    headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" }
+  });
+}
+
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
@@ -160,13 +185,13 @@ self.addEventListener("fetch", event => {
     const gameRoute = rel === "game" || rel === "game/" || rel === "index.html" || url.searchParams.get("play") === "1";
     if (!gameRoute) return;
     event.respondWith((async () => {
-      const response = await networkFirst("index.html", new Request(`${self.registration.scope}__game_v93.html`));
-      return injectPublicAuthGuard(response);
+      const response = await networkFirst("index.html", new Request(`${self.registration.scope}__game_v94.html`));
+      return injectPublicBoot(response);
     })());
     return;
   }
 
   const rel = relativePath(url);
   if (!rel || rel === "sw.js") return;
-  event.respondWith(networkFirst(rel, event.request).catch(() => fetch(event.request)));
+  event.respondWith(networkFirst(rel, event.request).catch(error => assetFailure(rel, error)));
 });
