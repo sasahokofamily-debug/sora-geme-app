@@ -2,57 +2,66 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#02030a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SHOO KING II">
-<meta name="description" content="SHOO KING II - 宇宙を進むシューティングWebアプリ">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="./icons/icon.svg">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0078d4">
 <title>SHOO KING II</title>
 <style>
-body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07111f;color:white;font-family:system-ui,sans-serif;text-align:center}
-.box{max-width:680px;padding:28px;border:1px solid rgba(255,255,255,.25);border-radius:18px;background:rgba(255,255,255,.08)}
-a{color:#7dd3fc}
-.small{opacity:.75;font-size:13px}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0078d4;color:#fff;font-family:"Segoe UI",system-ui,sans-serif}
+body{display:grid;place-items:center;text-align:center}
+.wrap{display:flex;flex-direction:column;align-items:center;transform:translateY(-2vh)}
+.spinner{position:relative;width:62px;height:62px;margin-bottom:22px;animation:spin 1s linear infinite}
+.spinner i{position:absolute;left:27px;top:2px;width:8px;height:8px;border-radius:50%;background:#fff;transform-origin:4px 29px}
+.spinner i:nth-child(1){transform:rotate(0deg);opacity:1}.spinner i:nth-child(2){transform:rotate(45deg);opacity:.86}.spinner i:nth-child(3){transform:rotate(90deg);opacity:.72}.spinner i:nth-child(4){transform:rotate(135deg);opacity:.58}.spinner i:nth-child(5){transform:rotate(180deg);opacity:.46}.spinner i:nth-child(6){transform:rotate(225deg);opacity:.34}.spinner i:nth-child(7){transform:rotate(270deg);opacity:.24}.spinner i:nth-child(8){transform:rotate(315deg);opacity:.14}
+#msg{font-size:22px;line-height:1.4}.sub{margin-top:10px;font-size:12px;opacity:.76}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
-</head>
-<body>
-<div class="box">
-<h1>起動中...</h1>
-<p id="msg">ゲームを読み込んでいます。</p>
-<p><a id="direct" href="https://raw.githack.com/sasahokofamily-debug/sora-geme-app/main/index.html">直接開く</a></p>
-<p class="small">読み込みが止まる場合は、少し待ってから再読み込みしてください。</p>
-</div>
 <script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(console.warn);
-  });
-}
-(async()=>{
-  const sources=[
-    'https://raw.githubusercontent.com/sasahokofamily-debug/sora-geme-app/main/index.html?cache='+Date.now(),
-    'https://cdn.jsdelivr.net/gh/sasahokofamily-debug/sora-geme-app@main/index.html?cache='+Date.now()
-  ];
-  let lastError=null;
-  for(const url of sources){
-    try{
-      const res=await fetch(url,{cache:'no-store'});
-      if(!res.ok) throw new Error(url+' / HTTP '+res.status);
-      const html=await res.text();
-      if(!html.includes('<!DOCTYPE html') && !html.includes('<html')) throw new Error('HTMLではありません');
-      document.open();
-      document.write(html);
-      document.close();
+(() => {
+  const destination = new URL('./game', location.href);
+  destination.searchParams.set('play', '1');
+  destination.searchParams.set('v', '92');
+
+  async function start() {
+    const msg = document.getElementById('msg');
+    if (!('serviceWorker' in navigator)) {
+      location.replace(destination.href);
       return;
-    }catch(e){ lastError=e; }
+    }
+    try {
+      const registration = await navigator.serviceWorker.register('./sw.js?v=92', { scope: './' });
+      await registration.update().catch(() => {});
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise(resolve => {
+          const timer = setTimeout(resolve, 650);
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            clearTimeout(timer);
+            resolve();
+          }, { once: true });
+        });
+      }
+      location.replace(destination.href);
+    } catch (error) {
+      console.error(error);
+      if (msg) msg.textContent = '起動方法を切り替えています...';
+      setTimeout(() => location.replace(destination.href), 120);
+    }
   }
-  document.getElementById('msg').textContent='読み込みに失敗しました。下の「直接開く」を押してください。';
-  console.error(lastError);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
 })();
 </script>
+</head>
+<body>
+<div class="wrap">
+  <div class="spinner" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div id="msg">起動中...</div>
+  <div class="sub">公開版を準備しています</div>
+</div>
 </body>
 </html>
