@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v87";
+const CACHE_NAME = "shooking-ii-v88";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -10,8 +10,9 @@ const APP_SHELL = [
   "./common-nav.js",
   "./ui-patch.js",
   "./app-notice.js?v=8",
-  "./release-current.js?v=6",
+  "./release-current.js?v=7",
   "./firebase-config.js",
+  "./auth-session-fix.js?v=1",
   "./google-login.js",
   "./google-login-fix.js",
   "./password-reset-fix.js?v=4",
@@ -36,7 +37,7 @@ const APP_SHELL = [
   "./tutorial-controls-fix.js?v=3",
   "./tutorial-polish-fix.js?v=2",
   "./button-actions.js?v=3",
-  "./startup-loading.js?v=1",
+  "./startup-loading.js?v=2",
   "./css/seasonal-gacha.css",
   "./css/gmail-seat-invite.css",
   "./manifest.webmanifest",
@@ -75,11 +76,16 @@ function addModernMobileMeta(html) {
   return html.replace("</head>", '<meta name="mobile-web-app-capable" content="yes">\n</head>');
 }
 
+function removeScript(html, filename) {
+  const escaped = filename.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return html.replace(new RegExp(`<script[^>]+src=["'][^"']*${escaped}[^"']*["'][^>]*><\\/script>`, "gi"), "");
+}
+
 function addStartupLoader(html) {
   if (html.includes('id="shookingStartupLoader"')) return html;
   const style = `<style id="shookingStartupLoaderStyle">
 html.shooking-loading,html.shooking-loading body{overflow:hidden!important}
-#shookingStartupLoader{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;box-sizing:border-box;padding:24px;background:linear-gradient(145deg,#005a9e 0%,#0078d4 54%,#0067b8 100%);color:#fff;font-family:"Segoe UI",system-ui,sans-serif;text-align:center;opacity:1;visibility:visible;pointer-events:auto;transition:opacity .42s ease,visibility .42s ease}
+#shookingStartupLoader{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;box-sizing:border-box;padding:24px;background:linear-gradient(145deg,#005a9e 0%,#0078d4 54%,#0067b8 100%);color:#fff;font-family:"Segoe UI",system-ui,sans-serif;text-align:center;opacity:1;visibility:visible;pointer-events:auto;transition:opacity .36s ease,visibility .36s ease}
 #shookingStartupLoader.is-ready{opacity:0;visibility:hidden;pointer-events:none}
 .shookingStartupLoadingCenter{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:220px;transform:translateY(-2vh)}
 .shookingStartupSpinner{position:relative;width:76px;height:76px;margin-bottom:30px;animation:shookingStartupSpin 1.22s linear infinite}
@@ -108,10 +114,13 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = prependGameScript(html, "gemedeta.js", 1);
     html = appendStyle(html, "css/seasonal-gacha.css", 1);
     html = appendStyle(html, "css/gmail-seat-invite.css", 1);
+    html = removeScript(html, "release-current.js");
+    html = removeScript(html, "auth-session-fix.js");
     html = appendScript(html, "ui-patch.js", 6);
     html = appendScript(html, "app-notice.js", 8);
-    html = appendScript(html, "release-current.js", 6);
+    html = appendScript(html, "release-current.js", 7);
     html = appendScript(html, "firebase-config.js", 2);
+    html = appendScript(html, "auth-session-fix.js", 1);
     html = appendScript(html, "google-login.js", 11);
     html = appendScript(html, "google-login-fix.js", 3);
     html = appendScript(html, "password-reset-fix.js", 4);
@@ -128,16 +137,16 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = appendScript(html, "shared-enemy-sync.js", 1);
     html = appendScript(html, "hard-stages.js", 16);
     html = appendScript(html, "hangar-fix.js", 17);
-    html = html.replace(/<script[^>]+src=["'][^"']*gacha-upgrade\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<script[^>]+src=["'][^"']*gacha-11\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<script[^>]+src=["'][^"']*seasonal-gacha-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<script[^>]+src=["'][^"']*gmail-seat-invite\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<script[^>]+src=["'][^"']*tutorial-guide\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<script[^>]+src=["'][^"']*tutorial-controls-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<script[^>]+src=["'][^"']*tutorial-polish-fix\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<script[^>]+src=["'][^"']*button-actions\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<script[^>]+src=["'][^"']*startup-loading\.js[^"']*["'][^>]*><\/script>/gi, "");
-    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gacha-11.js?v=2"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=3"></script>\n<script src="./tutorial-polish-fix.js?v=2"></script>\n<script src="./button-actions.js?v=3"></script>\n<script src="./startup-loading.js?v=1"></script>\n</body>');
+    html = removeScript(html, "gacha-upgrade.js");
+    html = removeScript(html, "gacha-11.js");
+    html = removeScript(html, "seasonal-gacha-fix.js");
+    html = removeScript(html, "gmail-seat-invite.js");
+    html = removeScript(html, "tutorial-guide.js");
+    html = removeScript(html, "tutorial-controls-fix.js");
+    html = removeScript(html, "tutorial-polish-fix.js");
+    html = removeScript(html, "button-actions.js");
+    html = removeScript(html, "startup-loading.js");
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gacha-11.js?v=2"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=3"></script>\n<script src="./tutorial-polish-fix.js?v=2"></script>\n<script src="./button-actions.js?v=3"></script>\n<script src="./startup-loading.js?v=2"></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
@@ -180,6 +189,7 @@ self.addEventListener("fetch", event => {
     requestUrl.pathname.endsWith("/login-failure-effect.js") ||
     requestUrl.pathname.endsWith("/app-notice.js") ||
     requestUrl.pathname.endsWith("/release-current.js") ||
+    requestUrl.pathname.endsWith("/auth-session-fix.js") ||
     requestUrl.pathname.endsWith("/button-actions.js") ||
     requestUrl.pathname.endsWith("/startup-loading.js") ||
     requestUrl.pathname.endsWith("/guest-login.js") ||
