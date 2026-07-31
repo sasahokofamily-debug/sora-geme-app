@@ -20,7 +20,8 @@ body{display:grid;place-items:center;text-align:center}
 (() => {
   const destination = new URL('./game', location.href);
   destination.searchParams.set('play', '1');
-  destination.searchParams.set('v', '92');
+  destination.searchParams.set('v', '93');
+  destination.searchParams.set('_pages', '93');
 
   async function start() {
     const msg = document.getElementById('msg');
@@ -29,7 +30,7 @@ body{display:grid;place-items:center;text-align:center}
       return;
     }
     try {
-      const registration = await navigator.serviceWorker.register('./sw.js?v=92', { scope: './' });
+      const registration = await navigator.serviceWorker.register('./sw.js?v=93', { scope: './' });
       await registration.update().catch(() => {});
       await navigator.serviceWorker.ready;
       if (!navigator.serviceWorker.controller) {
