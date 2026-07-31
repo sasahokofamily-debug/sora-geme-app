@@ -1,4 +1,4 @@
-const CACHE_NAME = "shooking-ii-v88";
+const CACHE_NAME = "shooking-ii-v89";
 const APP_SHELL = [
   "./landing.html",
   "./index.html",
@@ -10,7 +10,7 @@ const APP_SHELL = [
   "./common-nav.js",
   "./ui-patch.js",
   "./app-notice.js?v=8",
-  "./release-current.js?v=7",
+  "./release-current.js?v=8",
   "./firebase-config.js",
   "./auth-session-fix.js?v=1",
   "./google-login.js",
@@ -37,7 +37,7 @@ const APP_SHELL = [
   "./tutorial-controls-fix.js?v=3",
   "./tutorial-polish-fix.js?v=2",
   "./button-actions.js?v=3",
-  "./startup-loading.js?v=2",
+  "./startup-loading.js?v=3",
   "./css/seasonal-gacha.css",
   "./css/gmail-seat-invite.css",
   "./manifest.webmanifest",
@@ -85,7 +85,7 @@ function addStartupLoader(html) {
   if (html.includes('id="shookingStartupLoader"')) return html;
   const style = `<style id="shookingStartupLoaderStyle">
 html.shooking-loading,html.shooking-loading body{overflow:hidden!important}
-#shookingStartupLoader{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;box-sizing:border-box;padding:24px;background:linear-gradient(145deg,#005a9e 0%,#0078d4 54%,#0067b8 100%);color:#fff;font-family:"Segoe UI",system-ui,sans-serif;text-align:center;opacity:1;visibility:visible;pointer-events:auto;transition:opacity .36s ease,visibility .36s ease}
+#shookingStartupLoader{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;box-sizing:border-box;padding:24px;background:linear-gradient(145deg,#005a9e 0%,#0078d4 54%,#0067b8 100%);color:#fff;font-family:"Segoe UI",system-ui,sans-serif;text-align:center;opacity:1;visibility:visible;pointer-events:auto;transition:opacity .14s ease,visibility .14s ease}
 #shookingStartupLoader.is-ready{opacity:0;visibility:hidden;pointer-events:none}
 .shookingStartupLoadingCenter{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:220px;transform:translateY(-2vh)}
 .shookingStartupSpinner{position:relative;width:76px;height:76px;margin-bottom:30px;animation:shookingStartupSpin 1.22s linear infinite}
@@ -97,7 +97,7 @@ html.shooking-loading,html.shooking-loading body{overflow:hidden!important}
 @media(prefers-reduced-motion:reduce){.shookingStartupSpinner{animation-duration:2.4s}}
 </style>`;
   html = html.replace("</head>", `${style}\n</head>`);
-  const markup = `<div id="shookingStartupLoader" role="status" aria-live="polite"><div class="shookingStartupLoadingCenter"><div class="shookingStartupSpinner" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div id="shookingStartupLoadingText">読み込み中...</div><div id="shookingStartupLoadingDetail">SHOO KING IIを準備しています</div></div></div><script>window.__shookingStartupLoadingStarted=performance.now();document.documentElement.classList.add('shooking-loading');</script>`;
+  const markup = `<div id="shookingStartupLoader" role="status" aria-live="polite"><div class="shookingStartupLoadingCenter"><div class="shookingStartupSpinner" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div id="shookingStartupLoadingText">読み込み中...</div><div id="shookingStartupLoadingDetail">SHOO KING IIを準備しています</div></div></div><script>window.__shookingStartupLoadingStarted=performance.now();document.documentElement.classList.add('shooking-loading');setTimeout(function(){var el=document.getElementById('shookingStartupLoader');document.documentElement.classList.remove('shooking-loading');if(el){el.classList.add('is-ready');setTimeout(function(){el.remove()},140)}},1100);</script>`;
   return html.replace(/<body([^>]*)>/i, match => `${match}${markup}`);
 }
 
@@ -118,7 +118,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = removeScript(html, "auth-session-fix.js");
     html = appendScript(html, "ui-patch.js", 6);
     html = appendScript(html, "app-notice.js", 8);
-    html = appendScript(html, "release-current.js", 7);
+    html = appendScript(html, "release-current.js", 8);
     html = appendScript(html, "firebase-config.js", 2);
     html = appendScript(html, "auth-session-fix.js", 1);
     html = appendScript(html, "google-login.js", 11);
@@ -146,7 +146,7 @@ async function patchHtml(response, routeLooksLikeGame) {
     html = removeScript(html, "tutorial-polish-fix.js");
     html = removeScript(html, "button-actions.js");
     html = removeScript(html, "startup-loading.js");
-    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gacha-11.js?v=2"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=3"></script>\n<script src="./tutorial-polish-fix.js?v=2"></script>\n<script src="./button-actions.js?v=3"></script>\n<script src="./startup-loading.js?v=2"></script>\n</body>');
+    html = html.replace("</body>", '<script src="./gacha-upgrade.js?v=7"></script>\n<script src="./seasonal-gacha-fix.js?v=3"></script>\n<script src="./gacha-11.js?v=2"></script>\n<script src="./gmail-seat-invite.js?v=2"></script>\n<script src="./tutorial-guide.js?v=4"></script>\n<script src="./tutorial-controls-fix.js?v=3"></script>\n<script src="./tutorial-polish-fix.js?v=2"></script>\n<script src="./button-actions.js?v=3"></script>\n<script src="./startup-loading.js?v=3"></script>\n</body>');
   }
 
   const headers = new Headers(response.headers);
