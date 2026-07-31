@@ -1,7 +1,8 @@
 const CACHE_NAME = "shooking-pages-v92";
 const BUILD = "92";
 const RAW_BASE = "https://raw.githubusercontent.com/sasahokofamily-debug/sora-geme-app/main/";
-const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/+$/, "") + "/";
+const SCOPE_URL = new URL(self.registration.scope);
+const SCOPE_PATH = SCOPE_URL.pathname.replace(/\/+$/, "") + "/";
 
 self.addEventListener("install", event => {
   event.waitUntil(self.skipWaiting());
@@ -12,6 +13,20 @@ self.addEventListener("activate", event => {
     const keys = await caches.keys();
     await Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)));
     await self.clients.claim();
+
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const client of windows) {
+      try {
+        const url = new URL(client.url);
+        if (url.origin !== self.location.origin) continue;
+        if (url.searchParams.get("_pages") === BUILD) continue;
+        const game = new URL("./game", self.registration.scope);
+        game.searchParams.set("play", "1");
+        game.searchParams.set("v", BUILD);
+        game.searchParams.set("_pages", BUILD);
+        await client.navigate(game.href);
+      } catch {}
+    }
   })());
 });
 
