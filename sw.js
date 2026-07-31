@@ -1,8 +1,8 @@
-const CACHE_NAME = "shooking-ii-v93";
-const SW_BUILD = "93";
+const CACHE_NAME = "shooking-ii-v94";
+const SW_BUILD = "94";
 
 const GAME_SCRIPTS = [
-  ["ui-patch.js",6],["app-notice.js",8],["release-current.js",12],["firebase-config.js",2],
+  ["ui-patch.js",6],["app-notice.js",8],["release-current.js",13],["firebase-config.js",2],
   ["auth-session-fix.js",2],["google-login.js",11],["google-login-fix.js",3],
   ["password-reset-fix.js",4],["password-change.js",2],["login-cool.js",3],
   ["login-success-warp.js",6],["login-failure-effect.js",3],["guest-login.js",2],
@@ -22,16 +22,7 @@ self.addEventListener("activate", event => {
     const keys=await caches.keys();
     await Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)));
     await self.clients.claim();
-    const windows=await self.clients.matchAll({type:"window",includeUncontrolled:true});
-    for(const client of windows){
-      try{
-        const url=new URL(client.url);
-        if(url.origin!==self.location.origin)continue;
-        if(url.searchParams.get("_swv")===SW_BUILD)continue;
-        url.searchParams.set("_swv",SW_BUILD);
-        await client.navigate(url.href);
-      }catch{}
-    }
+    // Do not navigate or reload clients here.
   })());
 });
 
@@ -71,7 +62,7 @@ html.shooking-loading,html.shooking-loading body{overflow:hidden!important}
 @keyframes shookingStartupSpin{to{transform:rotate(360deg)}}
 </style>`;
   html=html.replace("</head>",`${style}\n</head>`);
-  const markup=`<div id="shookingStartupLoader" role="status" aria-live="polite"><div class="shookingStartupLoadingCenter"><div class="shookingStartupSpinner" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div id="shookingStartupLoadingText">読み込み中...</div><div id="shookingStartupLoadingDetail">画面を準備しています</div></div></div><script>(()=>{const started=performance.now();window.__shookingStartupLoadingStarted=started;document.documentElement.classList.add('shooking-loading');let done=false;const hasAccount=()=>{try{return !!JSON.parse(localStorage.getItem('shooking2_current_account')||'null')}catch{return false}};const prepare=()=>{if(hasAccount())return true;const login=document.getElementById('loginScreen');if(!login)return false;document.querySelectorAll('.screen').forEach(screen=>screen.classList.add('hidden'));login.classList.remove('hidden');login.style.removeProperty('display');login.style.removeProperty('visibility');document.getElementById('home')?.classList.add('hidden');document.body.classList.remove('game-playing');document.body.classList.add('game-menu');return true};const finish=()=>{if(done)return;if(!prepare()&&performance.now()-started<650){setTimeout(finish,30);return}done=true;document.documentElement.classList.remove('shooking-loading');const el=document.getElementById('shookingStartupLoader');if(!el)return;el.classList.add('is-ready');setTimeout(()=>el.remove(),70)};window.__shookingInlineLoaderFinish=finish;setTimeout(finish,280);if('serviceWorker'in navigator)navigator.serviceWorker.getRegistration().then(reg=>reg&&reg.update()).catch(()=>{})})();</script>`;
+  const markup=`<div id="shookingStartupLoader" role="status" aria-live="polite"><div class="shookingStartupLoadingCenter"><div class="shookingStartupSpinner" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div id="shookingStartupLoadingText">読み込み中...</div><div id="shookingStartupLoadingDetail">画面を準備しています</div></div></div><script>(()=>{const started=performance.now();window.__shookingStartupLoadingStarted=started;document.documentElement.classList.add('shooking-loading');let done=false;const hasAccount=()=>{try{return !!JSON.parse(localStorage.getItem('shooking2_current_account')||'null')}catch{return false}};const prepare=()=>{if(hasAccount())return true;const login=document.getElementById('loginScreen');if(!login)return false;document.querySelectorAll('.screen').forEach(screen=>screen.classList.add('hidden'));login.classList.remove('hidden');login.style.removeProperty('display');login.style.removeProperty('visibility');document.getElementById('home')?.classList.add('hidden');document.body.classList.remove('game-playing');document.body.classList.add('game-menu');return true};const finish=()=>{if(done)return;if(!prepare()&&performance.now()-started<650){setTimeout(finish,30);return}done=true;document.documentElement.classList.remove('shooking-loading');const el=document.getElementById('shookingStartupLoader');if(!el)return;el.classList.add('is-ready');setTimeout(()=>el.remove(),70)};window.__shookingInlineLoaderFinish=finish;setTimeout(finish,280)})();</script>`;
   return html.replace(/<body([^>]*)>/i,match=>`${match}${markup}`);
 }
 
