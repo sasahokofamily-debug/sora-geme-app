@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='auth-session-fix-v1';
+const VERSION='auth-session-fix-v2-login-before-reveal';
 const CURRENT_KEY='shooking2_current_account';
 const PENDING_WARP_KEY='shooking2_login_warp_pending';
 const nativeSetInterval=window.setInterval.bind(window);
@@ -9,8 +9,7 @@ function hasAccount(){
  try{return !!JSON.parse(localStorage.getItem(CURRENT_KEY)||'null')}catch{return false}
 }
 
-/* google-login.js used to rebuild the authentication UI every second.
-   Suppress only that exact render loop; all other intervals keep working. */
+/* Stop only the old authentication UI loop that rebuilt the same DOM every second. */
 window.setInterval=function(callback,delay,...args){
  const source=typeof callback==='function'?Function.prototype.toString.call(callback):String(callback||'');
  if(Number(delay)===1000&&source.includes('patchLoginUi')&&source.includes('injectSettingsUi')&&source.includes('patchAccountStatus')){
@@ -29,17 +28,23 @@ function clearTransientLoginState(){
 }
 
 function showLoginNow(){
- if(hasAccount())return false;
+ if(hasAccount()){
+  document.documentElement.classList.remove('shooking-auth-pending');
+  return false;
+ }
  const login=document.getElementById('loginScreen');
  if(!login)return false;
- document.querySelectorAll('.screen').forEach(screen=>screen.classList.add('hidden'));
+ document.querySelectorAll('.screen').forEach(screen=>{
+  if(screen!==login)screen.classList.add('hidden');
+ });
  login.classList.remove('hidden');
  login.style.removeProperty('display');
+ login.style.removeProperty('visibility');
  login.removeAttribute('aria-hidden');
+ document.getElementById('home')?.classList.add('hidden');
  document.body.classList.remove('game-playing');
  document.body.classList.add('game-menu');
- const status=document.getElementById('accountStatusHome');
- if(status&&status.textContent.trim()!=='未ログイン')status.textContent='未ログイン';
+ document.documentElement.classList.remove('shooking-auth-pending');
  requestAnimationFrame(()=>{
   const first=document.getElementById('loginName');
   if(first&&matchMedia('(pointer:fine)').matches)first.focus({preventScroll:true});
@@ -75,17 +80,19 @@ function settle(){
 }
 
 function install(){
+ if(!hasAccount())document.documentElement.classList.add('shooking-auth-pending');
  settle();
  let attempts=0;
  const retry=()=>{
   settle();
   attempts++;
-  if(attempts<16)setTimeout(retry,160);
+  if(attempts<20)setTimeout(retry,100);
  };
  setTimeout(retry,0);
- window.addEventListener('pageshow',()=>{if(!hasAccount()){showLoginNow();setTimeout(showLoginNow,80)}});
+ window.addEventListener('pageshow',()=>{if(!hasAccount()){showLoginNow();setTimeout(showLoginNow,40)}});
  window.addEventListener('storage',event=>{if(event.key===CURRENT_KEY&&!event.newValue)finishLoggedOutUi()});
  document.addEventListener('shooking:logout',finishLoggedOutUi);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!hasAccount())showLoginNow()});
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
