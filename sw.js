@@ -1,8 +1,8 @@
-const CACHE_NAME = "shooking-ii-v94";
-const SW_BUILD = "94";
+const CACHE_NAME = "shooking-ii-v95";
+const SW_BUILD = "95";
 
 const GAME_SCRIPTS = [
-  ["ui-patch.js",6],["app-notice.js",8],["release-current.js",13],["firebase-config.js",2],
+  ["ui-patch.js",6],["app-notice.js",8],["release-current.js",14],["firebase-config.js",2],
   ["auth-session-fix.js",2],["google-login.js",11],["google-login-fix.js",3],
   ["password-reset-fix.js",4],["password-change.js",2],["login-cool.js",3],
   ["login-success-warp.js",6],["login-failure-effect.js",3],["guest-login.js",2],
