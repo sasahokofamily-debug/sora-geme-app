@@ -1,5 +1,6 @@
 (()=>{
 'use strict';
+if(document.body?.dataset?.noCommonNav==='true'||location.pathname.endsWith('/webstore.html')) return;
 if(document.getElementById('shookingCommonNav')||document.getElementById('shookingGameExit')) return;
 
 const path=location.pathname;
@@ -21,59 +22,15 @@ style.textContent=`
 #shookingBreadcrumb a{color:#58a6ff;text-decoration:none}
 #shookingGameExit{position:fixed;left:12px;bottom:12px;z-index:99998;display:inline-flex;padding:11px 14px;border:1px solid #58a6ff;border-radius:12px;background:#0d1117;color:#fff;text-decoration:none;font:900 13px system-ui;box-shadow:0 8px 28px rgba(0,0,0,.4)}
 @media(max-width:720px){#shookingCommonNav .sn-inner{overflow-x:auto}.sn-brand{display:none!important}#shookingCommonNav a{white-space:nowrap;flex:0 0 auto}}
-@media(max-width:700px),(pointer:coarse){
-  #shookingGameExit{left:max(8px,env(safe-area-inset-left));bottom:max(82px,calc(env(safe-area-inset-bottom) + 82px));padding:8px 10px;border-radius:10px;font-size:11px}
-  body.game-playing #shookingGameExit{display:none!important}
-}
+@media(max-width:700px),(pointer:coarse){#shookingGameExit{left:max(8px,env(safe-area-inset-left));bottom:max(82px,calc(env(safe-area-inset-bottom) + 82px));padding:8px 10px;border-radius:10px;font-size:11px}body.game-playing #shookingGameExit{display:none!important}}
 `;
 document.head.appendChild(style);
 
-if(isGame){
- const exit=document.createElement('a');
- exit.id='shookingGameExit';
- exit.href='/details.html';
- exit.textContent='← 詳細に戻る';
- document.body.appendChild(exit);
- return;
-}
-
+if(isGame){const exit=document.createElement('a');exit.id='shookingGameExit';exit.href='/details.html';exit.textContent='← 詳細に戻る';document.body.appendChild(exit);return;}
 if(isRacing) return;
-
-const nav=document.createElement('nav');
-nav.id='shookingCommonNav';
-nav.setAttribute('aria-label','共通メニュー');
-nav.innerHTML=`<div class="sn-inner"><div class="sn-brand">◉ SORA GAMES</div>
-<a href="/" ${pageName==='ホーム'?'aria-current="page"':''}>🏠 ホーム</a>
-<a href="/details.html" ${pageName==='詳細'?'aria-current="page"':''}>🚀 Shooking</a>
-<a href="/racing.html" ${pageName==='Racing'?'aria-current="page"':''}>🏎️ Racing VR</a>
-<a href="/download-builder.html" ${pageName==='ダウンロード'?'aria-current="page"':''}>📥 ダウンロード</a>
-<a href="/permission-maker.html" ${pageName==='権限発行'?'aria-current="page"':''}>🔑 権限発行</a></div>`;
-document.body.prepend(nav);
-
-const crumb=document.createElement('div');
-crumb.id='shookingBreadcrumb';
-crumb.innerHTML=pageName==='ホーム'?'ホーム':`<a href="/">ホーム</a> ＞ ${pageName}`;
-nav.insertAdjacentElement('afterend',crumb);
-
-if(isDetails){
- document.querySelectorAll('a').forEach(a=>{
-  const text=(a.textContent||'').trim();
-  if(text.includes('ゲームをプレイ')){a.href='/game?play=1';a.textContent='▶ ゲームを始める';}
-  if(text.includes('GitHub Pages版を開く')){a.href='/';a.textContent='🏠 ホームへ戻る';}
-  if(text==='ゲームへ戻る'){a.href='/';a.textContent='ホームへ戻る';}
- });
-}
-if(isDownload){
- document.querySelectorAll('a').forEach(a=>{
-  const text=(a.textContent||'').trim();
-  if(text.includes('ゲームを開く')){a.href='/details.html';a.textContent='詳細ページへ戻る';}
-  if(text.includes('Vercel版を開く')){a.href='/';a.textContent='ホームへ戻る';}
- });
-}
-if(isPermission){
- document.querySelectorAll('a').forEach(a=>{
-  const text=(a.textContent||'').trim();
-  if(text.includes('Vercel版ゲームへ移動')){a.href='/details.html';a.textContent='詳細・ゲーム開始ページへ戻る';}
- });
-}
+const nav=document.createElement('nav');nav.id='shookingCommonNav';nav.setAttribute('aria-label','共通メニュー');nav.innerHTML=`<div class="sn-inner"><div class="sn-brand">◉ SORA GAMES</div><a href="/" ${pageName==='ホーム'?'aria-current="page"':''}>🏠 ホーム</a><a href="/details.html" ${pageName==='詳細'?'aria-current="page"':''}>🚀 Shooking</a><a href="/racing.html" ${pageName==='Racing'?'aria-current="page"':''}>🏎️ Racing VR</a><a href="/download-builder.html" ${pageName==='ダウンロード'?'aria-current="page"':''}>📥 ダウンロード</a><a href="/permission-maker.html" ${pageName==='権限発行'?'aria-current="page"':''}>🔑 権限発行</a></div>`;document.body.prepend(nav);
+const crumb=document.createElement('div');crumb.id='shookingBreadcrumb';crumb.innerHTML=pageName==='ホーム'?'ホーム':`<a href="/">ホーム</a> ＞ ${pageName}`;nav.insertAdjacentElement('afterend',crumb);
+if(isDetails){document.querySelectorAll('a').forEach(a=>{const text=(a.textContent||'').trim();if(text.includes('ゲームをプレイ')){a.href='/game?play=1';a.textContent='▶ ゲームを始める';}if(text.includes('GitHub Pages版を開く')){a.href='/';a.textContent='🏠 ホームへ戻る';}if(text==='ゲームへ戻る'){a.href='/';a.textContent='ホームへ戻る';}})}
+if(isDownload){document.querySelectorAll('a').forEach(a=>{const text=(a.textContent||'').trim();if(text.includes('ゲームを開く')){a.href='/details.html';a.textContent='詳細ページへ戻る';}if(text.includes('Vercel版を開く')){a.href='/';a.textContent='ホームへ戻る';}})}
+if(isPermission){document.querySelectorAll('a').forEach(a=>{const text=(a.textContent||'').trim();if(text.includes('Vercel版ゲームへ移動')){a.href='/details.html';a.textContent='詳細・ゲーム開始ページへ戻る';}})}
 })();
