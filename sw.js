@@ -1,7 +1,7 @@
-const CACHE_NAME="shooking-ii-v101";
-const SW_BUILD="101";
+const CACHE_NAME="shooking-ii-v102-fast-login";
+const SW_BUILD="102-fast-login";
 const GAME_SCRIPTS=[
-["ui-patch.js",6],["app-notice.js",8],["release-current.js",20],["firebase-config.js",2],
+["app-notice.js",8],["release-current.js",20],["firebase-config.js",2],
 ["auth-session-fix.js",2],["google-login.js",11],["google-login-fix.js",3],
 ["password-reset-fix.js",4],["password-change.js",2],["login-cool.js",3],
 ["login-success-warp.js",6],["login-failure-effect.js",3],["guest-login.js",2],
@@ -9,7 +9,7 @@ const GAME_SCRIPTS=[
 ["multiplayer-sync.js",2],["shared-enemy-sync.js",1],["hard-stages.js",16],["hangar-fix.js",17],
 ["gacha-upgrade.js",7],["seasonal-gacha-fix.js",3],["gacha-11.js",2],["gmail-seat-invite.js",2],
 ["tutorial-guide.js",4],["tutorial-controls-fix.js",3],["tutorial-polish-fix.js",2],
-["button-actions.js",3],["startup-loading.js",4]
+["button-actions.js",3],["startup-loading.js",5]
 ];
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)));await self.clients.claim()})()));
@@ -19,7 +19,61 @@ function ensureScript(html,file,version){html=removeScript(html,file);return htm
 function prependScript(html,file,version){html=removeScript(html,file);return html.replace("<body",`<script src="./${file}?v=${version}"></script>\n<body`)}
 function appendStyle(html,file,version){html=html.replace(new RegExp(`<link[^>]+href=["'][^"']*${esc(file)}[^"']*["'][^>]*>`,"gi"),"");return html.replace("</head>",`<link rel="stylesheet" href="./${file}?v=${version}">\n</head>`)}
 function addMeta(html){if(html.includes('name="mobile-web-app-capable"')||html.includes("name='mobile-web-app-capable'"))return html;return html.replace("</head>",'<meta name="mobile-web-app-capable" content="yes">\n</head>')}
-function addLoader(html){if(html.includes('id="shookingStartupLoader"'))return html;const style=`<style id="shookingStartupLoaderStyle">html.shooking-loading,html.shooking-loading body{overflow:hidden!important}#shookingStartupLoader{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#0078d4;color:#fff;font-family:"Segoe UI",system-ui,sans-serif;text-align:center;transition:opacity .06s linear,visibility .06s linear}#shookingStartupLoader.is-ready{opacity:0;visibility:hidden;pointer-events:none}.shookingStartupSpinner{width:54px;height:54px;border:5px solid #ffffff45;border-top-color:#fff;border-radius:50%;margin:0 auto 18px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}</style>`;html=html.replace("</head>",style+"\n</head>");const markup=`<div id="shookingStartupLoader"><div><div class="shookingStartupSpinner"></div><div>読み込み中...</div></div></div><script>(()=>{const started=performance.now();document.documentElement.classList.add('shooking-loading');let done=false;const has=()=>{try{return !!JSON.parse(localStorage.getItem('shooking2_current_account')||'null')}catch{return false}};const prep=()=>{if(has())return true;const login=document.getElementById('loginScreen');if(!login)return false;document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));login.classList.remove('hidden');document.getElementById('home')?.classList.add('hidden');return true};const finish=()=>{if(done)return;if(!prep()&&performance.now()-started<650){setTimeout(finish,30);return}done=true;document.documentElement.classList.remove('shooking-loading');const el=document.getElementById('shookingStartupLoader');if(el){el.classList.add('is-ready');setTimeout(()=>el.remove(),70)}};window.__shookingInlineLoaderFinish=finish;setTimeout(finish,280)})();<\/script>`;return html.replace(/<body([^>]*)>/i,m=>m+markup)}
-async function patchHtml(response,routeLooksLikeGame){let html=await response.text();html=addMeta(html);const isGame=routeLooksLikeGame||html.includes('id="game"')||html.includes("realGachaOverlay");html=ensureScript(html,"common-nav.js",3);if(isGame){html=addLoader(html);html=prependScript(html,"game-system.js",1);html=prependScript(html,"gemedeta.js",1);html=appendStyle(html,"css/seasonal-gacha.css",1);html=appendStyle(html,"css/gmail-seat-invite.css",1);for(const [f,v] of GAME_SCRIPTS)html=ensureScript(html,f,v)}const headers=new Headers(response.headers);headers.set("content-type","text/html; charset=utf-8");headers.set("cache-control","no-store, no-cache, must-revalidate");headers.delete("content-length");return new Response(html,{status:response.status,statusText:response.statusText,headers})}
+function addLoader(html){
+  if(html.includes('id="shookingStartupLoader"'))return html;
+  const style=`<style id="shookingStartupLoaderStyle">html.shooking-loading,html.shooking-loading body{overflow:hidden!important}#shookingStartupLoader{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#0078d4;color:#fff;font-family:"Segoe UI",system-ui,sans-serif;text-align:center;transition:opacity .08s linear,visibility .08s linear}#shookingStartupLoader.is-ready{opacity:0;visibility:hidden;pointer-events:none}.shookingStartupSpinner{width:54px;height:54px;border:5px solid #ffffff45;border-top-color:#fff;border-radius:50%;margin:0 auto 18px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+  html=html.replace("</head>",style+"\n</head>");
+  const markup=`<div id="shookingStartupLoader"><div><div class="shookingStartupSpinner"></div><div>読み込み中...</div><div style="font-size:13px;opacity:.88;margin-top:8px">ログイン画面を準備しています</div></div></div><script>(()=>{const started=performance.now();let done=false;document.documentElement.classList.add('shooking-loading');function openLoginOrHome(){document.getElementById('shookingStartupPortal')?.remove();document.documentElement.style.overflow='';document.body?.classList.remove('game-playing');document.body?.classList.add('game-menu');const login=document.getElementById('loginScreen')||document.getElementById('login');const home=document.getElementById('home');const target=login||home;if(target){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));target.classList.remove('hidden');return true}return false}function finish(){if(done)return;done=true;try{openLoginOrHome()}catch(e){}document.documentElement.classList.remove('shooking-loading');const el=document.getElementById('shookingStartupLoader');if(el){el.classList.add('is-ready');setTimeout(()=>el.remove(),80)}}window.__shookingInlineLoaderFinish=finish;window.__shookingForceLoginReady=finish;setTimeout(finish,360);setTimeout(finish,900);window.addEventListener('load',()=>setTimeout(finish,60),{once:true})})();<\/script>`;
+  return html.replace(/<body([^>]*)>/i,m=>m+markup)
+}
+async function patchHtml(response,routeLooksLikeGame){
+  let html=await response.text();
+  html=addMeta(html);
+  const isGame=routeLooksLikeGame||html.includes('id="game"')||html.includes("realGachaOverlay");
+  html=ensureScript(html,"common-nav.js",3);
+  if(isGame){
+    html=addLoader(html);
+    html=prependScript(html,"game-system.js",1);
+    html=prependScript(html,"gemedeta.js",1);
+    html=appendStyle(html,"css/seasonal-gacha.css",1);
+    html=appendStyle(html,"css/gmail-seat-invite.css",1);
+    for(const [f,v] of GAME_SCRIPTS)html=ensureScript(html,f,v)
+  }
+  const headers=new Headers(response.headers);
+  headers.set("content-type","text/html; charset=utf-8");
+  headers.set("cache-control","no-store, no-cache, must-revalidate");
+  headers.delete("content-length");
+  return new Response(html,{status:response.status,statusText:response.statusText,headers})
+}
 function cachePut(key,response){if(!response||!response.ok)return;const copy=response.clone();caches.open(CACHE_NAME).then(c=>c.put(key,copy)).catch(()=>{})}
-self.addEventListener("fetch",event=>{if(event.request.method!=="GET")return;const url=new URL(event.request.url);if(!/^https?:$/.test(url.protocol))return;if(event.request.mode==="navigate"){event.respondWith((async()=>{const path=url.pathname.replace(/\/+$/,"")||"/";const scopePath=new URL(self.registration.scope).pathname.replace(/\/+$/,"")||"/";const isRoot=url.origin===self.location.origin&&path===scopePath;const isGame=path.endsWith("/game")||path.endsWith("/index.html")||url.searchParams.get("play")==="1";const source=isGame?"./index.html":isRoot?"./landing.html":event.request;const fallback=isGame?"./index.html":isRoot?"./landing.html":event.request;try{const req=source instanceof Request?source:new Request(source,{cache:"no-store"});const res=await fetch(req);cachePut(fallback,res);return patchHtml(res,isGame)}catch{const cached=await caches.match(fallback);return cached?patchHtml(cached,isGame):Response.error()}})());return}const fresh=/\/(?:common-nav|webstore|gemedeta|game-system|google-login-fix|password-reset-fix|password-change|login-cool|login-success-warp|login-failure-effect|app-notice|release-current|auth-session-fix|button-actions|startup-loading|guest-login|gacha-upgrade|gacha-11|seasonal-gacha-fix|gmail-seat-invite|tutorial-guide|tutorial-controls-fix|tutorial-polish-fix)\.js$/.test(url.pathname)||/\/css\/(?:seasonal-gacha|gmail-seat-invite)\.css$/.test(url.pathname)||/\/webstore\.css$/.test(url.pathname);if(fresh){event.respondWith((async()=>{try{const res=await fetch(new Request(event.request,{cache:"no-store"}));cachePut(event.request,res);return res}catch{return(await caches.match(event.request))||Response.error()}})());return}event.respondWith(caches.match(event.request).then(c=>c||fetch(event.request).then(r=>{cachePut(event.request,r);return r})))});
+self.addEventListener("fetch",event=>{
+  if(event.request.method!=="GET")return;
+  const url=new URL(event.request.url);
+  if(!/^https?:$/.test(url.protocol))return;
+  if(event.request.mode==="navigate"){
+    event.respondWith((async()=>{
+      const path=url.pathname.replace(/\/+$/,"")||"/";
+      const scopePath=new URL(self.registration.scope).pathname.replace(/\/+$/,"")||"/";
+      const isRoot=url.origin===self.location.origin&&path===scopePath;
+      const isGame=isRoot||path.endsWith("/game")||path.endsWith("/index.html")||url.searchParams.get("play")==="1";
+      const source=isGame?"./index.html":event.request;
+      const fallback=isGame?"./index.html":event.request;
+      try{
+        const req=source instanceof Request?source:new Request(source,{cache:"no-store"});
+        const res=await fetch(req);
+        cachePut(fallback,res);
+        return patchHtml(res,isGame)
+      }catch{
+        const cached=await caches.match(fallback);
+        return cached?patchHtml(cached,isGame):Response.error()
+      }
+    })());
+    return
+  }
+  const fresh=/\/(?:common-nav|webstore|gemedeta|game-system|google-login-fix|password-reset-fix|password-change|login-cool|login-success-warp|login-failure-effect|app-notice|release-current|auth-session-fix|button-actions|startup-loading|guest-login|gacha-upgrade|gacha-11|seasonal-gacha-fix|gmail-seat-invite|tutorial-guide|tutorial-controls-fix|tutorial-polish-fix)\.js$/.test(url.pathname)||/\/css\/(?:seasonal-gacha|gmail-seat-invite)\.css$/.test(url.pathname)||/\/webstore\.css$/.test(url.pathname);
+  if(fresh){
+    event.respondWith((async()=>{try{const res=await fetch(new Request(event.request,{cache:"no-store"}));cachePut(event.request,res);return res}catch{return(await caches.match(event.request))||Response.error()}})());
+    return
+  }
+  event.respondWith(caches.match(event.request).then(c=>c||fetch(event.request).then(r=>{cachePut(event.request,r);return r})))
+});
