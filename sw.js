@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v104-home-fast-light";
-const SW_BUILD="104-home-fast-light";
+const CACHE_NAME="shooking-ii-v105-login-cool-light";
+const SW_BUILD="105-login-cool-light";
 
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 
@@ -36,11 +36,12 @@ async function patchHtml(response,{game=false,landing=false}={}){
   let html=await response.text();
   html=addMeta(html);
   if(landing){
-    html=ensureScript(html,"common-nav.js",5);
+    html=ensureScript(html,"common-nav.js",6);
   }
   if(game){
     html=addLoader(html);
-    html=ensureScript(html,"startup-loading.js",7);
+    html=ensureScript(html,"login-cool.js",4);
+    html=ensureScript(html,"startup-loading.js",8);
   }
   const headers=new Headers(response.headers);
   headers.set("content-type","text/html; charset=utf-8");
@@ -73,7 +74,7 @@ self.addEventListener("fetch",event=>{
     return
   }
 
-  const fresh=/\/(?:sw|common-nav|startup-loading)\.js$/.test(url.pathname);
+  const fresh=/\/(?:sw|common-nav|startup-loading|login-cool)\.js$/.test(url.pathname);
   if(fresh){
     event.respondWith(fetch(new Request(event.request,{cache:"reload"})).catch(()=>fetch(event.request)));
   }
