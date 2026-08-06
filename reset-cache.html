@@ -11,14 +11,15 @@
 <body>
 <main class="card">
   <h1>キャッシュ更新中</h1>
-  <p class="small">古い読み込み画面・古いService Worker・古いキャッシュを削除して、軽いホーム画面を新しい状態で開き直します。</p>
+  <p class="small">古い読み込み画面・古いService Worker・古いキャッシュを削除して、新しいログイン画面を読み込める状態にします。</p>
   <div id="status" class="status">準備中...</div>
   <button id="run" type="button">もう一度キャッシュ更新</button>
-  <a class="ghost" id="openHome" href="./?v=104-home-fast-light">ホームを開く</a>
-  <a class="ghost" id="openGame" href="./?play=1&v=104-home-fast-light">ゲーム本体を開く</a>
+  <a class="ghost" id="openHome" href="./?v=105-login-cool-light">ホームを開く</a>
+  <a class="ghost" id="openGame" href="./?play=1&v=105-login-cool-light">ゲーム本体を開く</a>
 </main>
 <script>
 (()=>{
+  const VERSION='105-login-cool-light';
   const status=document.getElementById('status');
   const log=[];
   function say(text){log.push(text);status.textContent=log.join('\n')}
@@ -47,7 +48,7 @@
 
     try{localStorage.setItem('shooking2_cache_reset_at',String(Date.now()))}catch(e){}
     const next=new URL('./',location.href);
-    next.searchParams.set('v','104-home-fast-light-'+Date.now());
+    next.searchParams.set('v',VERSION+'-'+Date.now());
     say('4/4 軽いホーム画面で開き直します...');
     setTimeout(()=>location.replace(next.href),650);
   }
