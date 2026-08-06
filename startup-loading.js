@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-const VERSION='startup-loading-v5-fast-login-ready';
-const MAX_VISIBLE_MS=620;
+const VERSION='startup-loading-v6-cache-reset-ready';
+const MAX_VISIBLE_MS=520;
 let timer=0;
 let finished=false;
 
@@ -54,7 +54,7 @@ function install(){
   const inlineFinish=window.__shookingInlineLoaderFinish;
   if(typeof inlineFinish==='function')inlineFinish();
   timer=setTimeout(removeLoader,MAX_VISIBLE_MS);
-  setTimeout(removeLoader,1100);
+  setTimeout(removeLoader,1000);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
 else install();
