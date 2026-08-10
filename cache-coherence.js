@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BUILD='112-cache-coherence';
+const BUILD='113-loading-failsafe';
 const BUILD_PARAM='__shoo_build';
 const STORE_KEY='shooking2_runtime_build';
 const RELOAD_KEY='shooking2_build_reload_'+BUILD;
