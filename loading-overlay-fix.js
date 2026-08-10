@@ -36,6 +36,15 @@ function watch(){
   return true;
 }
 
+function guardMalformedKeyEvent(event){
+  if(typeof event.key==='string')return;
+  try{event.preventDefault()}catch(e){}
+  try{event.stopImmediatePropagation()}catch(e){}
+  try{event.stopPropagation()}catch(e){}
+}
+window.addEventListener('keydown',guardMalformedKeyEvent,true);
+window.addEventListener('keyup',guardMalformedKeyEvent,true);
+
 let tries=0;
 const timer=setInterval(()=>{
   if(watch()||++tries>40)clearInterval(timer);
@@ -50,5 +59,5 @@ window.addEventListener('popstate',()=>setTimeout(hide,80));
 window.addEventListener('load',()=>setTimeout(hide,120),{once:true});
 setTimeout(hide,1400);
 
-window.__SHOOKING_LOADING_FAILSAFE__={version:'1.0',hide};
+window.__SHOOKING_LOADING_FAILSAFE__={version:'1.1-key-guard',hide};
 })();
