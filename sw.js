@@ -1,10 +1,9 @@
-const CACHE_NAME="shooking-ii-v114-light-runtime";
-const SW_BUILD="114-light-runtime";
+const CACHE_NAME="shooking-ii-v115-command-login";
+const SW_BUILD="115-command-login";
 const LEGACY_SCRIPTS=[
   "seasonal-gacha-fix.js",
   "gacha-upgrade.js",
   "gacha-11.js",
-  "login-cool.js",
   "login-failure-effect.js",
   "login-success-warp.js",
   "cache-coherence.js"
@@ -49,6 +48,10 @@ async function patchHtml(response,{game=false,landing=false}={}){
   if(landing)html=ensureScript(html,"common-nav.js",8);
   if(game){
     html=ensureScript(html,"login-style.js",3);
+    html=ensureScript(html,"google-login.js",5);
+    html=ensureScript(html,"login-cool.js",4);
+    html=ensureScript(html,"login-command-extras.js",1);
+    html=ensureScript(html,"key-event-guard.js",1);
     html=ensureScript(html,"loading-overlay-fix.js",2);
     html=ensureScript(html,"startup-loading.js",10);
     html=ensureScript(html,"button-actions.js",5);
