@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v107-touch-input";
-const SW_BUILD="107-touch-input";
+const CACHE_NAME="shooking-ii-v108-button-events";
+const SW_BUILD="108-button-events";
 
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 
@@ -42,6 +42,7 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=addLoader(html);
     html=ensureScript(html,"login-style.js",1);
     html=ensureScript(html,"startup-loading.js",8);
+    html=ensureScript(html,"button-actions.js",3);
   }
   const headers=new Headers(response.headers);
   headers.set("content-type","text/html; charset=utf-8");
@@ -74,7 +75,7 @@ self.addEventListener("fetch",event=>{
     return
   }
 
-  const fresh=/\/(?:sw|common-nav|startup-loading|login-style)\.js$/.test(url.pathname);
+  const fresh=/\/(?:sw|common-nav|startup-loading|login-style|button-actions)\.js$/.test(url.pathname);
   if(fresh){
     event.respondWith(fetch(new Request(event.request,{cache:"reload"})).catch(()=>fetch(event.request)));
   }
