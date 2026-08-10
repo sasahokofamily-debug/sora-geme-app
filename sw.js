@@ -12,6 +12,16 @@ self.addEventListener("activate",event=>event.waitUntil((async()=>{
   const keys=await caches.keys();
   await Promise.all(keys.map(k=>caches.delete(k)));
   await self.clients.claim();
+  const clients=await self.clients.matchAll({type:"window",includeUncontrolled:true});
+  await Promise.all(clients.map(async client=>{
+    try{
+      const u=new URL(client.url);
+      if(u.origin!==self.location.origin)return;
+      if(u.searchParams.get("__shoo_build")===SW_BUILD)return;
+      u.searchParams.set("__shoo_build",SW_BUILD);
+      await client.navigate(u.href);
+    }catch(e){}
+  }));
 })()));
 self.addEventListener("message",event=>{
   const data=event.data||{};
@@ -40,11 +50,9 @@ async function patchHtml(response,{game=false,landing=false}={}){
   html=addMeta(html);
   if(landing)html=ensureScript(html,"common-nav.js",9);
   if(game){
-    /* Core interaction fixes first. */
     html=ensureScript(html,"button-actions.js",6);
     html=ensureScript(html,"key-event-guard.js",2);
 
-    /* Current authentication stack. */
     html=ensureScript(html,"firebase-config.js",2);
     html=ensureScript(html,"google-login.js",6);
     html=ensureScript(html,"google-login-fix.js",2);
@@ -58,7 +66,6 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,"login-cool.js",5);
     html=ensureScript(html,"login-command-extras.js",2);
 
-    /* Restore the current game modules that had stopped loading. */
     html=ensureScript(html,"hard-stages.js",17);
     html=ensureScript(html,"hangar-fix.js",18);
     html=ensureScript(html,"online-pve.js",3);
@@ -66,12 +73,10 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,"online-team-fix.js",3);
     html=ensureScript(html,"shared-enemy-sync.js",3);
 
-    /* Modern gacha: keep the cinematic machine, remove obsolete seasonal UI. */
     html=ensureScript(html,"gacha-upgrade.js",6);
     html=ensureScript(html,"gacha-current-filter.js",1);
     html=ensureScript(html,"gacha-11.js",3);
 
-    /* Current presentation. */
     html=ensureScript(html,"current-ui-suite.js",1);
     html=ensureScript(html,"home-menu-restore.js",2);
     html=ensureScript(html,"runtime-light-fix.js",2);
