@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v117-current-ui-restore";
-const SW_BUILD="117-current-ui-restore";
+const CACHE_NAME="shooking-ii-v118-current-suite";
+const SW_BUILD="118-current-suite";
 const LEGACY_SCRIPTS=[
   "seasonal-gacha-fix.js",
   "cache-coherence.js",
@@ -74,10 +74,11 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,"shared-enemy-sync.js",3);
 
     html=ensureScript(html,"gacha-upgrade.js",6);
-    html=ensureScript(html,"gacha-current-filter.js",1);
+    html=ensureScript(html,"gacha-current-filter.js",2);
     html=ensureScript(html,"gacha-11.js",3);
 
     html=ensureScript(html,"current-ui-suite.js",1);
+    html=ensureScript(html,"current-ui-extra.js",1);
     html=ensureScript(html,"home-menu-restore.js",2);
     html=ensureScript(html,"runtime-light-fix.js",2);
   }
