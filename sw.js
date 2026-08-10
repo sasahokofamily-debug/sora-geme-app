@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v112-cache-coherence";
-const SW_BUILD="112-cache-coherence";
+const CACHE_NAME="shooking-ii-v113-loading-failsafe";
+const SW_BUILD="113-loading-failsafe";
 const LEGACY_SCRIPTS=[
   "seasonal-gacha-fix.js",
   "gacha-upgrade.js",
@@ -68,17 +68,18 @@ async function patchHtml(response,{game=false,landing=false}={}){
   let html=await response.text();
   html=stripLegacyScripts(html);
   html=addMeta(html);
-  html=ensureScript(html,"cache-coherence.js",1);
+  html=ensureScript(html,"cache-coherence.js",2);
   if(landing){
     html=ensureScript(html,"common-nav.js",7);
   }
   if(game){
     html=addLoader(html);
     html=ensureScript(html,"login-style.js",2);
+    html=ensureScript(html,"loading-overlay-fix.js",1);
     html=ensureScript(html,"startup-loading.js",9);
     html=ensureScript(html,"button-actions.js",4);
     html=ensureScript(html,"gacha-runtime-bridge.js",2);
-    html=ensureScript(html,"gacha-cinematic.js",2);
+    html=ensureScript(html,"gacha-cinematic.js",3);
   }
   const headers=new Headers(response.headers);
   headers.set("content-type","text/html; charset=utf-8");
