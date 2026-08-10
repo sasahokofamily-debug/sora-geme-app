@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v115-command-login";
-const SW_BUILD="115-command-login";
+const CACHE_NAME="shooking-ii-v116-home-menu";
+const SW_BUILD="116-home-menu";
 const LEGACY_SCRIPTS=[
   "seasonal-gacha-fix.js",
   "gacha-upgrade.js",
@@ -58,6 +58,7 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,"gacha-runtime-bridge.js",3);
     html=ensureScript(html,"gacha-cinematic.js",4);
     html=ensureScript(html,"runtime-light-fix.js",1);
+    html=ensureScript(html,"home-menu-restore.js",1);
   }
   const headers=new Headers(response.headers);
   headers.set("content-type","text/html; charset=utf-8");
