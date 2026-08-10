@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v110-gacha-cinematic";
-const SW_BUILD="110-gacha-cinematic";
+const CACHE_NAME="shooking-ii-v111-gacha-cinematic";
+const SW_BUILD="111-gacha-cinematic";
 
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 
@@ -43,6 +43,7 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,"login-style.js",1);
     html=ensureScript(html,"startup-loading.js",8);
     html=ensureScript(html,"button-actions.js",3);
+    html=ensureScript(html,"gacha-runtime-bridge.js",1);
     html=ensureScript(html,"gacha-cinematic.js",1);
   }
   const headers=new Headers(response.headers);
@@ -76,7 +77,7 @@ self.addEventListener("fetch",event=>{
     return
   }
 
-  const fresh=/\/(?:sw|common-nav|startup-loading|login-style|button-actions|gacha-cinematic)\.js$/.test(url.pathname);
+  const fresh=/\/(?:sw|common-nav|startup-loading|login-style|button-actions|gacha-runtime-bridge|gacha-cinematic)\.js$/.test(url.pathname);
   if(fresh){
     event.respondWith(fetch(new Request(event.request,{cache:"reload"})).catch(()=>fetch(event.request)));
   }
