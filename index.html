@@ -1778,7 +1778,7 @@ body.simple-touch-controls #joystick{width:148px;height:148px;background:rgba(15
 let deferredInstallPrompt=null;
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("Service worker registration failed",err));
+    navigator.serviceWorker.register("./sw.js?v=109-cache-refresh",{updateViaCache:"none"}).catch(err=>console.warn("Service worker registration failed",err));
   });
 }
 window.addEventListener("beforeinstallprompt",event=>{

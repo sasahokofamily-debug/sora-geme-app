@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v108-button-events";
-const SW_BUILD="108-button-events";
+const CACHE_NAME="shooking-ii-v109-cache-refresh";
+const SW_BUILD="109-cache-refresh";
 
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 
