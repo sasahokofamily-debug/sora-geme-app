@@ -4,7 +4,7 @@ if(window.ShooOnlineTeamFix)return;
 const ROOM_KEY='shooking2_online_room';
 let auth=null,db=null,uid='',roomCode='',roomRef=null,playerRef=null,players=[],unsubPlayers=null,unsubNews=null,lastNewsId='';
 const $=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const now=()=>firebase.firestore.FieldValue.serverTimestamp();
 
 function gameState(){return window.gameState||window.state||window.player||window.game||window.saveData||null}

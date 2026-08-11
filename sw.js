@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v120-organized-js";
-const SW_BUILD="120-organized-js";
+const CACHE_NAME="shooking-ii-v121-organized-folders";
+const SW_BUILD="121-organized-folders";
 const FIX="fixjs/";
 const PLUS="plusjs/";
 const LEGACY_SCRIPTS=[
@@ -55,27 +55,27 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,"google-login.js",6);
     html=ensureScript(html,FIX+"google-login-fix.js",2);
     html=ensureScript(html,FIX+"firebase-error-patch.js",2);
-    html=ensureScript(html,"firebase-login-fallback.js",2);
-    html=ensureScript(html,"firebase-login-rescue.js",2);
+    html=ensureScript(html,FIX+"firebase-login-fallback.js",2);
+    html=ensureScript(html,FIX+"firebase-login-rescue.js",2);
     html=ensureScript(html,FIX+"auth-session-fix.js",2);
     html=ensureScript(html,"guest-login.js",2);
     html=ensureScript(html,"password-change.js",2);
-    html=ensureScript(html,"password-reset-fix.js",2);
+    html=ensureScript(html,FIX+"password-reset-fix.js",2);
     html=ensureScript(html,"login-cool.js",5);
     html=ensureScript(html,PLUS+"login-command-extras.js",2);
 
     html=ensureScript(html,"hard-stages.js",17);
-    html=ensureScript(html,"hangar-fix.js",18);
+    html=ensureScript(html,FIX+"hangar-fix.js",18);
     html=ensureScript(html,"online-pve.js",3);
     html=ensureScript(html,"multiplayer-sync.js",3);
-    html=ensureScript(html,"online-team-fix.js",3);
+    html=ensureScript(html,FIX+"online-team-fix.js",3);
     html=ensureScript(html,"shared-enemy-sync.js",3);
 
-    html=ensureScript(html,"gacha-upgrade.js",6);
+    html=ensureScript(html,PLUS+"gacha-upgrade.js",6);
     html=ensureScript(html,FIX+"gacha-current-filter.js",2);
-    html=ensureScript(html,"gacha-11.js",3);
+    html=ensureScript(html,PLUS+"gacha-11.js",3);
 
-    html=ensureScript(html,"current-ui-suite.js",1);
+    html=ensureScript(html,PLUS+"current-ui-suite.js",1);
     html=ensureScript(html,PLUS+"current-ui-extra.js",1);
     html=ensureScript(html,FIX+"home-menu-restore.js",2);
     html=ensureScript(html,FIX+"runtime-light-fix.js",2);

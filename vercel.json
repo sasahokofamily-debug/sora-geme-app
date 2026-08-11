@@ -29,13 +29,13 @@
       ]
     },
     {
-      "source": "/loading-overlay-fix.js",
+      "source": "/fixjs/loading-overlay-fix.js",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, immutable" }
       ]
     },
     {
-      "source": "/runtime-light-fix.js",
+      "source": "/fixjs/runtime-light-fix.js",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, immutable" }
       ]
@@ -53,13 +53,13 @@
       ]
     },
     {
-      "source": "/gacha-runtime-bridge.js",
+      "source": "/plusjs/gacha-runtime-bridge.js",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, immutable" }
       ]
     },
     {
-      "source": "/gacha-cinematic.js",
+      "source": "/plusjs/gacha-cinematic.js",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, immutable" }
       ]
