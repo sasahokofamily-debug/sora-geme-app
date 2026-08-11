@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v118-current-suite";
-const SW_BUILD="118-current-suite";
+const CACHE_NAME="shooking-ii-v119-no-auto-reload";
+const SW_BUILD="119-no-auto-reload";
 const LEGACY_SCRIPTS=[
   "seasonal-gacha-fix.js",
   "cache-coherence.js",
@@ -8,21 +8,15 @@ const LEGACY_SCRIPTS=[
 ];
 
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
+
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
   const keys=await caches.keys();
   await Promise.all(keys.map(k=>caches.delete(k)));
   await self.clients.claim();
-  const clients=await self.clients.matchAll({type:"window",includeUncontrolled:true});
-  await Promise.all(clients.map(async client=>{
-    try{
-      const u=new URL(client.url);
-      if(u.origin!==self.location.origin)return;
-      if(u.searchParams.get("__shoo_build")===SW_BUILD)return;
-      u.searchParams.set("__shoo_build",SW_BUILD);
-      await client.navigate(u.href);
-    }catch(e){}
-  }));
+  // IMPORTANT: never navigate/reload open tabs from the service worker.
+  // v118 used client.navigate() here and could trap the app in a reload loop.
 })()));
+
 self.addEventListener("message",event=>{
   const data=event.data||{};
   if(data.type!=="SHOOKING_CLEAR_CACHE")return;
@@ -104,6 +98,8 @@ self.addEventListener("fetch",event=>{
       const req=source instanceof Request?source:new Request(source,{cache:"reload"});
       const res=await fetch(req);
       return patchHtml(res,{game:wantsGame,landing:isRoot&&!wantsGame});
-    }catch(e){return fetch(event.request)}
+    }catch(e){
+      return fetch(event.request);
+    }
   })());
 });
