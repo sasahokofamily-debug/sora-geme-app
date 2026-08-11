@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v123-support-center";
-const SW_BUILD="123-support-center";
+const CACHE_NAME="shooking-ii-v124-support-center-refresh";
+const SW_BUILD="124-support-center-refresh";
 const FIX="fixjs/";
 const PLUS="plusjs/";
 const LEGACY_SCRIPTS=[
