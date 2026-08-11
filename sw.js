@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v122-bootstrap";
-const SW_BUILD="122-bootstrap";
+const CACHE_NAME="shooking-ii-v123-support-center";
+const SW_BUILD="123-support-center";
 const FIX="fixjs/";
 const PLUS="plusjs/";
 const LEGACY_SCRIPTS=[
@@ -69,8 +69,7 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,"password-change.js",2);
     html=ensureScript(html,FIX+"password-reset-fix.js",2);
 
-    // Current official login UI. Keep this after auth patches and let its MutationObserver
-    // re-decorate the screen if another module changes the login DOM later.
+    // Current official login UI.
     html=ensureScript(html,"login-cool.js",6);
     html=ensureScript(html,PLUS+"login-command-extras.js",3);
 
@@ -89,6 +88,10 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,PLUS+"current-ui-extra.js",1);
     html=ensureScript(html,FIX+"home-menu-restore.js",2);
     html=ensureScript(html,FIX+"runtime-light-fix.js",2);
+
+    // Home > その他メニュー support center.
+    html=ensureScript(html,PLUS+"error-voice-assist.js",1);
+    html=ensureScript(html,PLUS+"bug-report-center.js",1);
   }
   const headers=new Headers(response.headers);
   headers.set("content-type","text/html; charset=utf-8");
