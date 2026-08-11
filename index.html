@@ -14,46 +14,104 @@
 <main class="boot">
   <div class="mark"><div class="ship"></div></div>
   <h1>SHOO KING II</h1>
-  <p>COMMAND SYSTEM を準備しています。旧UIを表示せず、最新版のログイン・設定・ガチャを読み込みます。</p>
+  <p>COMMAND SYSTEM を準備しています。端末に古いService Workerが残っている場合は、最新版へ切り替わるまでゲームを起動しません。</p>
   <div class="bar"><div class="fill"></div></div>
   <div id="status" class="status">BOOTING COMMAND SYSTEM...</div>
   <button id="retry" class="retry" type="button">再試行</button>
 </main>
 <script>
 (()=>{
-  const BUILD='124-support-center-refresh';
+  const BUILD='125-ipad-sw-handshake';
   const status=document.getElementById('status');
   const retry=document.getElementById('retry');
   let finished=false;
+  let booting=false;
   const say=t=>{status.textContent=t};
-  async function waitForController(timeout=7000){
-    if(navigator.serviceWorker.controller)return true;
+
+  function askControllerBuild(timeout=850){
     return new Promise(resolve=>{
+      const controller=navigator.serviceWorker.controller;
+      if(!controller){resolve('');return;}
+      const requestId='build-'+Date.now()+'-'+Math.random().toString(36).slice(2);
       let done=false;
-      const finish=v=>{if(done)return;done=true;clearTimeout(timer);navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(v)};
-      const onChange=()=>finish(!!navigator.serviceWorker.controller);
-      const timer=setTimeout(()=>finish(!!navigator.serviceWorker.controller),timeout);
-      navigator.serviceWorker.addEventListener('controllerchange',onChange);
+      let timer=0;
+      const finish=value=>{
+        if(done)return;
+        done=true;
+        clearTimeout(timer);
+        navigator.serviceWorker.removeEventListener('message',onMessage);
+        resolve(String(value||''));
+      };
+      const onMessage=event=>{
+        const data=event.data||{};
+        if(data.type==='SHOOKING_BUILD'&&data.requestId===requestId)finish(data.build);
+      };
+      navigator.serviceWorker.addEventListener('message',onMessage);
+      timer=setTimeout(()=>finish(''),timeout);
+      try{controller.postMessage({type:'SHOOKING_GET_BUILD',requestId});}
+      catch(e){finish('');}
     });
   }
+
+  function waitForControllerSignal(timeout=300){
+    return new Promise(resolve=>{
+      let done=false;
+      let timer=0;
+      const finish=()=>{
+        if(done)return;
+        done=true;
+        clearTimeout(timer);
+        navigator.serviceWorker.removeEventListener('controllerchange',onChange);
+        resolve();
+      };
+      const onChange=()=>finish();
+      navigator.serviceWorker.addEventListener('controllerchange',onChange);
+      timer=setTimeout(finish,timeout);
+    });
+  }
+
+  async function waitForExpectedBuild(timeout=10000){
+    const deadline=Date.now()+timeout;
+    let lastBuild='';
+    while(Date.now()<deadline){
+      const current=await askControllerBuild();
+      if(current===BUILD)return {ok:true,build:current};
+      if(current)lastBuild=current;
+      if(lastBuild) say(`OLD SW DETECTED: ${lastBuild}\nWAITING FOR: ${BUILD}`);
+      else say(`SERVICE WORKER BUILD を確認中...\nEXPECTED: ${BUILD}`);
+      await waitForControllerSignal(300);
+    }
+    return {ok:false,build:lastBuild};
+  }
+
   async function boot(){
-    if(finished)return;
+    if(finished||booting)return;
+    booting=true;
     retry.style.display='none';
     if(!('serviceWorker' in navigator)){
-      say('SERVICE WORKER 未対応のため起動できません');retry.style.display='block';return;
+      say('SERVICE WORKER 未対応のため起動できません');
+      retry.style.display='block';
+      booting=false;
+      return;
     }
     try{
-      say('SERVICE WORKER を確認中...');
+      say(`SERVICE WORKER v125 を確認中...`);
       const reg=await navigator.serviceWorker.register('./sw.js?v='+BUILD,{updateViaCache:'none'});
       await reg.update().catch(()=>{});
       await navigator.serviceWorker.ready;
-      say('LATEST UI MODULES を接続中...');
-      const controlled=await waitForController();
-      if(!controlled){
-        say('最新版の制御をまだ取得できません。\n「再試行」を押してください。');retry.style.display='block';return;
+
+      const result=await waitForExpectedBuild();
+      if(!result.ok){
+        say(result.build
+          ? `古いSW (${result.build}) がまだ端末を制御しています。\n最新版 ${BUILD} への切替後に「再試行」を押してください。`
+          : `最新版SWの応答を確認できませんでした。\n「再試行」を押してください。`);
+        retry.style.display='block';
+        booting=false;
+        return;
       }
+
       finished=true;
-      say('COMMAND SYSTEM ONLINE');
+      say(`COMMAND SYSTEM ONLINE\nSW: ${result.build}`);
       const next=new URL('./game-core.html',location.href);
       next.searchParams.set('play','1');
       next.searchParams.set('boot',BUILD);
@@ -62,8 +120,10 @@
       console.error(error);
       say('BOOT ERROR: '+(error?.message||error));
       retry.style.display='block';
+      booting=false;
     }
   }
+
   retry.addEventListener('click',boot);
   boot();
 })();
