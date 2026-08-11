@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v124-support-center-refresh";
-const SW_BUILD="124-support-center-refresh";
+const CACHE_NAME="shooking-ii-v125-ipad-sw-handshake";
+const SW_BUILD="125-ipad-sw-handshake";
 const FIX="fixjs/";
 const PLUS="plusjs/";
 const LEGACY_SCRIPTS=[
@@ -16,11 +16,17 @@ self.addEventListener("activate",event=>event.waitUntil((async()=>{
   const keys=await caches.keys();
   await Promise.all(keys.map(k=>caches.delete(k)));
   await self.clients.claim();
-  // Important: never navigate or reload open tabs here.
+  // Never navigate or reload open tabs from the service worker.
 })()));
 
 self.addEventListener("message",event=>{
   const data=event.data||{};
+  if(data.type==="SHOOKING_GET_BUILD"){
+    try{
+      event.source?.postMessage({type:"SHOOKING_BUILD",build:SW_BUILD,cache:CACHE_NAME,requestId:data.requestId||""});
+    }catch(e){}
+    return;
+  }
   if(data.type!=="SHOOKING_CLEAR_CACHE")return;
   event.waitUntil((async()=>{
     const keys=await caches.keys();
