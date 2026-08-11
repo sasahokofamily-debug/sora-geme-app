@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v125-ipad-sw-handshake";
-const SW_BUILD="125-ipad-sw-handshake";
+const CACHE_NAME="shooking-ii-v126-login-style";
+const SW_BUILD="126-login-style";
 const FIX="fixjs/";
 const PLUS="plusjs/";
 const LEGACY_SCRIPTS=[
@@ -75,8 +75,8 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,"password-change.js",2);
     html=ensureScript(html,FIX+"password-reset-fix.js",2);
 
-    // Current official login UI.
-    html=ensureScript(html,"login-cool.js",6);
+    // Keep the login screen on the existing lightweight stylesheet.
+    html=ensureScript(html,"login-style.js",1);
     html=ensureScript(html,PLUS+"login-command-extras.js",3);
 
     html=ensureScript(html,"hard-stages.js",17);
