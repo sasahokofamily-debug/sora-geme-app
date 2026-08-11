@@ -1,10 +1,11 @@
-const CACHE_NAME="shooking-ii-v121-organized-folders";
-const SW_BUILD="121-organized-folders";
+const CACHE_NAME="shooking-ii-v122-bootstrap";
+const SW_BUILD="122-bootstrap";
 const FIX="fixjs/";
 const PLUS="plusjs/";
 const LEGACY_SCRIPTS=[
   "seasonal-gacha-fix.js",
   "cache-coherence.js",
+  "login-style.js",
   "login-failure-effect.js",
   "login-success-warp.js"
 ];
@@ -15,7 +16,7 @@ self.addEventListener("activate",event=>event.waitUntil((async()=>{
   const keys=await caches.keys();
   await Promise.all(keys.map(k=>caches.delete(k)));
   await self.clients.claim();
-  // Never reload or navigate open tabs from the service worker.
+  // Important: never navigate or reload open tabs here.
 })()));
 
 self.addEventListener("message",event=>{
@@ -48,6 +49,12 @@ async function patchHtml(response,{game=false,landing=false}={}){
   html=addMeta(html);
   if(landing)html=ensureScript(html,"common-nav.js",9);
   if(game){
+    // Normalize the old inline SW registration so it cannot switch back to an old script URL.
+    html=html.replace(
+      'navigator.serviceWorker.register("./sw.js?v=109-cache-refresh",{updateViaCache:"none"})',
+      `navigator.serviceWorker.register("./sw.js?v=${SW_BUILD}",{updateViaCache:"none"})`
+    );
+
     html=ensureScript(html,"button-actions.js",6);
     html=ensureScript(html,FIX+"key-event-guard.js",2);
 
@@ -61,8 +68,11 @@ async function patchHtml(response,{game=false,landing=false}={}){
     html=ensureScript(html,"guest-login.js",2);
     html=ensureScript(html,"password-change.js",2);
     html=ensureScript(html,FIX+"password-reset-fix.js",2);
-    html=ensureScript(html,"login-cool.js",5);
-    html=ensureScript(html,PLUS+"login-command-extras.js",2);
+
+    // Current official login UI. Keep this after auth patches and let its MutationObserver
+    // re-decorate the screen if another module changes the login DOM later.
+    html=ensureScript(html,"login-cool.js",6);
+    html=ensureScript(html,PLUS+"login-command-extras.js",3);
 
     html=ensureScript(html,"hard-stages.js",17);
     html=ensureScript(html,FIX+"hangar-fix.js",18);
@@ -96,8 +106,8 @@ self.addEventListener("fetch",event=>{
     const path=url.pathname.replace(/\/+$/,"")||"/";
     const scopePath=new URL(self.registration.scope).pathname.replace(/\/+$/,"")||"/";
     const isRoot=path===scopePath;
-    const wantsGame=path.endsWith("/game")||path.endsWith("/index.html")||url.searchParams.get("play")==="1";
-    const source=wantsGame?"./index.html":isRoot?"./landing.html":event.request;
+    const wantsGame=path.endsWith("/game")||path.endsWith("/game-core.html")||url.searchParams.get("play")==="1";
+    const source=wantsGame?"./game-core.html":isRoot?"./landing.html":event.request;
     try{
       const req=source instanceof Request?source:new Request(source,{cache:"reload"});
       const res=await fetch(req);
