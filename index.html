@@ -7,121 +7,23 @@
 <meta name="robots" content="noindex">
 <title>SHOO KING II</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#02030a;color:#e5f8ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 20%,rgba(14,165,233,.17),transparent 34%),linear-gradient(145deg,#01030a,#061126 55%,#02030a)}.boot{width:min(430px,90vw);padding:28px;border:1px solid rgba(103,232,249,.35);border-radius:24px;background:rgba(2,6,23,.86);box-shadow:0 28px 90px rgba(0,0,0,.58),0 0 40px rgba(56,189,248,.13);text-align:center}.mark{width:86px;height:86px;margin:0 auto 18px;border:1px solid rgba(103,232,249,.45);border-radius:50%;display:grid;place-items:center;box-shadow:0 0 28px rgba(56,189,248,.2);position:relative}.mark:before,.mark:after{content:"";position:absolute;background:rgba(103,232,249,.28)}.mark:before{width:1px;height:120%}.mark:after{height:1px;width:120%}.ship{width:30px;height:44px;clip-path:polygon(50% 0,76% 46%,100% 82%,62% 68%,50% 100%,38% 68%,0 82%,24% 46%);background:linear-gradient(#fff,#67e8f9 45%,#2563eb);filter:drop-shadow(0 0 12px #38bdf8)}h1{margin:0;color:#fff;font-size:30px;letter-spacing:.04em}p{margin:8px 0 18px;color:#93a7bd;font-size:13px;line-height:1.6}.bar{height:8px;border-radius:999px;background:#0f172a;overflow:hidden;border:1px solid rgba(103,232,249,.16)}.fill{width:20%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#06b6d4,#2563eb,#7c3aed);animation:load 1.15s ease-in-out infinite alternate}.status{margin-top:13px;color:#67e8f9;font:800 11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;white-space:pre-wrap}.retry{display:none;width:100%;margin-top:18px;padding:12px;border:0;border-radius:12px;background:#1f8cff;color:#fff;font-weight:900;cursor:pointer}@keyframes load{from{width:18%}to{width:88%}}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#02030a;color:#e5f8ff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}body{display:grid;place-items:center;background:radial-gradient(circle at 50% 18%,rgba(14,165,233,.18),transparent 34%),#02030a}.box{width:min(420px,90vw);padding:28px;border:1px solid rgba(103,232,249,.35);border-radius:22px;background:rgba(2,6,23,.94);text-align:center;box-shadow:0 24px 80px #0009}h1{margin:0 0 8px;color:#67e8f9}p{color:#a9c5d6;line-height:1.7}.ring{width:58px;height:58px;margin:0 auto 18px;border:4px solid #164e63;border-top-color:#67e8f9;border-radius:50%;animation:s .7s linear infinite}a{display:block;margin-top:16px;padding:12px;border-radius:11px;background:#1f8cff;color:white;text-decoration:none;font-weight:900}@keyframes s{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<main class="boot">
-  <div class="mark"><div class="ship"></div></div>
-  <h1>SHOO KING II</h1>
-  <p>ゲーム本体を準備しています。Service Workerの更新に失敗しても、起動そのものは止めません。</p>
-  <div class="bar"><div class="fill"></div></div>
-  <div id="status" class="status">BOOTING COMMAND SYSTEM...</div>
-  <button id="retry" class="retry" type="button">ゲームを直接開く</button>
-</main>
+<main class="box"><div class="ring"></div><h1>SHOO KING II</h1><p>安定起動ランチャーへ移動しています…</p><a id="manual" href="./launch.html">起動しない場合はこちら</a></main>
 <script>
 (()=>{
-  const BUILD='127-resilient-boot';
-  const status=document.getElementById('status');
-  const directButton=document.getElementById('retry');
-  let finished=false;
-  let booting=false;
-  const say=t=>{status.textContent=t};
-  const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-
-  function gameUrl(){
-    const next=new URL('./game-core.html',location.href);
-    next.searchParams.set('play','1');
-    next.searchParams.set('boot',BUILD);
-    return next.href;
-  }
-
-  function launch(detail='DIRECT MODE'){
-    if(finished)return;
-    finished=true;
-    say(`COMMAND SYSTEM ONLINE\n${detail}`);
-    setTimeout(()=>location.replace(gameUrl()),80);
-  }
-
-  function askControllerBuild(timeout=450){
-    return new Promise(resolve=>{
-      const controller=navigator.serviceWorker?.controller;
-      if(!controller){resolve('');return;}
-      const requestId='build-'+Date.now()+'-'+Math.random().toString(36).slice(2);
-      let done=false;
-      let timer=0;
-      const finish=value=>{
-        if(done)return;
-        done=true;
-        clearTimeout(timer);
-        navigator.serviceWorker.removeEventListener('message',onMessage);
-        resolve(String(value||''));
-      };
-      const onMessage=event=>{
-        const data=event.data||{};
-        if(data.type==='SHOOKING_BUILD'&&data.requestId===requestId)finish(data.build);
-      };
-      navigator.serviceWorker.addEventListener('message',onMessage);
-      timer=setTimeout(()=>finish(''),timeout);
-      try{controller.postMessage({type:'SHOOKING_GET_BUILD',requestId});}
-      catch(e){finish('');}
-    });
-  }
-
-  function waitForController(timeout=1800){
-    if(navigator.serviceWorker?.controller)return Promise.resolve(true);
-    return new Promise(resolve=>{
-      let done=false;
-      const finish=value=>{
-        if(done)return;
-        done=true;
-        clearTimeout(timer);
-        navigator.serviceWorker.removeEventListener('controllerchange',onChange);
-        resolve(value);
-      };
-      const onChange=()=>finish(!!navigator.serviceWorker.controller);
-      const timer=setTimeout(()=>finish(!!navigator.serviceWorker.controller),timeout);
-      navigator.serviceWorker.addEventListener('controllerchange',onChange);
-    });
-  }
-
-  async function boot(){
-    if(finished||booting)return;
-    booting=true;
-    directButton.style.display='none';
-
-    if(!('serviceWorker' in navigator)){
-      say('SERVICE WORKER 未対応\nDIRECT MODEで起動します');
-      launch('DIRECT MODE / NO SERVICE WORKER');
-      return;
+  const target=new URL('./launch.html',location.href);
+  target.searchParams.set('from','legacy-index');
+  target.searchParams.set('v','128');
+  document.getElementById('manual').href=target.href;
+  try{
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
     }
-
-    try{
-      say('SERVICE WORKER を更新中...\n起動はブロックしません');
-      const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
-      try{reg.waiting?.postMessage({type:'SHOOKING_SKIP_WAITING'});}catch(e){}
-      try{reg.installing?.postMessage({type:'SHOOKING_SKIP_WAITING'});}catch(e){}
-
-      await Promise.race([
-        reg.update().catch(()=>{}),
-        delay(900)
-      ]);
-      await waitForController(1800);
-
-      const current=await askControllerBuild();
-      if(current===BUILD)launch(`SW: ${current}`);
-      else if(current)launch(`SW: ${current} / UPDATE CONTINUES IN BACKGROUND`);
-      else launch('DIRECT FALLBACK / SW STARTING IN BACKGROUND');
-    }catch(error){
-      console.warn('Service worker boot failed; continuing directly.',error);
-      launch('DIRECT FALLBACK / SW UPDATE FAILED');
-    }
-  }
-
-  directButton.addEventListener('click',()=>launch('MANUAL DIRECT MODE'));
-  setTimeout(()=>{if(!finished)directButton.style.display='block';},1400);
-  setTimeout(()=>{if(!finished)launch('WATCHDOG DIRECT MODE');},5200);
-  boot();
+  }catch(e){}
+  setTimeout(()=>location.replace(target.href),40);
 })();
 </script>
 </body>
