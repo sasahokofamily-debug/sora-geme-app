@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='auth-first-paint-v1';
+const VERSION='auth-first-paint-v2-session-safe';
 const CURRENT_KEY='shooking2_current_account';
 const GUEST_KEY='shooking2_guest_session';
 
@@ -18,15 +18,30 @@ html.shooking-auth-first-paint body:before{
 `;
 document.head.appendChild(style);
 
+function guestSession(){
+  try{return sessionStorage.getItem(GUEST_KEY)==='1'}catch(e){return false}
+}
 function account(){
   try{
     const value=JSON.parse(localStorage.getItem(CURRENT_KEY)||'null');
     if(!value||typeof value!=='object')return null;
-    if(value.provider==='guest'&&value.guest===true)return value;
+    if(value.provider==='guest'||value.guest===true){
+      return guestSession()?value:null;
+    }
     if(typeof value.uid==='string'&&value.uid.trim())return value;
     if(typeof value.email==='string'&&value.email.includes('@'))return value;
   }catch(e){}
   return null;
+}
+function clearStaleGuest(){
+  try{
+    const value=JSON.parse(localStorage.getItem(CURRENT_KEY)||'null');
+    if(value&&(value.provider==='guest'||value.guest===true)&&!guestSession()){
+      localStorage.removeItem(CURRENT_KEY);
+      const profile=JSON.parse(localStorage.getItem('shooking2_google_profile')||'null');
+      if(profile&&(profile.provider==='guest'||profile.guest===true))localStorage.removeItem('shooking2_google_profile');
+    }
+  }catch(e){}
 }
 function reveal(){
   document.documentElement.classList.remove('shooking-auth-first-paint');
@@ -45,11 +60,10 @@ function showLogin(){
   reveal();
 }
 function settle(){
+  clearStaleGuest();
   const current=account();
-  let guest=false;
-  try{guest=sessionStorage.getItem(GUEST_KEY)==='1'}catch(e){}
   if(current){reveal();return;}
-  if(guest){
+  if(guestSession()){
     setTimeout(()=>{account()?reveal():showLogin()},260);
     return;
   }
