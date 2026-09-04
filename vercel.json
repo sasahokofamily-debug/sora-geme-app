@@ -1,16 +1,22 @@
 {
   "rewrites": [
     { "source": "/", "destination": "/landing.html" },
-    { "source": "/game", "destination": "/index.html" }
+    { "source": "/game", "destination": "/launch.html" },
+    { "source": "/launch", "destination": "/launch.html" }
   ],
   "headers": [
     { "source": "/landing.html", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
     { "source": "/details.html", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
-    { "source": "/game", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
+    { "source": "/game", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/launch", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/launch.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/index.html", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
-    { "source": "/game-core.html", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
+    { "source": "/game-core.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
     { "source": "/sw.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
     { "source": "/login-style.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
+    { "source": "/fixjs/auth-first-paint.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
+    { "source": "/fixjs/game-entry-rescue.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
+    { "source": "/fixjs/deferred-runtime.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
     { "source": "/fixjs/loading-overlay-fix.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
     { "source": "/fixjs/runtime-light-fix.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
     { "source": "/fixjs/boot-resilience.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }] },
