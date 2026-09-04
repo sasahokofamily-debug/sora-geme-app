@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='runtime-light-fix-v1';
+const VERSION='runtime-light-fix-v2-resilient';
 
 function killHeavyOverlay(){
   const el=document.getElementById('pageLoadingOverlay');
@@ -12,7 +12,25 @@ function killHeavyOverlay(){
     el.style.pointerEvents='none';
     el.setAttribute('aria-busy','false');
   }
+  const startup=document.getElementById('shookingStartupLoader');
+  if(startup){
+    startup.classList.add('is-ready');
+    startup.style.pointerEvents='none';
+    setTimeout(()=>startup.remove(),80);
+  }
   document.documentElement.classList.remove('shooking-loading');
+}
+
+async function recoverServiceWorker(){
+  if(!('serviceWorker' in navigator))return;
+  try{
+    const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
+    try{reg.waiting?.postMessage({type:'SHOOKING_SKIP_WAITING'});}catch(e){}
+    try{reg.installing?.postMessage({type:'SHOOKING_SKIP_WAITING'});}catch(e){}
+    reg.update().catch(()=>{});
+  }catch(error){
+    console.warn('SHOO KING runtime service worker recovery skipped',error);
+  }
 }
 
 const style=document.createElement('style');
@@ -35,6 +53,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 setTimeout(killHeavyOverlay,0);
 setTimeout(killHeavyOverlay,500);
 setTimeout(killHeavyOverlay,1200);
+setTimeout(killHeavyOverlay,3200);
+recoverServiceWorker();
 
 window.__SHOOKING_RUNTIME_LIGHT__=VERSION;
 })();
