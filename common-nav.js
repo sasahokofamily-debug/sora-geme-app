@@ -5,7 +5,7 @@ if(document.getElementById('shookingCommonNav')||document.getElementById('shooki
 
 const path=location.pathname;
 const isRacing=path.endsWith('/racing.html');
-const isGame=!isRacing&&(path.endsWith('/game')||path.endsWith('/index.html')||path.endsWith('/game-core.html'));
+const isGame=!isRacing&&(path.endsWith('/game')||path.endsWith('/launch')||path.endsWith('/launch.html')||path.endsWith('/index.html')||path.endsWith('/game-core.html'));
 const isDetails=path.endsWith('/details.html');
 const isDownload=path.endsWith('/download-builder.html');
 const isPermission=path.endsWith('/permission-maker.html');
@@ -47,7 +47,7 @@ nav.insertAdjacentElement('afterend',crumb);
 if(isDetails){
   document.querySelectorAll('a').forEach(a=>{
     const text=(a.textContent||'').trim();
-    if(text.includes('ゲームをプレイ')){a.href='./index.html';a.textContent='▶ ゲームを始める';}
+    if(text.includes('ゲームをプレイ')){a.href='./launch.html';a.textContent='▶ ゲームを始める';}
     if(text.includes('GitHub Pages版を開く')){a.href='./';a.textContent='🏠 ホームへ戻る';}
     if(text==='ゲームへ戻る'){a.href='./';a.textContent='ホームへ戻る';}
   });
