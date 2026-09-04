@@ -5,7 +5,7 @@ if(document.getElementById('shookingCommonNav')||document.getElementById('shooki
 
 const path=location.pathname;
 const isRacing=path.endsWith('/racing.html');
-const isGame=!isRacing&&(path==='/game'||path.endsWith('/index.html'));
+const isGame=!isRacing&&(path.endsWith('/game')||path.endsWith('/index.html')||path.endsWith('/game-core.html'));
 const isDetails=path.endsWith('/details.html');
 const isDownload=path.endsWith('/download-builder.html');
 const isPermission=path.endsWith('/permission-maker.html');
@@ -26,11 +26,42 @@ style.textContent=`
 `;
 document.head.appendChild(style);
 
-if(isGame){const exit=document.createElement('a');exit.id='shookingGameExit';exit.href='/details.html';exit.textContent='← 詳細に戻る';document.body.appendChild(exit);return;}
+if(isGame){
+  const exit=document.createElement('a');
+  exit.id='shookingGameExit';
+  exit.href='./details.html';
+  exit.textContent='← 詳細に戻る';
+  document.body.appendChild(exit);
+  return;
+}
 if(isRacing) return;
-const nav=document.createElement('nav');nav.id='shookingCommonNav';nav.setAttribute('aria-label','共通メニュー');nav.innerHTML=`<div class="sn-inner"><div class="sn-brand">◉ SORA GAMES</div><a href="/" ${pageName==='ホーム'?'aria-current="page"':''}>🏠 ホーム</a><a href="/details.html" ${pageName==='詳細'?'aria-current="page"':''}>🚀 Shooking</a><a href="/racing.html" ${pageName==='Racing'?'aria-current="page"':''}>🏎️ Racing VR</a><a href="/download-builder.html" ${pageName==='ダウンロード'?'aria-current="page"':''}>📥 ダウンロード</a><a href="/permission-maker.html" ${pageName==='権限発行'?'aria-current="page"':''}>🔑 権限発行</a></div>`;document.body.prepend(nav);
-const crumb=document.createElement('div');crumb.id='shookingBreadcrumb';crumb.innerHTML=pageName==='ホーム'?'ホーム':`<a href="/">ホーム</a> ＞ ${pageName}`;nav.insertAdjacentElement('afterend',crumb);
-if(isDetails){document.querySelectorAll('a').forEach(a=>{const text=(a.textContent||'').trim();if(text.includes('ゲームをプレイ')){a.href='/game?play=1';a.textContent='▶ ゲームを始める';}if(text.includes('GitHub Pages版を開く')){a.href='/';a.textContent='🏠 ホームへ戻る';}if(text==='ゲームへ戻る'){a.href='/';a.textContent='ホームへ戻る';}})}
-if(isDownload){document.querySelectorAll('a').forEach(a=>{const text=(a.textContent||'').trim();if(text.includes('ゲームを開く')){a.href='/details.html';a.textContent='詳細ページへ戻る';}if(text.includes('Vercel版を開く')){a.href='/';a.textContent='ホームへ戻る';}})}
-if(isPermission){document.querySelectorAll('a').forEach(a=>{const text=(a.textContent||'').trim();if(text.includes('Vercel版ゲームへ移動')){a.href='/details.html';a.textContent='詳細・ゲーム開始ページへ戻る';}})}
+const nav=document.createElement('nav');
+nav.id='shookingCommonNav';
+nav.setAttribute('aria-label','共通メニュー');
+nav.innerHTML=`<div class="sn-inner"><div class="sn-brand">◉ SORA GAMES</div><a href="./" ${pageName==='ホーム'?'aria-current="page"':''}>🏠 ホーム</a><a href="./details.html" ${pageName==='詳細'?'aria-current="page"':''}>🚀 Shooking</a><a href="./racing.html" ${pageName==='Racing'?'aria-current="page"':''}>🏎️ Racing VR</a><a href="./download-builder.html" ${pageName==='ダウンロード'?'aria-current="page"':''}>📥 ダウンロード</a><a href="./permission-maker.html" ${pageName==='権限発行'?'aria-current="page"':''}>🔑 権限発行</a></div>`;
+document.body.prepend(nav);
+const crumb=document.createElement('div');
+crumb.id='shookingBreadcrumb';
+crumb.innerHTML=pageName==='ホーム'?'ホーム':`<a href="./">ホーム</a> ＞ ${pageName}`;
+nav.insertAdjacentElement('afterend',crumb);
+if(isDetails){
+  document.querySelectorAll('a').forEach(a=>{
+    const text=(a.textContent||'').trim();
+    if(text.includes('ゲームをプレイ')){a.href='./index.html';a.textContent='▶ ゲームを始める';}
+    if(text.includes('GitHub Pages版を開く')){a.href='./';a.textContent='🏠 ホームへ戻る';}
+    if(text==='ゲームへ戻る'){a.href='./';a.textContent='ホームへ戻る';}
+  });
+}
+if(isDownload){
+  document.querySelectorAll('a').forEach(a=>{
+    const text=(a.textContent||'').trim();
+    if(text.includes('ゲームを開く')){a.href='./details.html';a.textContent='詳細ページへ戻る';}
+  });
+}
+if(isPermission){
+  document.querySelectorAll('a').forEach(a=>{
+    const text=(a.textContent||'').trim();
+    if(text.includes('Vercel版ゲームへ移動')){a.href='./details.html';a.textContent='詳細・ゲーム開始ページへ戻る';}
+  });
+}
 })();
