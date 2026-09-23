@@ -23,6 +23,11 @@
 const BUILD='131-lazy-auth-start';
 const msg=document.getElementById('msg');
 const retry=document.getElementById('retry');
+if(location.protocol==='file:'){
+  msg.textContent='ローカル版を直接起動しています...';
+  setTimeout(()=>location.replace('./game-core.html?play=1&local=1'),40);
+  return;
+}
 const managed=[
  'auth-first-paint.js','boot-resilience.js','button-actions.js','key-event-guard.js','firebase-config.js','auth-session-fix.js','google-login.js','google-login-fix.js','firebase-error-patch.js','firebase-login-fallback.js','firebase-login-rescue.js','guest-login.js','password-change.js','password-reset-fix.js','login-style.js','login-command-extras.js','game-entry-rescue.js','runtime-light-fix.js','deferred-runtime.js',
  'seasonal-gacha-fix.js','cache-coherence.js','login-cool.js','login-failure-effect.js','login-success-warp.js','startup-loading.js',
