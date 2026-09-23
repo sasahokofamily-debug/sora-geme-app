@@ -20,7 +20,7 @@
 <script>
 (()=>{
 'use strict';
-  const BUILD='129-direct-fallback';
+const BUILD='130-auth-order-fix';
 const msg=document.getElementById('msg');
 const retry=document.getElementById('retry');
 const managed=[
@@ -76,11 +76,9 @@ async function load(){
   doc.querySelectorAll('meta[name="shooking-build"]').forEach(el=>el.remove());
   const meta=doc.createElement('meta');meta.name='shooking-build';meta.content=BUILD;doc.head.appendChild(meta);
 
-  // This runs before the original game body so the raw home screen can never flash first.
-  const first=script('fixjs/auth-first-paint.js',doc);
-  doc.body.insertBefore(first,doc.body.firstChild);
-
   for(const path of critical)doc.body.appendChild(script(path,doc));
+  // Run the auth check after the game DOM exists so it can reveal the real login screen.
+  doc.body.appendChild(script('fixjs/auth-first-paint.js',doc));
 
   const marker=doc.createElement('script');
   marker.textContent=`window.__SHOOKING_DIRECT_LAUNCH__=${JSON.stringify(BUILD)};document.documentElement.dataset.shookingLaunch=${JSON.stringify(BUILD)};`;

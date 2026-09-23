@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v129-direct-fallback";
-const SW_BUILD="129-direct-fallback";
+const CACHE_NAME="shooking-ii-v130-auth-order-fix";
+const SW_BUILD="130-auth-order-fix";
 
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 
