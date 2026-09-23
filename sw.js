@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v128-direct-launch";
-const SW_BUILD="128-direct-launch";
+const CACHE_NAME="shooking-ii-v129-direct-fallback";
+const SW_BUILD="129-direct-fallback";
 
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 
@@ -64,6 +64,10 @@ self.addEventListener("fetch",event=>{
   // A user/bookmark that opens the raw historical game page is moved to the
   // direct launcher. launch.html fetches game-core as a non-navigation request,
   // so that fetch is not intercepted here and cannot loop.
+  if(isRawGame&&url.searchParams.get("direct")==="1"){
+    event.respondWith(networkHtml("./game-core.html"));
+    return;
+  }
   if(isRawGame){
     event.respondWith(Response.redirect(new URL("./launch.html",self.registration.scope).href,302));
     return;

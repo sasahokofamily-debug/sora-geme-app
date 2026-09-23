@@ -20,7 +20,7 @@
 <script>
 (()=>{
 'use strict';
-const BUILD='128-direct-launch';
+  const BUILD='129-direct-fallback';
 const msg=document.getElementById('msg');
 const retry=document.getElementById('retry');
 const managed=[
@@ -53,11 +53,16 @@ function basename(src){try{return new URL(src,location.href).pathname.split('/')
 function script(path,doc){const s=doc.createElement('script');s.src=`./${path}?v=${BUILD}`;s.setAttribute('data-shooking-runtime',BUILD);return s}
 async function load(){
  retry.style.display='none';
+ let fallbackTimer=0;
  try{
   say('GAME CORE を取得中...');
   const coreUrl=new URL('./game-core.html',location.href);
   coreUrl.searchParams.set('runtime',BUILD);
-  const response=await fetch(coreUrl.href,{cache:'no-store',headers:{'x-shooking-launch':BUILD}});
+  coreUrl.searchParams.set('direct','1');
+  const controller=new AbortController();
+  fallbackTimer=setTimeout(()=>controller.abort(),7000);
+  const response=await fetch(coreUrl.href,{cache:'no-store',headers:{'x-shooking-launch':BUILD},signal:controller.signal});
+  clearTimeout(fallbackTimer);
   if(!response.ok)throw new Error(`game-core HTTP ${response.status}`);
   let html=await response.text();
   if(!html.includes('SHOO KING II'))throw new Error('game-core の内容を確認できません');
@@ -83,11 +88,16 @@ async function load(){
 
   say('RUNTIME を接続中...');
   const output='<!doctype html>\n'+doc.documentElement.outerHTML;
-  document.open();document.write(output);document.close();
+ document.open();document.write(output);document.close();
  }catch(error){
+  clearTimeout(fallbackTimer);
   console.error('SHOO KING direct launch failed',error);
-  say('起動に失敗しました\n'+String(error?.message||error));
-  retry.style.display='block';
+  say('直接起動へ切り替えます...');
+  const direct=new URL('./game-core.html',location.href);
+  direct.searchParams.set('play','1');
+  direct.searchParams.set('direct','1');
+  direct.searchParams.set('boot',BUILD);
+  setTimeout(()=>location.replace(direct.href),80);
  }
 }
 retry.addEventListener('click',load);
