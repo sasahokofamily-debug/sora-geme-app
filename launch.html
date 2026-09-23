@@ -20,7 +20,7 @@
 <script>
 (()=>{
 'use strict';
-const BUILD='130-auth-order-fix';
+const BUILD='131-lazy-auth-start';
 const msg=document.getElementById('msg');
 const retry=document.getElementById('retry');
 const managed=[
@@ -29,24 +29,15 @@ const managed=[
  'hard-stages.js','hangar-fix.js','online-pve.js','multiplayer-sync.js','online-team-fix.js','shared-enemy-sync.js','gacha-upgrade.js','gacha-current-filter.js','gacha-11.js','current-ui-suite.js','current-ui-extra.js','home-menu-restore.js','error-voice-assist.js','bug-report-center.js'
 ];
 const critical=[
- 'fixjs/boot-resilience.js',
- 'button-actions.js',
- 'fixjs/key-event-guard.js',
- 'firebase-config.js',
- 'fixjs/auth-session-fix.js',
- 'google-login.js',
- 'fixjs/google-login-fix.js',
- 'fixjs/firebase-error-patch.js',
- 'fixjs/firebase-login-fallback.js',
- 'fixjs/firebase-login-rescue.js',
- 'guest-login.js',
- 'password-change.js',
- 'fixjs/password-reset-fix.js',
- 'login-style.js',
- 'plusjs/login-command-extras.js',
- 'fixjs/game-entry-rescue.js',
- 'fixjs/runtime-light-fix.js',
- 'fixjs/deferred-runtime.js'
+  'fixjs/boot-resilience.js',
+  'button-actions.js',
+  'fixjs/key-event-guard.js',
+  'firebase-config.js',
+  'fixjs/auth-session-fix.js',
+  'login-style.js',
+  'fixjs/game-entry-rescue.js',
+  'fixjs/runtime-light-fix.js',
+  'fixjs/deferred-runtime.js'
 ];
 function say(text){msg.textContent=text}
 function basename(src){try{return new URL(src,location.href).pathname.split('/').pop()}catch(e){return String(src).split('/').pop().split('?')[0]}}

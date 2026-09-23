@@ -4,8 +4,17 @@ const VERSION='deferred-runtime-v1';
 if(window.__SHOOKING_DEFERRED_RUNTIME__)return;
 window.__SHOOKING_DEFERRED_RUNTIME__=VERSION;
 
-const BUILD='128-direct-launch';
+const BUILD='131-lazy-auth-start';
 const queue=[
+  'google-login.js',
+  'fixjs/google-login-fix.js',
+  'fixjs/firebase-error-patch.js',
+  'fixjs/firebase-login-fallback.js',
+  'fixjs/firebase-login-rescue.js',
+  'guest-login.js',
+  'password-change.js',
+  'fixjs/password-reset-fix.js',
+  'plusjs/login-command-extras.js',
   'hard-stages.js',
   'fixjs/hangar-fix.js',
   'online-pve.js',

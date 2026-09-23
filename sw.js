@@ -1,5 +1,5 @@
-const CACHE_NAME="shooking-ii-v130-auth-order-fix";
-const SW_BUILD="130-auth-order-fix";
+const CACHE_NAME="shooking-ii-v131-lazy-auth-start";
+const SW_BUILD="131-lazy-auth-start";
 
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 
